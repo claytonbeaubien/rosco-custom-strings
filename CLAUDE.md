@@ -8,8 +8,24 @@ Currently a standalone HTML/JS/Canvas tool. Being formalized into a deployable p
 - `index.html` — main tool (formerly rosco_pack_generator.html)
 - `rosco_string_engine.json` — string data (gauges, tensions, types by scale/tuning/string count)
 - `assets/` — logo, fonts (being built out)
+- `Rosco_Tuning_Reference.pdf` — printable customer-facing tuning reference (all supported tunings)
 - `README.md` — project overview
 - `CLAUDE.md` — this file
+
+## Rules — ALWAYS follow
+
+### Tuning reference PDF stays in sync with the pack builder
+**Whenever a new tuning is added to (or removed from) `index.html`, the `Rosco_Tuning_Reference.pdf` MUST be regenerated.** This PDF is published on roscoguitars.com as a free download and the matching Notion page ("Rosco Tuning Reference — All Supported Tunings", id `34c69b46-94dd-81ff-906b-c552c2387e66`) also needs the new rows.
+
+Checklist when tunings change:
+1. Update `PACKS` in `index.html` (all scale lengths for that tuning).
+2. Update `TUNING_ORDER` (6/7-string) or `TUNING_ORDER_8` (8-string) so the dropdown picks it up.
+3. Update the `SECTIONS` list in `/sessions/festive-loving-turing/build_tuning_pdf.py` — add/remove the `(tuning_name, [notes low→high])` tuple for the right instrument section, and bump the count in the section's subtitle/blurb.
+4. Rebuild the PDF: `python3 /sessions/festive-loving-turing/build_tuning_pdf.py` → writes `/sessions/festive-loving-turing/mnt/rosco-custom-strings/Rosco_Tuning_Reference.pdf`.
+5. Update the Notion page (same content — new row in the instrument's table, bump count in the intro).
+6. Present the regenerated PDF to Clayton with a `computer://` link.
+
+Do this proactively whenever the change is made — don't wait for Clayton to ask.
 
 ## Owner
 Clayton — Rosco Guitars Ltd
