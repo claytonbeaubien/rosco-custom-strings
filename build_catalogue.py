@@ -32,7 +32,11 @@ SOURCE_XLSX = PROJECT_ROOT / "source_data" / "Daddario Price List - March-2025.x
 SHEET_NAME = "Daddario Price List 2025"
 OUTPUT_JSON = PROJECT_ROOT / "daddario_catalogue.json"
 
-MARKUP = 2.2  # mirrored in rosco_string_engine.json -> pricing_config.markup
+MARKUP = {  # mirrored in rosco_string_engine.json -> pricing_config.markup
+    "guitar": 1.95,
+    "bass":   1.55,
+    "acoustic": 1.95,  # reserved; calc doesn't use acoustic yet
+}
 CURRENCY = "CAD"
 
 # Each prefix maps to series/instrument/type metadata. Order matters only when

@@ -4,7 +4,11 @@
     "sheet": "Daddario Price List 2025",
     "generated": "2026-04-27",
     "currency": "CAD",
-    "markup": 2.2
+    "markup": {
+      "guitar": 1.95,
+      "bass": 1.55,
+      "acoustic": 1.95
+    }
   },
   "strings": [
     {

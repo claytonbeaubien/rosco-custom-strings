@@ -8,7 +8,11 @@
     "scale_length_unit": "inches"
   },
   "pricing_config": {
-    "markup": 2.2,
+    "markup": {
+      "guitar": 1.95,
+      "bass": 1.55,
+      "acoustic": 1.95
+    },
     "catalogue_file": "daddario_catalogue.json",
     "currency": "CAD",
     "rounding": "nearest_0.05"
