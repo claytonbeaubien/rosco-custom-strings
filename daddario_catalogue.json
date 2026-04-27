@@ -3594,6 +3594,18 @@
       "retail_price": 1.8
     },
     {
+      "prod_code": "PL021",
+      "description": "SINGLE PLAIN STEEL 021",
+      "series": "XL",
+      "instrument": "guitar",
+      "type": "plain",
+      "gauge": 0.021,
+      "gauge_display": ".021",
+      "net_cost": 0.88,
+      "retail_price": 1.8,
+      "source": "manual"
+    },
+    {
       "prod_code": "PL022",
       "description": "SINGLE PLAIN STEEL 022",
       "series": "XL",
@@ -3966,6 +3978,18 @@
       "gauge_display": ".064",
       "net_cost": 2.94,
       "retail_price": 6.0
+    },
+    {
+      "prod_code": "NW065",
+      "description": "SINGLE NICKEL WOUND 065",
+      "series": "XL",
+      "instrument": "guitar",
+      "type": "wound",
+      "gauge": 0.065,
+      "gauge_display": ".065",
+      "net_cost": 2.94,
+      "retail_price": 6.0,
+      "source": "manual"
     },
     {
       "prod_code": "NW066",

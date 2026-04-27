@@ -71,6 +71,16 @@ MANUAL_ADDITIONS = [
     # March 2025 price sheet but available through Clayton's distributor.
     # Source: invoice screenshot, Apr 2026.
     ("NW090", "SINGLE NICKEL WOUND 090", 12.50, 6.13),
+    # PL021 — single .021 plain steel. Sits between PL020 and PL022 (which
+    # D'Addario does sell as singles). Useful for alternate tunings on
+    # heavier-gauged top strings. Stocked.
+    # Source: invoice screenshot, Apr 2026.
+    ("PL021", "SINGLE PLAIN STEEL 021", 1.80, 0.88),
+    # NW065 — single .065 nickel wound. Sits between NW064 and NW066
+    # (both of which D'Addario sells as singles). Useful for filling
+    # out 6/7-string low-end ladders. Stocked.
+    # Source: invoice screenshot, Apr 2026.
+    ("NW065", "SINGLE NICKEL WOUND 065", 6.00, 2.94),
 ]
 
 # Multi-string bundles to exclude (uppercase substring match against description).
