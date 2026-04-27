@@ -56,6 +56,23 @@ PREFIX_MAP = {
 # Match longest prefixes first so NYXLB wins over XLB, NYNW wins over NW, etc.
 PREFIXES_BY_LENGTH = sorted(PREFIX_MAP.keys(), key=len, reverse=True)
 
+# Manual additions — strings sourced outside the standard D'Addario price sheet
+# (special-order or distributor extras Clayton actually buys). These are merged
+# in after the spreadsheet pass and survive every xlsx re-run. If a code here
+# collides with a row in the spreadsheet, the manual entry wins so Clayton's
+# real invoiced cost takes precedence over D'Addario's published net.
+#
+# Format: (prod_code, description, retail_price, net_cost)
+# Series/instrument/type/gauge are inferred from the prefix exactly like
+# spreadsheet rows.
+MANUAL_ADDITIONS = [
+    # NW090 — single .090 nickel wound, used as the lowest string in 8-string
+    # and extreme drop-tuning guitar packs. Not on D'Addario's standard
+    # March 2025 price sheet but available through Clayton's distributor.
+    # Source: invoice screenshot, Apr 2026.
+    ("NW090", "SINGLE NICKEL WOUND 090", 12.50, 6.13),
+]
+
 # Multi-string bundles to exclude (uppercase substring match against description).
 EXCLUDE_KEYWORDS = (
     "KIT",
@@ -188,6 +205,42 @@ def build() -> list[dict]:
             "retail_price": retail_price,
         })
 
+    # Merge in manual additions. These overwrite spreadsheet rows with the
+    # same prod_code, since the manual values reflect what Clayton actually
+    # pays.
+    by_code = {s["prod_code"]: s for s in strings}
+    added = 0
+    replaced = 0
+    for code, desc, retail, net in MANUAL_ADDITIONS:
+        prefix = match_prefix(code)
+        if prefix is None:
+            print(f"  skipping manual addition {code}: no matching prefix")
+            continue
+        gauge_info = extract_gauge(code, prefix)
+        if gauge_info is None:
+            print(f"  skipping manual addition {code}: gauge could not be parsed")
+            continue
+        gauge, gauge_display = gauge_info
+        meta = PREFIX_MAP[prefix]
+        entry = {
+            "prod_code": code,
+            "description": desc,
+            "series": meta["series"],
+            "instrument": meta["instrument"],
+            "type": meta["type"],
+            "gauge": gauge,
+            "gauge_display": gauge_display,
+            "net_cost": float(net),
+            "retail_price": float(retail),
+            "source": "manual",
+        }
+        if code in by_code:
+            replaced += 1
+        else:
+            added += 1
+        by_code[code] = entry
+    strings = list(by_code.values())
+
     # Sort: instrument -> series -> type -> gauge ascending
     strings.sort(key=lambda s: (s["instrument"], s["series"], s["type"], s["gauge"]))
 
@@ -195,6 +248,7 @@ def build() -> list[dict]:
     print(f"  skipped {skipped_bundles} bundle/kit rows")
     print(f"  skipped {skipped_no_prefix} rows with non-targeted prefix")
     print(f"  skipped {skipped_no_gauge} rows where gauge could not be parsed")
+    print(f"  manual additions: {added} added, {replaced} replaced ({len(MANUAL_ADDITIONS)} total)")
     print(f"  kept    {len(strings)} single strings")
     print()
 

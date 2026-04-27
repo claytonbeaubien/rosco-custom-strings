@@ -4034,6 +4034,18 @@
       "retail_price": 10.0
     },
     {
+      "prod_code": "NW090",
+      "description": "SINGLE NICKEL WOUND 090",
+      "series": "XL",
+      "instrument": "guitar",
+      "type": "wound",
+      "gauge": 0.09,
+      "gauge_display": ".090",
+      "net_cost": 6.13,
+      "retail_price": 12.5,
+      "source": "manual"
+    },
+    {
       "prod_code": "XSPL008",
       "description": "XS SINGLE PLAIN STEEL 008",
       "series": "XS Coated",
