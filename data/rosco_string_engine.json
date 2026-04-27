@@ -1,11 +1,17 @@
 {
   "meta": {
     "version": "1.0",
-    "description": "Rosco Guitars string tension engine \u2014 D'Addario XL unit weights + Rosco tension targets",
+    "description": "Rosco Guitars string tension engine — D'Addario XL unit weights + Rosco tension targets",
     "last_updated": "2026-03-10",
     "formula": "T = (UW * (2 * L * F)^2) / 386.4",
     "tension_unit": "lbs",
     "scale_length_unit": "inches"
+  },
+  "pricing_config": {
+    "markup": 2.2,
+    "catalogue_file": "daddario_catalogue.json",
+    "currency": "CAD",
+    "rounding": "nearest_0.05"
   },
   "note_frequencies": {
     "E4": 329.63,
@@ -70,7 +76,7 @@
   },
   "unit_weights": {
     "plain_steel": {
-      "comment": "PL series \u2014 D'Addario plain steel, Lock Twist. Values in lbs/inch.",
+      "comment": "PL series — D'Addario plain steel, Lock Twist. Values in lbs/inch.",
       "PL007": 1.085e-05,
       "PL008": 1.418e-05,
       "PL0085": 1.601e-05,
@@ -95,7 +101,7 @@
       "PL026": 0.00014975
     },
     "nickel_wound": {
-      "comment": "NW series \u2014 D'Addario XL Nickelplated Steel Round Wound. Values in lbs/inch.",
+      "comment": "NW series — D'Addario XL Nickelplated Steel Round Wound. Values in lbs/inch.",
       "NW017": 5.524e-05,
       "NW018": 6.215e-05,
       "NW019": 6.947e-05,
@@ -131,7 +137,7 @@
       "NW080": 0.00115011
     },
     "interpolated": {
-      "comment": "Half-size gauges not in the PDF \u2014 unit weights calculated by linear interpolation between adjacent PL values. Used for gauges like 9.5, 10.5, 11.5, 12.5, 16.5.",
+      "comment": "Half-size gauges not in the PDF — unit weights calculated by linear interpolation between adjacent PL values. Used for gauges like 9.5, 10.5, 11.5, 12.5, 16.5.",
       "PL0095_interp": 1.999e-05,
       "PL0105_interp": 2.442e-05,
       "PL0115_interp": 2.93e-05,
@@ -424,7 +430,7 @@
       "3": {
         "target_lbs": 15.5,
         "type": "plain",
-        "note": "G \u2014 wound if gauge >19p, then target 16 lbs"
+        "note": "G — wound if gauge >19p, then target 16 lbs"
       },
       "4": {
         "target_lbs": 18.0,
