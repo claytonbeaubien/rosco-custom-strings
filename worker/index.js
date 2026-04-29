@@ -8,11 +8,12 @@
  *
  * Endpoint: POST /
  * Request:  { brand: string, model: string, year?: string }
- * Response: { scale_length: number | null, note: string }
+ * Response: { scale_length: number | null, string_count: 4-8 | null, note: string }
  *
- * scale_length is null when Claude isn't reasonably confident; the browser
- * shows the friendly note from Claude in that case and leaves the customer
- * to pick manually.
+ * scale_length and string_count are independently null when Claude isn't
+ * reasonably confident. The browser auto-snaps the scale dropdown when
+ * scale_length is set, and switches the string-count buttons when
+ * string_count is set. Friendly note is always present.
  */
 
 // Browsers allowed to call this Worker. Edit and redeploy when adding a new
@@ -34,32 +35,35 @@ CRITICAL OUTPUT FORMAT: The first character of your response must be { and the l
 
 Given a brand, model, and optional year, respond with EXACTLY ONE JSON object:
 
-{"scale_length": <number_or_null>, "note": "<short sentence>"}
+{"scale_length": <number_or_null>, "string_count": <integer_or_null>, "note": "<short sentence>"}
 
 Rules:
-- First, decide whether the instrument is a guitar or a bass based on the model name. Bass models include "Bass", "Jazz Bass", "Precision Bass / P-Bass", "Stingray", "Thunderbird", "Rickenbacker 4xxx", "BB", "SR", etc.
+- First, decide whether the instrument is a guitar or a bass based on the model name. Bass models include "Bass", "Jazz Bass", "Precision Bass / P-Bass", "Stingray", "Thunderbird", "Rickenbacker 4xxx", "BB", "SR", "Grabber", "Ripper", "Hofner", etc.
 - scale_length: a real number in inches. Typical ranges:
   - Guitar: 24.0 – 28.625 (most common: 24.75 Gibson, 25.0 PRS, 25.5 Fender)
   - Baritone guitar: 26.5 – 30.0
   - Bass: 30 short-scale, 32 medium-scale, 34 long-scale (most common), 35 super-long, 36 extra-long
   - Use null if you cannot identify the model or aren't reasonably confident.
+- string_count: integer — must be one of 4, 5, 6, 7, or 8. Use null if the instrument has a different count (e.g. 12-string acoustic, 6-string bass) or you're uncertain. Default assumptions: most guitars = 6, most basses = 4. Models with "5", "V", "7", "8" in the name usually indicate that count.
 - note: ONE short sentence about the instrument, under 180 characters. If scale_length is null, write a friendly and lightly playful "couldn't find it" message — luthier humor is welcome but keep it brief and original.
 
 Examples:
-{"scale_length": 25.5, "note": "Standard Fender guitar scale, used on Strats and Teles."}
-{"scale_length": 24.75, "note": "Classic Gibson scale, slightly shorter than Fender."}
-{"scale_length": 25.0, "note": "PRS uses a 25-inch scale — between Gibson and Fender."}
-{"scale_length": 27.0, "note": "Common extended scale for 7-string and baritone guitars."}
-{"scale_length": 28.625, "note": "Standard Ibanez 8-string scale length."}
-{"scale_length": 34.0, "note": "Standard Fender long-scale bass — Precision and Jazz both use it."}
-{"scale_length": 34.0, "note": "Music Man StingRay long-scale bass, 34 inches like most modern basses."}
-{"scale_length": 35.0, "note": "Super-long scale, common on 5-string basses for tighter low B."}
-{"scale_length": 33.25, "note": "Rickenbacker bass scale — slightly shorter than Fender's 34."}
-{"scale_length": 30.0, "note": "Short-scale bass, like a Fender Mustang Bass or Hofner violin bass."}
-{"scale_length": null, "note": "Stumped on that one — even our resident luthier shrugged. Try a different spelling or pick a scale manually."}
-{"scale_length": null, "note": "Couldn't pin that one down. Maybe a typo, maybe a one-off custom — manual pick from the list works just fine."}
+{"scale_length": 25.5, "string_count": 6, "note": "Standard Fender guitar scale, used on Strats and Teles."}
+{"scale_length": 24.75, "string_count": 6, "note": "Classic Gibson scale, slightly shorter than Fender."}
+{"scale_length": 25.0, "string_count": 6, "note": "PRS uses a 25-inch scale — between Gibson and Fender."}
+{"scale_length": 26.5, "string_count": 7, "note": "Common 7-string extended scale, shared with many baritones."}
+{"scale_length": 28.625, "string_count": 8, "note": "Standard Ibanez 8-string scale length."}
+{"scale_length": 34.0, "string_count": 4, "note": "Standard Fender long-scale bass — Precision and Jazz both use it."}
+{"scale_length": 34.0, "string_count": 4, "note": "Music Man StingRay long-scale bass, 34 inches."}
+{"scale_length": 34.0, "string_count": 4, "note": "Gibson Grabber, 34-inch scale 4-string bass from the mid-70s."}
+{"scale_length": 34.0, "string_count": 5, "note": "Five-string Jazz Bass — same scale as the four, with an added low B."}
+{"scale_length": 35.0, "string_count": 5, "note": "Super-long scale, common on 5-string basses for tighter low B."}
+{"scale_length": 33.25, "string_count": 4, "note": "Rickenbacker bass scale — slightly shorter than Fender's 34."}
+{"scale_length": 30.0, "string_count": 4, "note": "Short-scale bass, like a Fender Mustang Bass or Hofner violin bass."}
+{"scale_length": null, "string_count": null, "note": "Stumped on that one — even our resident luthier shrugged. Try a different spelling or pick a scale manually."}
+{"scale_length": null, "string_count": null, "note": "Couldn't pin that one down. Maybe a typo, maybe a one-off custom — manual pick from the list works just fine."}
 
-Refuse any non-instrument request by returning {"scale_length": null, "note": "Not a guitar or bass lookup."}.`;
+Refuse any non-instrument request by returning {"scale_length": null, "string_count": null, "note": "Not a guitar or bass lookup."}.`;
 
 export default {
   async fetch(request, env) {
@@ -199,9 +203,16 @@ export default {
     ) {
       scale_length = Math.round(parsed.scale_length * 100) / 100;
     }
+    let string_count = null;
+    if (
+      Number.isInteger(parsed.string_count) &&
+      [4, 5, 6, 7, 8].includes(parsed.string_count)
+    ) {
+      string_count = parsed.string_count;
+    }
     const note = (typeof parsed.note === 'string' ? parsed.note : '').slice(0, 240);
 
-    return jsonResponse({ scale_length, note }, 200, origin);
+    return jsonResponse({ scale_length, string_count, note }, 200, origin);
   },
 };
 
