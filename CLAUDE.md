@@ -7,6 +7,9 @@ Currently a standalone HTML/JS/Canvas tool. Being formalized into a deployable p
 ## Current file structure
 - `index.html` — main tool (formerly rosco_pack_generator.html)
 - `rosco_string_engine.json` — string data (gauges, tensions, types by scale/tuning/string count)
+- `daddario_catalogue.json` — D'Addario single-string pricing catalogue
+- `build_catalogue.py` — generates `daddario_catalogue.json` from the source xlsx
+- `worker/` — Cloudflare Worker that proxies the scale-length lookup (Anthropic key lives there as encrypted secret, never in browser code). See `worker/README.md`.
 - `assets/` — logo, fonts (being built out)
 - `Rosco_Tuning_Reference.pdf` — printable customer-facing tuning reference (all supported tunings)
 - `README.md` — project overview
@@ -36,7 +39,12 @@ Airtable base: Guitar Shop Management (`appB5AOWKFwyj52WM`)
 ### Phase 1 — GitHub Pages (CURRENT)
 - Repo name: `rosco-custom-strings`
 - Deploy via GitHub Pages for internal access anywhere
-- No backend required — pure static site
+- Static site for the calculator itself
+- Cloudflare Worker (`worker/`) for the scale-length lookup so the
+  Anthropic API key stays out of the browser. Worker URL:
+  `https://rosco-scale-lookup.clayton-18a.workers.dev/`. Key is held as
+  an encrypted Cloudflare secret. To deploy Worker changes, see
+  `worker/README.md` (dashboard paste OR `wrangler deploy`).
 
 ### Phase 2 — Airtable Integration
 Goal: "Save Pack" button in the tool that logs the string set to Airtable.
@@ -60,17 +68,4 @@ Airtable API key handling: use a Cloudflare Worker proxy to keep the key hidden
 once this is public-facing. For internal GitHub Pages use, key can be stored in
 a local config file excluded from git via .gitignore.
 
-### Phase 3 — Customer Facing (RoscoGuitars.com)
-- Embed tool on website so customers can build their own sets
-- Customer submits set → triggers order flow
-- Shopify integration for string pack purchases
-- Inventory deduction in Airtable on order
-
-## String data notes
-- `rosco_string_engine.json` uses match key pattern: `{scale×100}-{Tuning}-{string count}`
-- Known quirks: string 3 plain/wound threshold rule, trailing zero stripping in gauge display
-- D'Addario XL Nickel Wound / Plain Steel as default string brand
-
-## Do not touch
-- Any archived calculator files
-- `rosco_string_engine.json` data structure unless explicitly instructed
+###
