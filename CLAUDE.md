@@ -68,4 +68,17 @@ Airtable API key handling: use a Cloudflare Worker proxy to keep the key hidden
 once this is public-facing. For internal GitHub Pages use, key can be stored in
 a local config file excluded from git via .gitignore.
 
-###
+### Phase 3 — Customer Facing (RoscoGuitars.com)
+- Embed tool on website so customers can build their own sets
+- Customer submits set → triggers order flow
+- Shopify integration for string pack purchases
+- Inventory deduction in Airtable on order
+
+## String data notes
+- `rosco_string_engine.json` uses match key pattern: `{scale×100}-{Tuning}-{string count}`
+- Known quirks: string 3 plain/wound threshold rule, trailing zero stripping in gauge display
+- D'Addario XL Nickel Wound / Plain Steel as default string brand
+
+## Do not touch
+- Any archived calculator files
+- `rosco_string_engine.json` data structure unless explicitly instructed
