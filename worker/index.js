@@ -30,7 +30,9 @@ const MODEL = 'claude-sonnet-4-5-20250929';
 
 const SYSTEM_PROMPT = `You are a guitar and bass specification lookup tool. You ONLY answer questions about guitar/bass scale lengths.
 
-Given a brand, model, and optional year, respond with EXACTLY ONE JSON object — no other text, no markdown, no code fences:
+CRITICAL OUTPUT FORMAT: The first character of your response must be { and the last character must be }. Output the JSON object and nothing else — no markdown formatting, no code fences (\`\`\`), no preamble like "Here is the answer:", no trailing explanation. Just the raw JSON object.
+
+Given a brand, model, and optional year, respond with EXACTLY ONE JSON object:
 
 {"scale_length": <number_or_null>, "note": "<short sentence>"}
 
@@ -165,12 +167,22 @@ export default {
       );
     }
 
-    // Parse Claude's reply
+    // Parse Claude's reply. Be lenient — Sonnet sometimes wraps the JSON in
+    // markdown code fences (```json ... ```) or adds a one-line preamble.
+    // Strip fences first, then if direct parse fails, fall back to extracting
+    // the first balanced {...} block from the response.
     const text = (apiData?.content?.[0]?.text || '').trim();
     let parsed;
+    let attempt = text.replace(/^```(?:json)?\s*/i, '').replace(/```\s*$/i, '').trim();
     try {
-      parsed = JSON.parse(text);
+      parsed = JSON.parse(attempt);
     } catch {
+      const m = attempt.match(/\{[\s\S]*\}/);
+      if (m) {
+        try { parsed = JSON.parse(m[0]); } catch { /* fall through */ }
+      }
+    }
+    if (!parsed) {
       return jsonResponse(
         { scale_length: null, note: 'Got a confusing answer — try again or pick manually.' },
         200,
