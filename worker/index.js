@@ -23,7 +23,7 @@ const ALLOWED_ORIGINS = [
   'https://www.roscoguitars.com',
 ];
 
-// Anthropic model. Sonnet 4.6 — significantly sharper than Haiku on niche
+// Anthropic model. Sonnet 4.5 — significantly sharper than Haiku on niche
 // instrument questions (e.g. recognizing a Fender Jazz Bass as a 34" long-
 // scale bass, not a guitar). Per-lookup cost is still under a cent.
 const MODEL = 'claude-sonnet-4-5-20250929';
@@ -185,4 +185,37 @@ export default {
       parsed.scale_length >= 22 &&
       parsed.scale_length <= 40
     ) {
-      scale_length = Math.round(parsed.scale_leng
+      scale_length = Math.round(parsed.scale_length * 100) / 100;
+    }
+    const note = (typeof parsed.note === 'string' ? parsed.note : '').slice(0, 240);
+
+    return jsonResponse({ scale_length, note }, 200, origin);
+  },
+};
+
+// ---- helpers ----
+
+function corsHeaders(origin) {
+  const headers = {
+    'Content-Type': 'application/json',
+    'Cache-Control': 'no-store',
+  };
+  if (ALLOWED_ORIGINS.includes(origin)) {
+    headers['Access-Control-Allow-Origin'] = origin;
+    headers['Access-Control-Allow-Methods'] = 'POST, OPTIONS';
+    headers['Access-Control-Allow-Headers'] = 'Content-Type';
+    headers['Access-Control-Max-Age'] = '86400';
+  }
+  return headers;
+}
+
+function preflightResponse(origin) {
+  return new Response(null, { status: 204, headers: corsHeaders(origin) });
+}
+
+function jsonResponse(data, status, origin) {
+  return new Response(JSON.stringify(data), {
+    status,
+    headers: corsHeaders(origin),
+  });
+}
