@@ -30,6 +30,11 @@ Checklist when tunings change:
 
 Do this proactively whenever the change is made — don't wait for Clayton to ask.
 
+### Always commit changes after editing files
+Whenever Claude edits a file in this repo (HTML, JS, CSS, Python, JSON, Markdown, etc.), Claude should `git commit` those changes immediately with a clear conventional-commit-style message (`feat:`, `fix:`, `style:`, `chore:`, `copy:`, etc.). Don't wait for Clayton to ask. Clayton reviews diffs and pushes from GitHub Desktop on his end. Same pattern for the Worker code in `worker/` — Claude commits, Clayton pushes and redeploys.
+
+If the working tree has multiple unrelated changes pending, prefer one commit per logical change (separate commits for separate edits). If they're tightly related, one commit is fine.
+
 ## Owner
 Clayton — Rosco Guitars Ltd
 Airtable base: Guitar Shop Management (`appB5AOWKFwyj52WM`)
