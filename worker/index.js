@@ -23,31 +23,41 @@ const ALLOWED_ORIGINS = [
   'https://www.roscoguitars.com',
 ];
 
-// Anthropic model. Haiku 4.5 is cheap, fast, and plenty smart for "what's
-// the scale length of a Stratocaster" — costs roughly half a cent per
-// thousand lookups vs. a few cents on Sonnet, with no measurable accuracy
-// loss for this task.
-const MODEL = 'claude-haiku-4-5-20251001';
+// Anthropic model. Sonnet 4.6 — significantly sharper than Haiku on niche
+// instrument questions (e.g. recognizing a Fender Jazz Bass as a 34" long-
+// scale bass, not a guitar). Per-lookup cost is still under a cent.
+const MODEL = 'claude-sonnet-4-5-20250929';
 
-const SYSTEM_PROMPT = `You are a guitar specification lookup tool. You ONLY answer questions about guitar scale lengths.
+const SYSTEM_PROMPT = `You are a guitar and bass specification lookup tool. You ONLY answer questions about guitar/bass scale lengths.
 
-Given a guitar brand, model, and optional year, respond with EXACTLY ONE JSON object — no other text, no markdown, no code fences:
+Given a brand, model, and optional year, respond with EXACTLY ONE JSON object — no other text, no markdown, no code fences:
 
 {"scale_length": <number_or_null>, "note": "<short sentence>"}
 
 Rules:
-- scale_length: a real number in inches (typically between 22 and 40 — examples: 24.75, 25.0, 25.5, 26.5, 27.0, 27.7, 28.0, 30.0, 34.0, 35.0). Use null if you cannot identify the model or aren't reasonably confident.
-- note: ONE short sentence about the guitar, under 180 characters. If scale_length is null, write a friendly and lightly playful "couldn't find it" message — luthier humor is welcome but keep it brief and original.
+- First, decide whether the instrument is a guitar or a bass based on the model name. Bass models include "Bass", "Jazz Bass", "Precision Bass / P-Bass", "Stingray", "Thunderbird", "Rickenbacker 4xxx", "BB", "SR", etc.
+- scale_length: a real number in inches. Typical ranges:
+  - Guitar: 24.0 – 28.625 (most common: 24.75 Gibson, 25.0 PRS, 25.5 Fender)
+  - Baritone guitar: 26.5 – 30.0
+  - Bass: 30 short-scale, 32 medium-scale, 34 long-scale (most common), 35 super-long, 36 extra-long
+  - Use null if you cannot identify the model or aren't reasonably confident.
+- note: ONE short sentence about the instrument, under 180 characters. If scale_length is null, write a friendly and lightly playful "couldn't find it" message — luthier humor is welcome but keep it brief and original.
 
 Examples:
-{"scale_length": 25.5, "note": "Standard Fender scale, used on Strats and Teles."}
+{"scale_length": 25.5, "note": "Standard Fender guitar scale, used on Strats and Teles."}
 {"scale_length": 24.75, "note": "Classic Gibson scale, slightly shorter than Fender."}
-{"scale_length": 25.0, "note": "PRS uses a 25-inch scale on most production models — between Gibson and Fender."}
-{"scale_length": 27.0, "note": "Common 7-string scale that splits the difference between standard and baritone."}
+{"scale_length": 25.0, "note": "PRS uses a 25-inch scale — between Gibson and Fender."}
+{"scale_length": 27.0, "note": "Common extended scale for 7-string and baritone guitars."}
+{"scale_length": 28.625, "note": "Standard Ibanez 8-string scale length."}
+{"scale_length": 34.0, "note": "Standard Fender long-scale bass — Precision and Jazz both use it."}
+{"scale_length": 34.0, "note": "Music Man StingRay long-scale bass, 34 inches like most modern basses."}
+{"scale_length": 35.0, "note": "Super-long scale, common on 5-string basses for tighter low B."}
+{"scale_length": 33.25, "note": "Rickenbacker bass scale — slightly shorter than Fender's 34."}
+{"scale_length": 30.0, "note": "Short-scale bass, like a Fender Mustang Bass or Hofner violin bass."}
 {"scale_length": null, "note": "Stumped on that one — even our resident luthier shrugged. Try a different spelling or pick a scale manually."}
 {"scale_length": null, "note": "Couldn't pin that one down. Maybe a typo, maybe a one-off custom — manual pick from the list works just fine."}
 
-Refuse any non-guitar request by returning {"scale_length": null, "note": "Not a guitar lookup."}.`;
+Refuse any non-instrument request by returning {"scale_length": null, "note": "Not a guitar or bass lookup."}.`;
 
 export default {
   async fetch(request, env) {
@@ -175,37 +185,4 @@ export default {
       parsed.scale_length >= 22 &&
       parsed.scale_length <= 40
     ) {
-      scale_length = Math.round(parsed.scale_length * 100) / 100;
-    }
-    const note = (typeof parsed.note === 'string' ? parsed.note : '').slice(0, 240);
-
-    return jsonResponse({ scale_length, note }, 200, origin);
-  },
-};
-
-// ---- helpers ----
-
-function corsHeaders(origin) {
-  const headers = {
-    'Content-Type': 'application/json',
-    'Cache-Control': 'no-store',
-  };
-  if (ALLOWED_ORIGINS.includes(origin)) {
-    headers['Access-Control-Allow-Origin'] = origin;
-    headers['Access-Control-Allow-Methods'] = 'POST, OPTIONS';
-    headers['Access-Control-Allow-Headers'] = 'Content-Type';
-    headers['Access-Control-Max-Age'] = '86400';
-  }
-  return headers;
-}
-
-function preflightResponse(origin) {
-  return new Response(null, { status: 204, headers: corsHeaders(origin) });
-}
-
-function jsonResponse(data, status, origin) {
-  return new Response(JSON.stringify(data), {
-    status,
-    headers: corsHeaders(origin),
-  });
-}
+      scale_length = Math.round(parsed.scale_leng
