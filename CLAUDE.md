@@ -30,10 +30,21 @@ Checklist when tunings change:
 
 Do this proactively whenever the change is made — don't wait for Clayton to ask.
 
-### Always commit changes after editing files
-Whenever Claude edits a file in this repo (HTML, JS, CSS, Python, JSON, Markdown, etc.), Claude should `git commit` those changes immediately with a clear conventional-commit-style message (`feat:`, `fix:`, `style:`, `chore:`, `copy:`, etc.). Don't wait for Clayton to ask. Clayton reviews diffs and pushes from GitHub Desktop on his end. Same pattern for the Worker code in `worker/` — Claude commits, Clayton pushes and redeploys.
+### Workflow: Claude edits, Clayton commits
+Claude edits files freely but **does NOT run `git commit`**. The Cowork bash sandbox can't reliably delete files in `.git/` (FUSE mount limitation), which means git lock files (`.git/index.lock`) accumulate and break commits in flight. After several attempts to work around this, the cleanest pattern is:
 
-If the working tree has multiple unrelated changes pending, prefer one commit per logical change (separate commits for separate edits). If they're tightly related, one commit is fine.
+1. Claude edits files. Multiple edits in one task are fine.
+2. Claude tells Clayton when changes are ready to commit, and provides a suggested conventional-commit-style message (e.g. `feat: …`, `fix: …`, `style: …`, `chore: …`).
+3. Clayton reviews the diffs in GitHub Desktop and commits + pushes from there. The "review step" doubles as a safety net (GitHub Desktop has caught a few silent file-truncation bugs from the sandbox-side write tools).
+4. For Worker code in `worker/`, Clayton additionally redeploys via the Cloudflare dashboard or `wrangler deploy` after pushing.
+
+If a session runs into a stale `.git/index.lock`, Clayton clears it from PowerShell:
+```
+Remove-Item C:\Users\Claytron\RoscoAI\rosco_projects\rosco-custom-strings\.git\index.lock -Force
+```
+(close GitHub Desktop first if it's open; its auto-fetcher has been the most likely culprit for recreating the lock).
+
+Note: GitHub Desktop's "Automatically fetch updated changes" is OFF for this repo — leave it off. Manual Fetch via the button works fine and avoids the lock-race issue.
 
 ## Owner
 Clayton — Rosco Guitars Ltd

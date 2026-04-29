@@ -26,12 +26,17 @@ const ALLOWED_ORIGINS = [
 
 // Anthropic model. Sonnet 4.5 — significantly sharper than Haiku on niche
 // instrument questions (e.g. recognizing a Fender Jazz Bass as a 34" long-
-// scale bass, not a guitar). Per-lookup cost is still under a cent.
+// scale bass, not a guitar). Combined with the web_search tool below, Sonnet
+// can also handle boutique brands and rare models it doesn't know from
+// training (Sago, Strandberg, Aristides, etc.). Per-lookup cost is still
+// under a cent for common instruments; ~1-3 cents when web search is used.
 const MODEL = 'claude-sonnet-4-5-20250929';
 
 const SYSTEM_PROMPT = `You are a guitar and bass specification lookup tool. You ONLY answer questions about guitar/bass scale lengths.
 
 CRITICAL OUTPUT FORMAT: The first character of your response must be { and the last character must be }. Output the JSON object and nothing else — no markdown formatting, no code fences (\`\`\`), no preamble like "Here is the answer:", no trailing explanation. Just the raw JSON object.
+
+IF YOU AREN'T SURE about the scale length from your training data, USE THE web_search TOOL to look it up before answering. Boutique brands (Sago, Strandberg, Aristides, Padalka, Skervesen, etc.), small builders, and rare/discontinued models often need a web search. Don't return null until you've tried searching the web.
 
 Given a brand, model, and optional year, respond with EXACTLY ONE JSON object:
 
@@ -146,10 +151,19 @@ export default {
         },
         body: JSON.stringify({
           model: MODEL,
-          max_tokens: 200,
+          // 1500 — leaves room for web search results to land in context
+          // before the final answer. The model itself decides whether to
+          // search; for well-known instruments it skips search entirely.
+          max_tokens: 1500,
           system: SYSTEM_PROMPT,
           messages: [
             { role: 'user', content: `What is the scale length of a ${desc}?` },
+          ],
+          // Anthropic's server-side web search tool. Claude will search
+          // the web when its training data isn't enough — e.g. boutique or
+          // niche instruments. Capped at 2 searches per call to bound cost.
+          tools: [
+            { type: 'web_search_20250305', name: 'web_search', max_uses: 2 },
           ],
         }),
       });
@@ -171,11 +185,18 @@ export default {
       );
     }
 
-    // Parse Claude's reply. Be lenient — Sonnet sometimes wraps the JSON in
-    // markdown code fences (```json ... ```) or adds a one-line preamble.
-    // Strip fences first, then if direct parse fails, fall back to extracting
-    // the first balanced {...} block from the response.
-    const text = (apiData?.content?.[0]?.text || '').trim();
+    // Find the last text block in the response. With web_search enabled, the
+    // content array may contain tool_use / web_search_tool_result blocks
+    // before the final text — those are Claude's intermediate searching.
+    // We only want the final answer.
+    const blocks = Array.isArray(apiData?.content) ? apiData.content : [];
+    let text = '';
+    for (let i = blocks.length - 1; i >= 0; i--) {
+      if (blocks[i]?.type === 'text' && typeof blocks[i].text === 'string') {
+        text = blocks[i].text.trim();
+        break;
+      }
+    }
     let parsed;
     let attempt = text.replace(/^```(?:json)?\s*/i, '').replace(/```\s*$/i, '').trim();
     try {
