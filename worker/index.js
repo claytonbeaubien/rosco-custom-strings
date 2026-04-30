@@ -370,9 +370,9 @@ async function handleCreateDraftOrder(request, env, origin) {
     { name: 'Tuning', value: String(pack.tuning || '—') },
     { name: 'Scale Length', value: pack.scale ? `${pack.scale}"` : '—' },
     { name: 'String Count', value: String(pack.string_count || pack.strings.length) },
-    { name: 'Gauges (low → high)', value: gaugeList || '—' },
+    { name: 'Gauges (low to high)', value: gaugeList || '—' },
   ];
-  if (noteList) properties.push({ name: 'Notes (low → high)', value: noteList });
+  if (noteList) properties.push({ name: 'Notes (low to high)', value: noteList });
   if (typeList) properties.push({ name: 'String Types', value: typeList });
 
   const title = String(
