@@ -8,7 +8,7 @@
 <script src="config.local.js"></script>
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
-body{background:#2a2c30;color:#111;font-family:system-ui,-apple-system,'Segoe UI',sans-serif;min-height:100vh}
+body{background:#ffffff;color:#111;font-family:system-ui,-apple-system,'Segoe UI',sans-serif;min-height:100vh}
 header{background:#fff;border-bottom:2px solid #2cd5c4;padding:16px 32px;display:flex;align-items:center;justify-content:center;box-shadow:0 1px 4px rgba(0,0,0,.08)}
 .logo-img{height:48px;width:auto}
 .header-right{color:#667085;font-size:11px;letter-spacing:.15em;text-transform:uppercase;font-weight:500}
@@ -27,7 +27,7 @@ header{background:#fff;border-bottom:2px solid #2cd5c4;padding:16px 32px;display
 
 /* Compact actions row: price on the left, save/print icons on the right,
    meta line below. Spans both columns at the top of the grid. */
-.actions-row{background:#fff;border:1px solid #e8e8e8;border-top:3px solid #2cd5c4;border-radius:10px;padding:12px 18px;box-shadow:0 1px 3px rgba(0,0,0,.04)}
+.actions-row{background:#e9ebef;border:1px solid #cfd2d7;border-top:3px solid #2cd5c4;border-radius:10px;padding:12px 18px;box-shadow:0 2px 6px rgba(0,0,0,.06)}
 .actions-row-main{display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:14px}
 .actions-row-main .price-inline{justify-self:start;display:flex;flex-direction:column;gap:2px;min-width:0}
 .actions-row-main .price-line{display:flex;align-items:baseline;gap:6px;flex-wrap:wrap;line-height:1}
@@ -70,7 +70,7 @@ header{background:#fff;border-bottom:2px solid #2cd5c4;padding:16px 32px;display
   .left-col,.right-col{display:contents}
   .preview-col,.actions-row,.config-card,.gauges-card,.label-card{width:100%;box-sizing:border-box;margin:0}
   /* Mobile order: canvas → actions → config → gauges → labels */
-  .preview-col{order:1;position:sticky;top:0;z-index:5;background:#2a2c30;padding:10px 3px 12px;margin:-16px -16px 0;width:calc(100% + 32px);gap:10px;border-bottom:1px solid #d8dadd;box-shadow:0 2px 6px rgba(0,0,0,.04)}
+  .preview-col{order:1;position:sticky;top:0;z-index:5;background:#ffffff;padding:10px 3px 12px;margin:-16px -16px 0;width:calc(100% + 32px);gap:10px;border-bottom:1px solid #d8dadd;box-shadow:0 2px 6px rgba(0,0,0,.04)}
   .preview-col .preview-label{display:none}
   .preview-col #label-canvas{width:100%;max-width:100%;height:auto;aspect-ratio:1/1;box-shadow:0 2px 10px rgba(0,0,0,.12)}
   .actions-row{order:2}
@@ -86,7 +86,7 @@ header{background:#fff;border-bottom:2px solid #2cd5c4;padding:16px 32px;display
   .modal-backdrop{padding-top:48px}
 }
 .section-title{font-size:10px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:#888;margin-bottom:14px}
-.card{background:#fff;border-radius:8px;padding:22px 22px 20px;margin-bottom:18px;border:1px solid #e8e8e8}
+.card{background:#e9ebef;border-radius:8px;padding:22px 22px 20px;margin-bottom:18px;border:1px solid #cfd2d7}
 .count-group{margin-bottom:16px}
 .count-group-label{font-size:10px;font-weight:700;letter-spacing:.1em;color:#888;text-transform:uppercase;margin-bottom:4px;margin-top:8px}
 .count-group-label:first-child{margin-top:0}
@@ -128,35 +128,40 @@ select:focus,input[type=text]:focus{border-color:#2cd5c4;outline:none}
 @media(max-width:599px){#label-canvas{max-width:100%;border-radius:4px}}
 
 /* Rosco Suggested Tensions — client-facing info section */
-.tensions-info{max-width:980px;margin:16px auto 48px;padding:0 24px}
-.tensions-info-card{background:#fff;border:1px solid #e8e8e8;border-radius:10px;padding:28px 32px;box-shadow:0 1px 3px rgba(0,0,0,.04)}
-.tensions-info h2{font-size:20px;font-weight:700;letter-spacing:-.01em;color:#1a1a1a;margin-bottom:4px}
+/* Inverted "Rosco Suggested Tensions" section — full-bleed black band
+   for editorial separation from the calculator above. Outer .tensions-info
+   is full-width with vertical padding; inner .tensions-info-card holds the
+   980px content constraint. All inner colors flipped to dark-mode. */
+.tensions-info{margin:0;padding:64px 24px;background:#0f1012;color:#e8e8e8}
+.tensions-info-card{max-width:980px;margin:0 auto;padding:0;background:transparent;border:none;box-shadow:none;border-radius:0}
+.tensions-info h2{font-size:22px;font-weight:700;letter-spacing:-.01em;color:#fff;margin-bottom:4px}
 .tensions-info .eyebrow{font-size:10px;font-weight:700;letter-spacing:.18em;text-transform:uppercase;color:#2cd5c4;margin-bottom:8px}
-.tensions-info p{color:#444;font-size:14px;line-height:1.6;margin-bottom:14px}
+.tensions-info p{color:#bdbdc0;font-size:14px;line-height:1.6;margin-bottom:14px}
 .tensions-info .ladder-grid{display:grid;grid-template-columns:1fr 1fr;gap:24px;margin:22px 0}
 @media(max-width:720px){.tensions-info .ladder-grid{grid-template-columns:1fr}}
-.tensions-info .ladder{background:#fafafa;border:1px solid #eee;border-radius:8px;padding:18px 20px}
-.tensions-info .ladder h3{font-size:13px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:#1a1a1a;margin-bottom:12px;padding-bottom:10px;border-bottom:1px solid #e5e5e5}
+.tensions-info .ladder{background:#1c1d20;border:1px solid #2a2b30;border-radius:8px;padding:18px 20px}
+.tensions-info .ladder h3{font-size:13px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:#fff;margin-bottom:12px;padding-bottom:10px;border-bottom:1px solid #2a2b30}
 .tensions-info .ladder table{width:100%;border-collapse:collapse;font-size:13px}
-.tensions-info .ladder td{padding:6px 0;color:#333}
-.tensions-info .ladder td:first-child{color:#777;width:70%}
+.tensions-info .ladder td{padding:6px 0;color:#d8d8d8}
+.tensions-info .ladder td:first-child{color:#8a8a8e;width:70%}
 .tensions-info .ladder td:last-child{text-align:right;font-weight:600;font-variant-numeric:tabular-nums}
 .tensions-info .rules{display:grid;grid-template-columns:1fr 1fr;gap:24px;margin-top:18px}
 @media(max-width:720px){.tensions-info .rules{grid-template-columns:1fr}}
-.tensions-info .rule{padding:0;font-size:13px;line-height:1.55;color:#555}
-.tensions-info .rule strong{color:#1a1a1a;display:block;margin-bottom:6px;font-size:12px;letter-spacing:.05em;text-transform:uppercase}
+.tensions-info .rule{padding:0;font-size:13px;line-height:1.55;color:#bdbdc0}
+.tensions-info .rule strong{color:#fff;display:block;margin-bottom:6px;font-size:12px;letter-spacing:.05em;text-transform:uppercase}
 .tensions-info .rule p{margin:0 0 8px}
 .tensions-info .rule p:last-child{margin-bottom:0}
-.tensions-info .rule .rule-subhead{font-weight:700;color:#1a1a1a;margin:6px 0 4px;font-size:13px;letter-spacing:0;text-transform:none}
+.tensions-info .rule .rule-subhead{font-weight:700;color:#fff;margin:6px 0 4px;font-size:13px;letter-spacing:0;text-transform:none}
 .tensions-info .rule ul{margin:0 0 8px;padding-left:18px;list-style:disc}
 .tensions-info .rule ul:last-child{margin-bottom:0}
 .tensions-info .rule li{margin-bottom:3px;line-height:1.5}
-.tensions-info .rule li b{color:#1a1a1a;font-weight:400}
+.tensions-info .rule li b{color:#fff;font-weight:400}
 .tensions-info .bands{display:flex;gap:8px;margin-top:14px;flex-wrap:wrap;justify-content:center}
 .tensions-info .band{font-size:12px;padding:5px 11px;border-radius:99px;font-weight:600;letter-spacing:.02em}
-.tensions-info .band-ok{background:rgba(44,213,196,.15);color:#159385}
-.tensions-info .band-warn{background:rgba(240,165,0,.15);color:#b27600}
-.tensions-info .band-bad{background:rgba(224,85,85,.15);color:#b23030}
+/* Bands keep their semantic colors but go a touch brighter for dark bg. */
+.tensions-info .band-ok{background:rgba(44,213,196,.18);color:#5be3d3}
+.tensions-info .band-warn{background:rgba(240,165,0,.20);color:#f5c14d}
+.tensions-info .band-bad{background:rgba(224,85,85,.20);color:#ff8a8a}
 .no-pack{color:#999;font-style:italic;font-size:13px;padding:8px 0}
 .sel-wrap{display:flex;align-items:flex-end;gap:4px}
 .sel-wrap .field{flex:1;min-width:0}
