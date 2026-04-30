@@ -1,19 +1,24 @@
 /**
- * Rosco Scale Lookup — Cloudflare Worker
+ * Rosco Custom Strings — Cloudflare Worker
  *
- * Proxies guitar scale-length lookups to Anthropic's API. Holds the API key
- * as an encrypted Cloudflare secret so it never leaves the browser. Endpoint
- * is called by the "Don't know your scale length? Find it for me" panel in
- * the Rosco Custom Strings calculator.
+ * Two endpoints, one Worker:
  *
- * Endpoint: POST /
+ *   POST /                     — Scale-length lookup (proxies Anthropic).
+ *   POST /create-draft-order   — Creates a Shopify Draft Order for a custom
+ *                                string pack and returns the invoice URL.
+ *
+ * Both endpoints share CORS, origin allowlist, and JSON helpers. Secrets
+ * (Anthropic key + Shopify client secret) are encrypted Cloudflare secrets
+ * so they never appear in the browser bundle.
+ *
+ * --- Scale lookup (/) ---
  * Request:  { brand: string, model: string, year?: string }
  * Response: { scale_length: number | null, string_count: 4-8 | null, note: string }
  *
- * scale_length and string_count are independently null when Claude isn't
- * reasonably confident. The browser auto-snaps the scale dropdown when
- * scale_length is set, and switches the string-count buttons when
- * string_count is set. Friendly note is always present.
+ * --- Shopify draft order (/create-draft-order) ---
+ * Request:  { pack: {...}, quantity: number }   (see handleCreateDraftOrder)
+ * Response: { invoice_url: string, draft_order_id: number }
+ *           or { error: string, detail?: string } on failure.
  */
 
 // Browsers allowed to call this Worker. Edit and redeploy when adding a new
@@ -23,6 +28,14 @@ const ALLOWED_ORIGINS = [
   'https://roscoguitars.com',
   'https://www.roscoguitars.com',
 ];
+
+// --- Shopify config -----------------------------------------------------
+// Hardcoded — single-shop integration, won't change. If you ever migrate
+// to a different store, change this value and redeploy.
+const SHOPIFY_SHOP_DOMAIN = 'jaubtg-0b.myshopify.com';
+// Pin a stable Admin API version. Bump as needed; Shopify supports each
+// version for ~12 months. See https://shopify.dev/docs/api/usage/versioning
+const SHOPIFY_API_VERSION = '2026-04';
 
 // Anthropic model. Sonnet 4.5 — significantly sharper than Haiku on niche
 // instrument questions (e.g. recognizing a Fender Jazz Bass as a 34" long-
@@ -73,6 +86,8 @@ Refuse any non-instrument request by returning {"scale_length": null, "string_co
 export default {
   async fetch(request, env) {
     const origin = request.headers.get('Origin') || '';
+    const url = new URL(request.url);
+    const path = url.pathname.replace(/\/+$/, '') || '/';
 
     // CORS preflight — must respond before the origin check kicks in.
     if (request.method === 'OPTIONS') {
@@ -81,161 +96,347 @@ export default {
 
     // Origin allowlist (production browsers only)
     if (!ALLOWED_ORIGINS.includes(origin)) {
-      return jsonResponse(
-        { scale_length: null, note: 'Forbidden origin.' },
-        403,
-        origin
-      );
+      return jsonResponse({ error: 'Forbidden origin.' }, 403, origin);
     }
 
     // POST only beyond this point
     if (request.method !== 'POST') {
-      return jsonResponse(
-        { scale_length: null, note: 'POST requests only.' },
-        405,
-        origin
-      );
+      return jsonResponse({ error: 'POST requests only.' }, 405, origin);
     }
 
-    // Parse and validate body
-    let body;
-    try {
-      body = await request.json();
-    } catch {
-      return jsonResponse(
-        { scale_length: null, note: 'Invalid request body.' },
-        400,
-        origin
-      );
+    // Route dispatch
+    if (path === '/create-draft-order') {
+      return handleCreateDraftOrder(request, env, origin);
     }
-
-    const brand = String(body.brand ?? '').trim().slice(0, 60);
-    const model = String(body.model ?? '').trim().slice(0, 80);
-    const year = String(body.year ?? '').trim().slice(0, 8);
-
-    if (!brand || !model) {
-      return jsonResponse(
-        { scale_length: null, note: 'Brand and model are required.' },
-        400,
-        origin
-      );
+    if (path === '/') {
+      return handleScaleLookup(request, env, origin);
     }
+    return jsonResponse({ error: 'Not found.' }, 404, origin);
+  },
+};
 
-    // Reject obvious junk / injection bait. Plain text + the few punctuation
-    // characters that show up in real guitar names (apostrophe, hyphen,
-    // ampersand, parens, period, slash).
-    const safeChars = /^[\w\s\-'./()&]+$/;
-    if (
-      !safeChars.test(brand) ||
-      !safeChars.test(model) ||
-      (year && !/^[\d\s\-]+$/.test(year))
-    ) {
+// ---- Scale lookup ------------------------------------------------------
+
+async function handleScaleLookup(request, env, origin) {
+  // Parse and validate body
+  let body;
+  try {
+    body = await request.json();
+  } catch {
+    return jsonResponse(
+      { scale_length: null, note: 'Invalid request body.' },
+      400,
+      origin
+    );
+  }
+
+  const brand = String(body.brand ?? '').trim().slice(0, 60);
+  const model = String(body.model ?? '').trim().slice(0, 80);
+  const year = String(body.year ?? '').trim().slice(0, 8);
+
+  if (!brand || !model) {
+    return jsonResponse(
+      { scale_length: null, note: 'Brand and model are required.' },
+      400,
+      origin
+    );
+  }
+
+  // Reject obvious junk / injection bait. Plain text + the few punctuation
+  // characters that show up in real guitar names (apostrophe, hyphen,
+  // ampersand, parens, period, slash).
+  const safeChars = /^[\w\s\-'./()&]+$/;
+  if (
+    !safeChars.test(brand) ||
+    !safeChars.test(model) ||
+    (year && !/^[\d\s\-]+$/.test(year))
+  ) {
+    return jsonResponse(
+      { scale_length: null, note: "Couldn't make sense of that — try plain letters and numbers." },
+      200,
+      origin
+    );
+  }
+
+  const desc = year ? `${year} ${brand} ${model}` : `${brand} ${model}`;
+
+  // Call Anthropic
+  let apiData;
+  try {
+    const apiRes = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'x-api-key': env.ANTHROPIC_API_KEY,
+        'anthropic-version': '2023-06-01',
+      },
+      body: JSON.stringify({
+        model: MODEL,
+        // 1500 — leaves room for web search results to land in context
+        // before the final answer. The model itself decides whether to
+        // search; for well-known instruments it skips search entirely.
+        max_tokens: 1500,
+        system: SYSTEM_PROMPT,
+        messages: [
+          { role: 'user', content: `What is the scale length of a ${desc}?` },
+        ],
+        // Anthropic's server-side web search tool. Claude will search
+        // the web when its training data isn't enough — e.g. boutique or
+        // niche instruments. Capped at 2 searches per call to bound cost.
+        tools: [
+          { type: 'web_search_20250305', name: 'web_search', max_uses: 2 },
+        ],
+      }),
+    });
+
+    if (!apiRes.ok) {
       return jsonResponse(
-        { scale_length: null, note: "Couldn't make sense of that — try plain letters and numbers." },
+        { scale_length: null, note: 'Lookup hiccup — try again or pick manually.' },
         200,
         origin
       );
     }
 
-    const desc = year ? `${year} ${brand} ${model}` : `${brand} ${model}`;
+    apiData = await apiRes.json();
+  } catch (err) {
+    return jsonResponse(
+      { scale_length: null, note: 'Lookup failed — pick a scale manually.' },
+      200,
+      origin
+    );
+  }
 
-    // Call Anthropic
-    let apiData;
-    try {
-      const apiRes = await fetch('https://api.anthropic.com/v1/messages', {
+  // Find the last text block in the response. With web_search enabled, the
+  // content array may contain tool_use / web_search_tool_result blocks
+  // before the final text — those are Claude's intermediate searching.
+  // We only want the final answer.
+  const blocks = Array.isArray(apiData?.content) ? apiData.content : [];
+  let text = '';
+  for (let i = blocks.length - 1; i >= 0; i--) {
+    if (blocks[i]?.type === 'text' && typeof blocks[i].text === 'string') {
+      text = blocks[i].text.trim();
+      break;
+    }
+  }
+  let parsed;
+  let attempt = text.replace(/^```(?:json)?\s*/i, '').replace(/```\s*$/i, '').trim();
+  try {
+    parsed = JSON.parse(attempt);
+  } catch {
+    const m = attempt.match(/\{[\s\S]*\}/);
+    if (m) {
+      try { parsed = JSON.parse(m[0]); } catch { /* fall through */ }
+    }
+  }
+  if (!parsed) {
+    return jsonResponse(
+      { scale_length: null, note: 'Got a confusing answer — try again or pick manually.' },
+      200,
+      origin
+    );
+  }
+
+  // Validate values before returning to the browser
+  let scale_length = null;
+  if (
+    typeof parsed.scale_length === 'number' &&
+    parsed.scale_length >= 22 &&
+    parsed.scale_length <= 40
+  ) {
+    scale_length = Math.round(parsed.scale_length * 100) / 100;
+  }
+  let string_count = null;
+  if (
+    Number.isInteger(parsed.string_count) &&
+    [4, 5, 6, 7, 8].includes(parsed.string_count)
+  ) {
+    string_count = parsed.string_count;
+  }
+  const note = (typeof parsed.note === 'string' ? parsed.note : '').slice(0, 240);
+
+  return jsonResponse({ scale_length, string_count, note }, 200, origin);
+}
+
+// ---- Shopify draft order ----------------------------------------------
+
+/**
+ * Creates a Shopify Draft Order with a single custom line item priced at
+ * the calculated total, and Pack details attached as line-item properties
+ * so they show up on the order in Shopify admin and on the customer's
+ * receipt. Returns the invoice_url which the browser redirects to for
+ * checkout (Shopify-hosted, collects shipping address + payment).
+ *
+ * Auth: OAuth 2.0 client_credentials grant against the Dev-Dashboard app's
+ * client_id / client_secret. Returns a token good for ~24h. We just request
+ * a fresh token per draft order — adds one round trip but keeps the code
+ * simple and avoids cache-invalidation bugs. (If we ever see meaningful
+ * traffic, add KV-backed token caching here.)
+ */
+async function handleCreateDraftOrder(request, env, origin) {
+  // Parse body
+  let body;
+  try {
+    body = await request.json();
+  } catch {
+    return jsonResponse({ error: 'Invalid request body.' }, 400, origin);
+  }
+
+  // Validate pack
+  const pack = body?.pack;
+  if (!pack || typeof pack !== 'object') {
+    return jsonResponse({ error: 'Missing pack.' }, 400, origin);
+  }
+  if (!Array.isArray(pack.strings) || pack.strings.length === 0) {
+    return jsonResponse({ error: 'Pack has no strings.' }, 400, origin);
+  }
+  // Sanity-check price. Cap at $1000 to prevent absurd / malicious values
+  // from being submitted to Shopify (real packs are $20–$80 range).
+  if (typeof pack.price !== 'number' || pack.price <= 0 || pack.price > 1000) {
+    return jsonResponse({ error: 'Invalid pack price.' }, 400, origin);
+  }
+  const qty = Math.max(1, Math.min(20, parseInt(body.quantity, 10) || 1));
+
+  // Verify env vars are configured (otherwise calls will fail in confusing
+  // ways downstream — fail fast with a clear error instead).
+  if (!env.SHOPIFY_CLIENT_ID || !env.SHOPIFY_CLIENT_SECRET) {
+    return jsonResponse(
+      { error: 'Worker misconfigured: missing Shopify credentials.' },
+      500,
+      origin
+    );
+  }
+
+  // 1. Get a short-lived access token (client_credentials grant).
+  let accessToken;
+  try {
+    const tokenRes = await fetch(
+      `https://${SHOPIFY_SHOP_DOMAIN}/admin/oauth/access_token`,
+      {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          client_id: env.SHOPIFY_CLIENT_ID,
+          client_secret: env.SHOPIFY_CLIENT_SECRET,
+          grant_type: 'client_credentials',
+        }),
+      }
+    );
+    if (!tokenRes.ok) {
+      const detail = (await tokenRes.text()).slice(0, 300);
+      return jsonResponse(
+        { error: 'Shopify auth failed.', detail },
+        502,
+        origin
+      );
+    }
+    const tokenData = await tokenRes.json();
+    accessToken = tokenData.access_token;
+    if (!accessToken) {
+      return jsonResponse({ error: 'Shopify auth: no token returned.' }, 502, origin);
+    }
+  } catch (err) {
+    return jsonResponse(
+      { error: 'Shopify auth error.', detail: String(err).slice(0, 200) },
+      502,
+      origin
+    );
+  }
+
+  // 2. Build line-item properties from the pack spec. These show up under
+  // the line item in the Shopify order and on the customer's receipt.
+  const gaugeList = pack.strings
+    .map((s) => s.gauge_display || (typeof s.gauge === 'number'
+      ? `.${String(Math.round(s.gauge * 1000)).padStart(3, '0')}`
+      : '?'))
+    .join(' / ');
+  const noteList = pack.strings
+    .map((s) => s.note || '')
+    .filter(Boolean)
+    .join(' ');
+  const typeList = pack.strings
+    .map((s) => s.type || '')
+    .filter(Boolean)
+    .join(' / ');
+
+  const properties = [
+    { name: 'Tuning', value: String(pack.tuning || '—') },
+    { name: 'Scale Length', value: pack.scale ? `${pack.scale}"` : '—' },
+    { name: 'String Count', value: String(pack.string_count || pack.strings.length) },
+    { name: 'Gauges (low → high)', value: gaugeList || '—' },
+  ];
+  if (noteList) properties.push({ name: 'Notes (low → high)', value: noteList });
+  if (typeList) properties.push({ name: 'String Types', value: typeList });
+
+  const title = String(
+    pack.title || `Custom String Pack — ${pack.tuning || ''} ${pack.scale ? pack.scale + '"' : ''}`
+  ).trim().slice(0, 200);
+
+  const draftPayload = {
+    draft_order: {
+      line_items: [
+        {
+          title,
+          price: pack.price.toFixed(2),
+          quantity: qty,
+          taxable: true,
+          requires_shipping: true,
+          properties,
+        },
+      ],
+      tags: 'custom-pack-tool',
+      note: 'Generated by the Rosco Custom Pack Generator.',
+      use_customer_default_address: false,
+    },
+  };
+
+  // 3. Create the draft order.
+  let draftRes;
+  try {
+    draftRes = await fetch(
+      `https://${SHOPIFY_SHOP_DOMAIN}/admin/api/${SHOPIFY_API_VERSION}/draft_orders.json`,
+      {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'x-api-key': env.ANTHROPIC_API_KEY,
-          'anthropic-version': '2023-06-01',
+          'X-Shopify-Access-Token': accessToken,
         },
-        body: JSON.stringify({
-          model: MODEL,
-          // 1500 — leaves room for web search results to land in context
-          // before the final answer. The model itself decides whether to
-          // search; for well-known instruments it skips search entirely.
-          max_tokens: 1500,
-          system: SYSTEM_PROMPT,
-          messages: [
-            { role: 'user', content: `What is the scale length of a ${desc}?` },
-          ],
-          // Anthropic's server-side web search tool. Claude will search
-          // the web when its training data isn't enough — e.g. boutique or
-          // niche instruments. Capped at 2 searches per call to bound cost.
-          tools: [
-            { type: 'web_search_20250305', name: 'web_search', max_uses: 2 },
-          ],
-        }),
-      });
-
-      if (!apiRes.ok) {
-        return jsonResponse(
-          { scale_length: null, note: 'Lookup hiccup — try again or pick manually.' },
-          200,
-          origin
-        );
+        body: JSON.stringify(draftPayload),
       }
+    );
+  } catch (err) {
+    return jsonResponse(
+      { error: 'Draft order request failed.', detail: String(err).slice(0, 200) },
+      502,
+      origin
+    );
+  }
 
-      apiData = await apiRes.json();
-    } catch (err) {
-      return jsonResponse(
-        { scale_length: null, note: 'Lookup failed — pick a scale manually.' },
-        200,
-        origin
-      );
-    }
+  if (!draftRes.ok) {
+    const detail = (await draftRes.text()).slice(0, 500);
+    return jsonResponse(
+      { error: 'Shopify rejected the draft order.', detail },
+      502,
+      origin
+    );
+  }
 
-    // Find the last text block in the response. With web_search enabled, the
-    // content array may contain tool_use / web_search_tool_result blocks
-    // before the final text — those are Claude's intermediate searching.
-    // We only want the final answer.
-    const blocks = Array.isArray(apiData?.content) ? apiData.content : [];
-    let text = '';
-    for (let i = blocks.length - 1; i >= 0; i--) {
-      if (blocks[i]?.type === 'text' && typeof blocks[i].text === 'string') {
-        text = blocks[i].text.trim();
-        break;
-      }
-    }
-    let parsed;
-    let attempt = text.replace(/^```(?:json)?\s*/i, '').replace(/```\s*$/i, '').trim();
-    try {
-      parsed = JSON.parse(attempt);
-    } catch {
-      const m = attempt.match(/\{[\s\S]*\}/);
-      if (m) {
-        try { parsed = JSON.parse(m[0]); } catch { /* fall through */ }
-      }
-    }
-    if (!parsed) {
-      return jsonResponse(
-        { scale_length: null, note: 'Got a confusing answer — try again or pick manually.' },
-        200,
-        origin
-      );
-    }
+  const draftData = await draftRes.json();
+  const invoiceUrl = draftData?.draft_order?.invoice_url;
+  const draftOrderId = draftData?.draft_order?.id;
+  if (!invoiceUrl) {
+    return jsonResponse(
+      { error: 'No invoice URL returned by Shopify.' },
+      502,
+      origin
+    );
+  }
 
-    // Validate values before returning to the browser
-    let scale_length = null;
-    if (
-      typeof parsed.scale_length === 'number' &&
-      parsed.scale_length >= 22 &&
-      parsed.scale_length <= 40
-    ) {
-      scale_length = Math.round(parsed.scale_length * 100) / 100;
-    }
-    let string_count = null;
-    if (
-      Number.isInteger(parsed.string_count) &&
-      [4, 5, 6, 7, 8].includes(parsed.string_count)
-    ) {
-      string_count = parsed.string_count;
-    }
-    const note = (typeof parsed.note === 'string' ? parsed.note : '').slice(0, 240);
-
-    return jsonResponse({ scale_length, string_count, note }, 200, origin);
-  },
-};
+  return jsonResponse(
+    { invoice_url: invoiceUrl, draft_order_id: draftOrderId },
+    200,
+    origin
+  );
+}
 
 // ---- helpers ----
 

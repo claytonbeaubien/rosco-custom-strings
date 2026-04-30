@@ -209,6 +209,37 @@ html.embedded .main{margin-top:16px}
 .modal-ok:hover{opacity:.85}
 @keyframes modalFade{from{opacity:0}to{opacity:1}}
 @keyframes modalSlide{from{transform:translateY(8px);opacity:0}to{transform:translateY(0);opacity:1}}
+
+/* Buy-flow modal — wider card with pack image preview + qty selector +
+   exact price → Proceed to Shopify checkout. Uses its own backdrop CSS
+   so it can sit above (or independent of) the generic modal. */
+.buy-modal-backdrop{position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:1001;display:none;align-items:flex-start;justify-content:center;padding:60px 16px 16px;animation:modalFade .15s ease-out;overflow-y:auto}
+.buy-modal-backdrop.is-open{display:flex}
+.buy-modal-card{background:#fff;border-radius:12px;border-top:3px solid #2cd5c4;padding:22px 26px 20px;max-width:560px;width:100%;box-shadow:0 12px 40px rgba(0,0,0,.28);animation:modalSlide .18s ease-out}
+.buy-modal-title{font-size:18px;font-weight:800;color:#1a1a1a;margin-bottom:4px;letter-spacing:-.01em}
+.buy-modal-sub{font-size:13px;color:#666;margin-bottom:14px}
+.buy-modal-image-wrap{background:#f6f6f6;border-radius:8px;padding:8px;margin-bottom:14px;text-align:center}
+.buy-modal-image{max-width:100%;height:auto;border-radius:4px;display:block;margin:0 auto}
+.buy-modal-row{display:flex;align-items:center;justify-content:space-between;gap:14px;padding:10px 0;border-top:1px solid #eee}
+.buy-modal-row:first-of-type{border-top:none}
+.buy-modal-label{font-size:13px;color:#444;font-weight:600}
+.buy-modal-value{font-size:14px;color:#111;font-weight:700;font-variant-numeric:tabular-nums}
+.buy-modal-qty{display:inline-flex;align-items:center;gap:0;border:1px solid #ddd;border-radius:6px;overflow:hidden}
+.buy-modal-qty button{background:#fafafa;border:none;width:32px;height:32px;font-size:16px;font-weight:700;cursor:pointer;color:#444;font-family:inherit;transition:background .12s}
+.buy-modal-qty button:hover:not(:disabled){background:#eee}
+.buy-modal-qty button:disabled{color:#bbb;cursor:not-allowed}
+.buy-modal-qty input{border:none;width:44px;text-align:center;font-size:14px;font-weight:700;color:#111;font-family:inherit;-moz-appearance:textfield}
+.buy-modal-qty input::-webkit-outer-spin-button,.buy-modal-qty input::-webkit-inner-spin-button{-webkit-appearance:none;margin:0}
+.buy-modal-total{font-size:18px;font-weight:800;color:#0a3a36;font-variant-numeric:tabular-nums}
+.buy-modal-actions{display:flex;justify-content:flex-end;gap:10px;margin-top:16px}
+.buy-modal-cancel{background:#fff;color:#444;border:1px solid #ccc;border-radius:6px;padding:9px 16px;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;transition:background .12s}
+.buy-modal-cancel:hover:not(:disabled){background:#f4f4f4}
+.buy-modal-proceed{background:#2cd5c4;color:#0a3a36;border:none;border-radius:6px;padding:9px 18px;font-size:13px;font-weight:800;letter-spacing:.05em;text-transform:uppercase;cursor:pointer;font-family:inherit;transition:background .15s,transform .15s;box-shadow:0 1px 2px rgba(20,140,128,.25)}
+.buy-modal-proceed:hover:not(:disabled){background:#25c0b0;transform:translateY(-1px)}
+.buy-modal-proceed:disabled{opacity:.6;cursor:wait;transform:none}
+.buy-modal-error{display:none;margin-top:12px;padding:10px 12px;background:#fff3f3;border:1px solid #f5c2c0;border-radius:6px;color:#a02020;font-size:12.5px;line-height:1.5}
+.buy-modal-error.is-open{display:block}
+.buy-modal-error a{color:#159385;text-decoration:underline;font-weight:600}
 </style>
 </head>
 <body>
@@ -975,21 +1006,232 @@ document.addEventListener('keydown', function(e) {
   }
 });
 
-// Placeholder click handler for the Buy this Pack button. Will eventually
-// post to a Shopify cart endpoint; for now it shows an in-page "coming soon"
-// modal (custom modal, not native alert — avoids the iframe security header).
-function onBuyClick() {
-  showModal(
-    'Buy this Pack — coming soon',
-    'Online checkout is coming soon. For now, just download the pack image ' +
-    '(use the download icon to the right of this button) and send it to me — ' +
-    "I'll get the strings ordered and ready for you." +
-    '<br><br>' +
-    '<strong>Email:</strong> <a href="mailto:clayton@roscoguitars.com" style="color:#159385;text-decoration:underline">clayton@roscoguitars.com</a><br>' +
-    '<strong>Phone / text:</strong> <a href="tel:+12365996660" style="color:#159385;text-decoration:underline">236-599-6660</a>',
-    true
-  );
+// ════════════════════════════════════════════
+// BUY THIS PACK — Shopify Draft Order flow
+// ════════════════════════════════════════════
+// Click flow:
+//   1. onBuyClick()        — capture pack snapshot + canvas image, open modal
+//   2. openBuyModal()      — render the modal with image, price, qty selector
+//   3. submitDraftOrder()  — POST to Worker /create-draft-order, redirect to
+//                            Shopify-hosted invoice URL on success
+//   4. On error: show inline error in the modal with email/phone fallback
+const WORKER_BASE_URL = 'https://rosco-scale-lookup.clayton-18a.workers.dev';
+
+// Build a snapshot of the current pack suitable for sending to the Worker.
+// Captured at click-time so subsequent edits to the calculator don't change
+// what the customer sees in the modal.
+function snapshotPackForCheckout() {
+  if (!currentPack) return null;
+  const { total, priced, missing } = calcPackTotal();
+  if (priced === 0) return null;
+  if (missing.length > 0) return { _missing: missing };
+
+  const scale = parseFloat(document.getElementById('scale-sel').value);
+  const overrideName = (document.getElementById('tuning-name-input')?.value || '').trim();
+  const tuningDisplay = overrideName || (typeof detectTuningName === 'function' ? detectTuningName() : '') || currentPack.tuning || 'Custom';
+
+  const canvas = document.getElementById('label-canvas');
+  let imageDataUrl = '';
+  try { imageDataUrl = canvas.toDataURL('image/png'); } catch (_) {}
+
+  const strings = currentPack.strings.map(s => ({
+    string_num: s.string_num,
+    note: s.note,
+    gauge: s.gauge,
+    gauge_display: s.gauge.toString(),
+    type: s.type || '',
+    tension_lbs: typeof s.tension_lbs === 'number'
+      ? Math.round(s.tension_lbs * 10) / 10
+      : null,
+  }));
+
+  return {
+    title: `Custom String Pack — ${tuningDisplay} ${scale.toFixed(2)}"`,
+    price: total,
+    tuning: tuningDisplay,
+    scale,
+    string_count: stringCount,
+    strings,
+    imageDataUrl,
+  };
 }
+
+function onBuyClick() {
+  if (!currentPack) {
+    showModal('No pack loaded', 'Pick a pack first, then hit Buy.', false);
+    return;
+  }
+  if (PRICE_CATALOGUE === null) {
+    showModal('Still loading prices', 'Hang on a second — pricing is still loading. Try again in a moment.', false);
+    return;
+  }
+  const snapshot = snapshotPackForCheckout();
+  if (!snapshot || snapshot._missing) {
+    const n = snapshot && snapshot._missing ? snapshot._missing.length : 0;
+    showModal(
+      'Pricing unavailable',
+      (n
+        ? `We don't have catalogue pricing for ${n} gauge(s) in this pack. `
+        : "We don't have catalogue pricing for this configuration. ") +
+      "Email me the pack image and I'll quote it manually." +
+      '<br><br>' +
+      '<strong>Email:</strong> <a href="mailto:clayton@roscoguitars.com" style="color:#159385;text-decoration:underline">clayton@roscoguitars.com</a>',
+      true
+    );
+    return;
+  }
+  openBuyModal(snapshot);
+}
+
+let buyModalState = null;
+
+function openBuyModal(snapshot) {
+  buyModalState = { snapshot, qty: 1, submitting: false };
+  document.getElementById('buy-modal-image').src = snapshot.imageDataUrl || '';
+  document.getElementById('buy-modal-unit-price').textContent = formatMoney(snapshot.price);
+  document.getElementById('buy-modal-qty-input').value = '1';
+  updateBuyModalTotal();
+  hideBuyModalError();
+  setBuyModalSubmitting(false);
+  document.getElementById('buy-modal-backdrop').classList.add('is-open');
+}
+
+function closeBuyModal(e) {
+  if (e && e.target && e.target.id !== 'buy-modal-backdrop') return;
+  if (buyModalState && buyModalState.submitting) return;
+  document.getElementById('buy-modal-backdrop').classList.remove('is-open');
+  buyModalState = null;
+}
+
+function changeBuyModalQty(delta) {
+  if (!buyModalState || buyModalState.submitting) return;
+  const next = Math.max(1, Math.min(20, buyModalState.qty + delta));
+  buyModalState.qty = next;
+  document.getElementById('buy-modal-qty-input').value = String(next);
+  updateBuyModalTotal();
+}
+
+function onBuyModalQtyInputChange() {
+  if (!buyModalState || buyModalState.submitting) return;
+  const raw = parseInt(document.getElementById('buy-modal-qty-input').value, 10);
+  const next = Math.max(1, Math.min(20, isNaN(raw) ? 1 : raw));
+  buyModalState.qty = next;
+  document.getElementById('buy-modal-qty-input').value = String(next);
+  updateBuyModalTotal();
+}
+
+function updateBuyModalTotal() {
+  if (!buyModalState) return;
+  const { snapshot, qty } = buyModalState;
+  document.getElementById('buy-modal-total').textContent = formatMoney(snapshot.price * qty);
+}
+
+function setBuyModalSubmitting(isSubmitting) {
+  if (!buyModalState) return;
+  buyModalState.submitting = isSubmitting;
+  const btn = document.getElementById('buy-modal-proceed');
+  const cancelBtn = document.getElementById('buy-modal-cancel');
+  const minus = document.getElementById('buy-modal-qty-minus');
+  const plus = document.getElementById('buy-modal-qty-plus');
+  const qtyInput = document.getElementById('buy-modal-qty-input');
+  btn.disabled = isSubmitting;
+  cancelBtn.disabled = isSubmitting;
+  minus.disabled = isSubmitting;
+  plus.disabled = isSubmitting;
+  qtyInput.disabled = isSubmitting;
+  btn.textContent = isSubmitting ? 'Creating order…' : 'Proceed to Checkout';
+}
+
+function showBuyModalError(msg) {
+  const el = document.getElementById('buy-modal-error');
+  el.innerHTML = msg;
+  el.classList.add('is-open');
+}
+function hideBuyModalError() {
+  const el = document.getElementById('buy-modal-error');
+  el.classList.remove('is-open');
+  el.innerHTML = '';
+}
+
+function escapeHtml(s) {
+  return String(s)
+    .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+}
+
+async function submitDraftOrder() {
+  if (!buyModalState || buyModalState.submitting) return;
+  const { snapshot, qty } = buyModalState;
+  hideBuyModalError();
+  setBuyModalSubmitting(true);
+
+  // Strip the data URL — Worker doesn't need it (it's only for the modal).
+  const { imageDataUrl, ...packForWire } = snapshot;
+
+  let res, data;
+  try {
+    res = await fetch(`${WORKER_BASE_URL}/create-draft-order`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ pack: packForWire, quantity: qty }),
+    });
+    data = await res.json().catch(() => ({}));
+  } catch (err) {
+    setBuyModalSubmitting(false);
+    showBuyModalError(
+      "Couldn't reach the checkout server. Check your connection and try " +
+      'again, or email <a href="mailto:clayton@roscoguitars.com">clayton@roscoguitars.com</a>.'
+    );
+    return;
+  }
+
+  if (!res.ok || !data.invoice_url) {
+    setBuyModalSubmitting(false);
+    const detail = (data && (data.error || data.detail)) || `HTTP ${res.status}`;
+    showBuyModalError(
+      "We couldn't create your order. Try again, or email " +
+      '<a href="mailto:clayton@roscoguitars.com">clayton@roscoguitars.com</a> ' +
+      `with a screenshot. <br><span style="opacity:.65">(${escapeHtml(detail)})</span>`
+    );
+    return;
+  }
+
+  // Got an invoice URL — send the customer to Shopify-hosted checkout.
+  // Try top-frame navigation first (works when iframe permits it, which it
+  // usually does for click-triggered navigations). Fall back to a new tab.
+  const url = data.invoice_url;
+  try {
+    if (window.top && window.top !== window.self) {
+      window.top.location.href = url;
+      return;
+    }
+    window.location.href = url;
+  } catch (_) {
+    window.open(url, '_blank', 'noopener');
+    setBuyModalSubmitting(false);
+    showBuyModalError('Opened checkout in a new tab — switch over to complete your order.');
+  }
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+  const minus = document.getElementById('buy-modal-qty-minus');
+  const plus = document.getElementById('buy-modal-qty-plus');
+  const input = document.getElementById('buy-modal-qty-input');
+  if (minus) minus.addEventListener('click', () => changeBuyModalQty(-1));
+  if (plus) plus.addEventListener('click', () => changeBuyModalQty(1));
+  if (input) input.addEventListener('change', onBuyModalQtyInputChange);
+});
+
+// ESC also closes the buy modal (mirrors the generic modal behaviour).
+document.addEventListener('keydown', function(e) {
+  if (e.key === 'Escape') {
+    const bd = document.getElementById('buy-modal-backdrop');
+    if (bd && bd.classList.contains('is-open') && !(buyModalState && buyModalState.submitting)) {
+      bd.classList.remove('is-open');
+      buyModalState = null;
+    }
+  }
+});
 
 async function loadPriceCatalogue() {
   try {
@@ -1887,12 +2129,47 @@ async function lookupScaleLength(btn) {
   }
 }
 </script>
-<!-- Modal (hidden by default) — used by Buy this Pack and other in-page popups. -->
+<!-- Modal (hidden by default) — generic in-page popup, used for errors,
+     "couldn't find scale", and other minor notices. -->
 <div class="modal-backdrop" id="modal-backdrop" onclick="closeModal(event)">
   <div class="modal-card" onclick="event.stopPropagation()" role="dialog" aria-labelledby="modal-title" aria-modal="true">
     <div class="modal-title" id="modal-title">Coming Soon</div>
     <div class="modal-body" id="modal-body"></div>
     <button class="modal-ok" type="button" onclick="closeModal()">OK</button>
+  </div>
+</div>
+
+<!-- Buy this Pack — checkout summary modal. Shows the pack image, exact
+     price, quantity selector, and a Proceed button that creates a Shopify
+     Draft Order via the Cloudflare Worker and redirects to checkout. -->
+<div class="buy-modal-backdrop" id="buy-modal-backdrop" onclick="closeBuyModal(event)">
+  <div class="buy-modal-card" onclick="event.stopPropagation()" role="dialog" aria-labelledby="buy-modal-title" aria-modal="true">
+    <div class="buy-modal-title" id="buy-modal-title">Review your pack</div>
+    <div class="buy-modal-sub">Looks good? Hit Proceed to Checkout — you'll be sent to our secure Shopify checkout to enter your shipping details and pay.</div>
+    <div class="buy-modal-image-wrap">
+      <img class="buy-modal-image" id="buy-modal-image" alt="Pack preview" />
+    </div>
+    <div class="buy-modal-row">
+      <span class="buy-modal-label">Price per pack</span>
+      <span class="buy-modal-value" id="buy-modal-unit-price">—</span>
+    </div>
+    <div class="buy-modal-row">
+      <span class="buy-modal-label">Quantity</span>
+      <span class="buy-modal-qty">
+        <button type="button" id="buy-modal-qty-minus" aria-label="Decrease quantity">−</button>
+        <input type="number" id="buy-modal-qty-input" value="1" min="1" max="20" aria-label="Quantity" />
+        <button type="button" id="buy-modal-qty-plus" aria-label="Increase quantity">+</button>
+      </span>
+    </div>
+    <div class="buy-modal-row">
+      <span class="buy-modal-label">Total <span style="font-weight:500;color:#888">(before shipping &amp; tax)</span></span>
+      <span class="buy-modal-total" id="buy-modal-total">—</span>
+    </div>
+    <div class="buy-modal-error" id="buy-modal-error" role="alert"></div>
+    <div class="buy-modal-actions">
+      <button class="buy-modal-cancel" type="button" id="buy-modal-cancel" onclick="closeBuyModal()">Cancel</button>
+      <button class="buy-modal-proceed" type="button" id="buy-modal-proceed" onclick="submitDraftOrder()">Proceed to Checkout</button>
+    </div>
   </div>
 </div>
 
