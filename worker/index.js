@@ -309,20 +309,28 @@ async function handleCreateDraftOrder(request, env, origin) {
   // 1. Get a short-lived access token (client_credentials grant).
   let accessToken;
   try {
+    // Standard OAuth 2.0 client_credentials grant — body must be
+    // application/x-www-form-urlencoded, not JSON. Shopify's token
+    // endpoint follows RFC 6749.
+    const tokenForm = new URLSearchParams({
+      grant_type: 'client_credentials',
+      client_id: env.SHOPIFY_CLIENT_ID,
+      client_secret: env.SHOPIFY_CLIENT_SECRET,
+    });
     const tokenRes = await fetch(
       `https://${SHOPIFY_SHOP_DOMAIN}/admin/oauth/access_token`,
       {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          client_id: env.SHOPIFY_CLIENT_ID,
-          client_secret: env.SHOPIFY_CLIENT_SECRET,
-          grant_type: 'client_credentials',
-        }),
+        headers: {
+          'Content-Type': 'application/x-www-form-urlencoded',
+          'Accept': 'application/json',
+        },
+        body: tokenForm.toString(),
       }
     );
     if (!tokenRes.ok) {
-      const detail = (await tokenRes.text()).slice(0, 300);
+      // Pass through Shopify's actual error body so we can see what's wrong.
+      const detail = `[${tokenRes.status}] ` + (await tokenRes.text()).slice(0, 400);
       return jsonResponse(
         { error: 'Shopify auth failed.', detail },
         502,

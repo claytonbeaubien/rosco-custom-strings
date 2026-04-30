@@ -1187,11 +1187,18 @@ async function submitDraftOrder() {
 
   if (!res.ok || !data.invoice_url) {
     setBuyModalSubmitting(false);
-    const detail = (data && (data.error || data.detail)) || `HTTP ${res.status}`;
+    // Surface BOTH the high-level error and the upstream detail so we can
+    // see what Shopify actually rejected. Most useful while we're still
+    // shaking out auth and field-validation issues.
+    const errMsg = (data && data.error) || `HTTP ${res.status}`;
+    const errDetail = data && data.detail ? data.detail : '';
     showBuyModalError(
       "We couldn't create your order. Try again, or email " +
       '<a href="mailto:clayton@roscoguitars.com">clayton@roscoguitars.com</a> ' +
-      `with a screenshot. <br><span style="opacity:.65">(${escapeHtml(detail)})</span>`
+      `with a screenshot.<br>` +
+      `<span style="opacity:.7;font-size:11px">${escapeHtml(errMsg)}` +
+      (errDetail ? ` — ${escapeHtml(errDetail)}` : '') +
+      `</span>`
     );
     return;
   }
