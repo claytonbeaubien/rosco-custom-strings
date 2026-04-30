@@ -218,13 +218,7 @@ select:focus,input[type=text]:focus{border-color:#2cd5c4;outline:none}
 html.embedded body{min-height:0}
 html.embedded header{display:none}
 html.embedded .main{margin-top:16px}
-@media(max-width:1099px){
-  html.embedded .main{margin-top:0}
-  /* When embedded on mobile, the iframe has a fixed height (set by
-     postHeight). Make the body scroll internally inside that height so
-     position:sticky elements stick relative to the iframe's viewport. */
-  html.embedded body{height:100vh;overflow-y:auto;-webkit-overflow-scrolling:touch}
-}
+@media(max-width:1099px){html.embedded .main{margin-top:0}}
 
 /* Modal — used by Buy this Pack and any future popups. Replaces native alert()
    so we don't get the browser's 'An embedded page at ... says' header when
@@ -281,28 +275,16 @@ html.embedded .main{margin-top:16px}
     document.documentElement.classList.add('embedded');
     let lastHeight = 0;
     function postHeight() {
+      // Measure content blocks directly so the report doesn't get inflated
+      // by body's intrinsic sizing (which can drift up with iframe height
+      // and create a feedback loop).
+      const main = document.querySelector('.main');
+      const tensions = document.querySelector('.tensions-info');
+      const footer = document.querySelector('.internal-tools');
       let h = 0;
-      // On mobile/tablet (<= 1099px), DON'T auto-grow the iframe — instead
-      // cap the height so the iframe has a fixed internal viewport. That
-      // gives position:sticky something to stick to (the body scrolls
-      // internally rather than the parent page scrolling past the whole
-      // iframe). screen.height is the device's CSS-pixel screen height;
-      // 75% leaves room for the GHL nav chrome above/below the iframe,
-      // and the clamp keeps it sane on tiny or huge displays.
-      if (window.innerWidth <= 1099) {
-        const target = Math.round((window.screen?.height || 800) * 0.75);
-        h = Math.max(480, Math.min(820, target));
-      } else {
-        // Desktop: measure content directly so the report doesn't get
-        // inflated by body's intrinsic sizing (which can drift up with
-        // iframe height and create a feedback loop).
-        const main = document.querySelector('.main');
-        const tensions = document.querySelector('.tensions-info');
-        const footer = document.querySelector('.internal-tools');
-        if (main)     h = Math.max(h, main.offsetTop + main.offsetHeight);
-        if (tensions) h = Math.max(h, tensions.offsetTop + tensions.offsetHeight);
-        if (footer)   h = Math.max(h, footer.offsetTop + footer.offsetHeight + 16);
-      }
+      if (main)     h = Math.max(h, main.offsetTop + main.offsetHeight);
+      if (tensions) h = Math.max(h, tensions.offsetTop + tensions.offsetHeight);
+      if (footer)   h = Math.max(h, footer.offsetTop + footer.offsetHeight + 16);
       // Round to the nearest 4px to avoid tiny pixel-level oscillations
       // that would keep the iframe re-rendering forever.
       h = Math.round(h / 4) * 4;
