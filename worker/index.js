@@ -388,6 +388,10 @@ async function handleCreateDraftOrder(request, env, origin) {
           quantity: qty,
           taxable: true,
           requires_shipping: true,
+          // Weight in grams — drives real-time Canada Post rates and gives
+          // Shopify-Shipping label-creation a sensible default if you ever
+          // turn that on. Estimator is conservative (rounds up).
+          grams: estimatePackWeightGrams(pack.strings),
           properties,
         },
       ],
@@ -444,6 +448,46 @@ async function handleCreateDraftOrder(request, env, origin) {
     200,
     origin
   );
+}
+
+// ---- weight estimation -------------------------------------------------
+
+/**
+ * Estimate total shipping weight (in grams) for a string pack so Shopify can
+ * quote real-time carrier rates correctly. Uses gauge + type to weight each
+ * string, then adds a packaging allowance for the padded envelope, label,
+ * insert, and a small margin.
+ *
+ * Calibrated against real D'Addario set weights (e.g. EXL110 nickel-wound
+ * 10-46 ≈ 25g of strings + ~20g packaging; EXL170 bass 45-100 ≈ 100g of
+ * strings + ~30g packaging). Rounds slightly up so we err on the carrier's
+ * side rather than under-quoting shipping.
+ *
+ * Coefficients:
+ *   PACKAGING_GRAMS = padded envelope + Rosco label + invoice + margin
+ *   PLAIN_PER_GAUGE = grams per inch of gauge for plain steel singles
+ *                     .010 → ~0.7g  .020 → ~1.3g
+ *   WOUND_BASE      = the ball end / wrap-attach mass (constant per string)
+ *   WOUND_PER_GAUGE = grams per inch of gauge for wound singles
+ *                     .026 → ~6g  .046 → ~14g  .105 → ~36g  .135 → ~47g
+ */
+function estimatePackWeightGrams(strings) {
+  const PACKAGING_GRAMS = 45;
+  const PLAIN_PER_GAUGE = 65;
+  const WOUND_BASE = 3;
+  const WOUND_PER_GAUGE = 380;
+
+  let total = PACKAGING_GRAMS;
+  for (const s of (strings || [])) {
+    if (!s || typeof s.gauge !== 'number') continue;
+    const g = s.gauge;
+    if (s.type === 'plain') {
+      total += Math.max(0.5, g * PLAIN_PER_GAUGE);
+    } else {
+      total += Math.max(WOUND_BASE, WOUND_BASE + (g - 0.018) * WOUND_PER_GAUGE);
+    }
+  }
+  return Math.round(total);
 }
 
 // ---- helpers ----
