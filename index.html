@@ -78,6 +78,9 @@ header{background:#fff;border-bottom:2px solid #2cd5c4;padding:16px 32px;display
   /* Buy bar pinned at the very top of the mobile column, slimmed down. */
   .actions-row{order:1;position:sticky;top:0;z-index:6;padding:8px 12px;border-radius:0;border-left:none;border-right:none;margin:-16px -16px 0;width:calc(100% + 32px);box-shadow:0 2px 6px rgba(0,0,0,.06)}
   .actions-row .price-meta{display:none}
+  /* Cards extend edge-to-edge to match the buy bar + pack image widths.
+     Drop side borders + radius since the edges run off-screen. */
+  .card{margin:0 -16px;width:calc(100% + 32px);border-radius:0;border-left:none;border-right:none}
   .config-card{order:3}
   .gauges-card{order:4}
   .label-card{order:5}
@@ -190,7 +193,7 @@ select:focus,input[type=text]:focus{border-color:#2cd5c4;outline:none}
 .preview-label{display:none;font-size:10px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:#888;align-self:flex-start}
 @media(max-width:1023px){.preview-label{display:block}}
 @media(max-width:599px){.str-table{font-size:12px}.str-table th{padding:6px 2px;font-size:8px}.str-table td{padding:8px 2px}.str-table select{font-size:13px;padding:7px 18px 7px 4px;min-height:36px}.str-table td.tension-val{font-size:13px;padding:7px 4px}.g-btn{font-size:20px;padding:4px 2px;min-width:34px;min-height:42px}}
-@media(max-width:599px){.card{padding:16px 12px 14px}}
+@media(max-width:599px){.card{margin:0 -12px;width:calc(100% + 24px);padding:16px 14px 14px}}
 @media(max-width:599px){.form-row{grid-template-columns:1fr!important}.count-btns-bass{width:100%}}
 @media(max-width:599px){.btn-row{flex-direction:column}.btn{width:100%;padding:14px 18px;font-size:15px}}
 @media(max-width:599px){header{padding:12px 16px}.logo-img{height:36px}.header-right{font-size:9px}}
