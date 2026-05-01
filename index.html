@@ -362,33 +362,14 @@ html.print-mode .print-banner{display:block;background:#f4f5f7;border:1px solid 
     document.documentElement.classList.add('print-mode');
 
     function applyPack() {
-      try {
-        // Set state directly (no setStringCount call — that would trigger
-        // a default-pack reload that overwrites our spec).
-        if (typeof window !== 'undefined') {
-          window.stringCount = spec.c;
-        }
-        const scaleSel = document.getElementById('scale-sel');
-        if (scaleSel) scaleSel.value = String(spec.s);
-        const tuningNameInput = document.getElementById('tuning-name-input');
-        if (tuningNameInput) tuningNameInput.value = spec.t || '';
-
-        window.currentPack = {
-          string_count: spec.c,
-          scale_length: spec.s,
-          tuning: spec.t,
-          strings: (spec.st || []).map((s) => ({
-            string_num: s.n,
-            note: s.no,
-            gauge: s.g,
-            type: s.ty,
-            tension_lbs: s.t,
-          })),
-        };
-
-        if (typeof window.renderLabel === 'function') window.renderLabel();
-      } catch (e) {
-        console.warn('Print mode apply failed:', e);
+      // Bridge function lives in the main calculator script, where it
+      // has access to setStringCount/currentPack/renderLabel. Wait for
+      // it to be defined (script execution order may not be guaranteed).
+      if (typeof window.applyPackForPrintMode === 'function') {
+        window.applyPackForPrintMode(spec);
+      } else {
+        // Try again shortly — main script may not have run yet.
+        setTimeout(applyPack, 100);
       }
     }
 
@@ -2279,6 +2260,55 @@ async function lookupScaleLength(btn) {
     btn.textContent = 'Look up scale length';
   }
 }
+
+// ════════════════════════════════════════════
+// PRINT MODE BRIDGE
+// ════════════════════════════════════════════
+// Called from the iframe-detect inline <script> when ?print=<spec> URL
+// param is present. Has to live here (not in the iframe script) so it
+// can reach setStringCount / currentPack / renderLabel — they're scoped
+// to this script tag.
+window.applyPackForPrintMode = function(spec) {
+  if (!spec || typeof spec !== 'object') return;
+  try {
+    // 1. Set string count first so the scale dropdown gets repopulated
+    //    with the right instrument's scale options (guitar vs bass).
+    if (typeof spec.c === 'number' && [4, 5, 6, 7, 8].includes(spec.c)) {
+      setStringCount(spec.c);
+    }
+    // 2. Snap scale to the closest matching option.
+    if (typeof spec.s === 'number') {
+      setScaleClosestTo(spec.s);
+    }
+    // 3. Set the tuning-name override input so the label shows the right
+    //    text (renderLabel reads from this input).
+    const tNameEl = document.getElementById('tuning-name-input');
+    if (tNameEl) tNameEl.value = String(spec.t || '');
+    // 4. Override currentPack with the order's exact strings — done LAST
+    //    so it wins over any default pack setStringCount loaded.
+    currentPack = {
+      string_count: spec.c,
+      scale_length: spec.s,
+      tuning: spec.t,
+      strings: (spec.st || []).map(function(s) {
+        return {
+          string_num: s.n,
+          note: s.no,
+          gauge: s.g,
+          type: s.ty,
+          tension_lbs: s.t,
+        };
+      }),
+    };
+    // 5. Render. Wrap in a microtask delay so any pending setStringCount
+    //    side-effects (font load, scale-sel change handlers) settle first.
+    setTimeout(function() {
+      if (typeof renderLabel === 'function') renderLabel();
+    }, 50);
+  } catch (e) {
+    console.warn('applyPackForPrintMode failed:', e);
+  }
+};
 </script>
 <!-- Modal (hidden by default) — generic in-page popup, used for errors,
      "couldn't find scale", and other minor notices. -->

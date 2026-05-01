@@ -366,6 +366,7 @@ async function handleCreateDraftOrder(request, env, origin) {
     .filter(Boolean)
     .join(' / ');
 
+  const estGrams = estimatePackWeightGrams(pack.strings);
   const properties = [
     { name: 'Tuning', value: String(pack.tuning || '—') },
     { name: 'Scale Length', value: pack.scale ? `${pack.scale}"` : '—' },
@@ -374,6 +375,11 @@ async function handleCreateDraftOrder(request, env, origin) {
   ];
   if (noteList) properties.push({ name: 'Notes (low to high)', value: noteList });
   if (typeList) properties.push({ name: 'String Types', value: typeList });
+  // Visible weight as a property — Shopify's per-line-item `grams` field
+  // doesn't always carry through on custom line items (no variant), so
+  // surfacing the number here lets Clayton type it into the label dialog
+  // manually if needed.
+  properties.push({ name: 'Weight (est.)', value: `${estGrams} g` });
 
   // Deep-link to the calculator in "print mode" — encodes the pack spec
   // into a URL Clayton can click from the order to render and print the
@@ -419,7 +425,7 @@ async function handleCreateDraftOrder(request, env, origin) {
           // Weight in grams — drives real-time Canada Post rates and gives
           // Shopify-Shipping label-creation a sensible default if you ever
           // turn that on. Estimator is conservative (rounds up).
-          grams: estimatePackWeightGrams(pack.strings),
+          grams: estGrams,
           properties,
         },
       ],
@@ -507,8 +513,15 @@ function estimatePackWeightGrams(strings) {
 
   let total = PACKAGING_GRAMS;
   for (const s of (strings || [])) {
-    if (!s || typeof s.gauge !== 'number') continue;
-    const g = s.gauge;
+    if (!s) continue;
+    // Gauges come through from the browser as strings ("60", "39", "28w").
+    // Browser stores gauge in inches as a fraction string -> the calc
+    // ALSO uses ".XXX" form. Cope with either: parseFloat first; if it
+    // looks like an integer >= 5 we have the "60" / "28w" form (mils),
+    // convert to inches by /1000.
+    const raw = parseFloat(s.gauge);
+    if (isNaN(raw)) continue;
+    const g = raw >= 5 ? raw / 1000 : raw;
     if (s.type === 'plain') {
       total += Math.max(0.5, g * PLAIN_PER_GAUGE);
     } else {
