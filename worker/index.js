@@ -398,6 +398,10 @@ async function handleCreateDraftOrder(request, env, origin) {
         ty: s.type || 'wound',
         t: s.tension_lbs,
       })),
+      // Label-info text the customer entered — drives the banner.
+      n: pack.label_name || '',
+      gt: pack.label_guitar || '',
+      bn: pack.label_band || '',
     };
     // btoa expects Latin-1; pass through encodeURIComponent + escape to
     // handle any UTF-8 chars in tuning names safely.

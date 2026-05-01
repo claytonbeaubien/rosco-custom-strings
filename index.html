@@ -1155,6 +1155,13 @@ function snapshotPackForCheckout() {
   const overrideName = (document.getElementById('tuning-name-input')?.value || '').trim();
   const tuningDisplay = overrideName || (typeof detectTuningName === 'function' ? detectTuningName() : '') || currentPack.tuning || 'Custom';
 
+  // Customer's label-info text — these drive the banner text via
+  // getBannerText() and need to round-trip through to the print-mode
+  // deep link so the printed label matches what the customer saw.
+  const labelName  = (document.getElementById('name-input')?.value  || '').trim();
+  const labelGuitar = (document.getElementById('band-input')?.value  || '').trim();
+  const labelBand  = (document.getElementById('band2-input')?.value || '').trim();
+
   const canvas = document.getElementById('label-canvas');
   let imageDataUrl = '';
   try { imageDataUrl = canvas.toDataURL('image/png'); } catch (_) {}
@@ -1177,6 +1184,9 @@ function snapshotPackForCheckout() {
     scale,
     string_count: stringCount,
     strings,
+    label_name: labelName,
+    label_guitar: labelGuitar,
+    label_band: labelBand,
     imageDataUrl,
   };
 }
@@ -2284,6 +2294,15 @@ window.applyPackForPrintMode = function(spec) {
     //    text (renderLabel reads from this input).
     const tNameEl = document.getElementById('tuning-name-input');
     if (tNameEl) tNameEl.value = String(spec.t || '');
+    // 3b. Set the label-info inputs so the banner shows the customer's
+    //     custom text instead of the default 'Custom Set' / 'Balanced
+    //     Tension'. getBannerText() reads from these three inputs.
+    const nEl = document.getElementById('name-input');
+    if (nEl) nEl.value = String(spec.n || '');
+    const gEl = document.getElementById('band-input');
+    if (gEl) gEl.value = String(spec.gt || '');
+    const bEl = document.getElementById('band2-input');
+    if (bEl) bEl.value = String(spec.bn || '');
     // 4. Override currentPack with the order's exact strings — done LAST
     //    so it wins over any default pack setStringCount loaded.
     currentPack = {
