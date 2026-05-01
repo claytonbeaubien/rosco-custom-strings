@@ -264,6 +264,40 @@ html.embedded .main{margin-top:16px}
 .buy-modal-error{display:none;margin-top:12px;padding:10px 12px;background:#fff3f3;border:1px solid #f5c2c0;border-radius:6px;color:#a02020;font-size:12.5px;line-height:1.5}
 .buy-modal-error.is-open{display:block}
 .buy-modal-error a{color:#159385;text-decoration:underline;font-weight:600}
+
+/* ---- Print mode (deep-link from a Shopify order) ----
+   Activated by ?print=<base64-spec> URL param. Hides the calculator UI
+   and shows only the rendered pack label canvas with Print/Save buttons,
+   for fulfillment label printing. */
+.print-banner{display:none}
+html.print-mode header,
+html.print-mode .actions-row,
+html.print-mode .right-col,
+html.print-mode .label-card,
+html.print-mode .tensions-info,
+html.print-mode .internal-tools{display:none !important}
+html.print-mode .main{padding-top:16px;display:block !important;max-width:600px;margin:0 auto;grid-template-columns:none !important;grid-template-areas:none !important}
+html.print-mode .left-col{display:block !important;width:100%}
+html.print-mode .preview-col{margin:0;padding:0;background:transparent !important;box-shadow:none !important;border:none !important;position:static !important}
+html.print-mode .preview-label{display:none}
+html.print-mode .print-banner{display:block;background:#f4f5f7;border:1px solid #cfd2d7;border-radius:8px;padding:18px 22px;margin:0 auto 18px;max-width:560px}
+.print-banner h2{font-size:16px;font-weight:700;color:#111;margin:0 0 6px;letter-spacing:-.005em}
+.print-banner p{font-size:13px;color:#555;margin:0 0 14px;line-height:1.5}
+.print-banner-actions{display:flex;gap:10px;flex-wrap:wrap}
+.print-banner .btn-print{background:#2cd5c4;color:#0a3a36;border:none;border-radius:6px;padding:10px 18px;font-size:13px;font-weight:800;letter-spacing:.05em;text-transform:uppercase;cursor:pointer;font-family:inherit;transition:background .15s}
+.print-banner .btn-print:hover{background:#25c0b0}
+.print-banner .btn-png{background:#fff;color:#444;border:1px solid #ccc;border-radius:6px;padding:10px 16px;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;transition:background .12s}
+.print-banner .btn-png:hover{background:#f4f4f4}
+
+/* When the print dialog actually fires, hide everything except the
+   canvas so paper output is just the pack label, full-page-ish. */
+@media print {
+  body * { visibility: hidden !important; }
+  .preview-col, .preview-col * { visibility: visible !important; }
+  .preview-col { position: absolute !important; top: 0; left: 0; width: 100%; padding: 0 !important; margin: 0 !important; background: transparent !important; box-shadow: none !important; border: none !important; }
+  .preview-col #label-canvas { width: 100% !important; max-width: 100% !important; height: auto !important; box-shadow: none !important; border-radius: 0 !important; }
+  .print-banner, header, .internal-tools { display: none !important; }
+}
 </style>
 </head>
 <body>
@@ -303,6 +337,80 @@ html.embedded .main{margin-top:16px}
     // (canvas drawing, font swaps, image loads).
     [200, 600, 1500].forEach(t => setTimeout(postHeight, t));
   }
+
+  // Print mode: activated by ?print=<base64-pack-spec> URL param. Used by
+  // the "Pack Label" deep link the Cloudflare Worker writes onto each
+  // Shopify order so Clayton can fulfill with a single click from the
+  // order page. Decodes the pack, applies state, renders the label.
+  (function activatePrintMode() {
+    const params = new URLSearchParams(window.location.search);
+    const packParam = params.get('print');
+    if (!packParam) return;
+
+    let spec;
+    try {
+      const b64 = decodeURIComponent(packParam);
+      const json = decodeURIComponent(escape(atob(b64)));
+      spec = JSON.parse(json);
+      if (spec.v !== 1) return;
+    } catch (e) {
+      console.warn('Pack print spec decode failed:', e);
+      return;
+    }
+
+    // Add the class right away so the UI flicker on load is suppressed.
+    document.documentElement.classList.add('print-mode');
+
+    function applyPack() {
+      try {
+        // Set state directly (no setStringCount call — that would trigger
+        // a default-pack reload that overwrites our spec).
+        if (typeof window !== 'undefined') {
+          window.stringCount = spec.c;
+        }
+        const scaleSel = document.getElementById('scale-sel');
+        if (scaleSel) scaleSel.value = String(spec.s);
+        const tuningNameInput = document.getElementById('tuning-name-input');
+        if (tuningNameInput) tuningNameInput.value = spec.t || '';
+
+        window.currentPack = {
+          string_count: spec.c,
+          scale_length: spec.s,
+          tuning: spec.t,
+          strings: (spec.st || []).map((s) => ({
+            string_num: s.n,
+            note: s.no,
+            gauge: s.g,
+            type: s.ty,
+            tension_lbs: s.t,
+          })),
+        };
+
+        if (typeof window.renderLabel === 'function') window.renderLabel();
+      } catch (e) {
+        console.warn('Print mode apply failed:', e);
+      }
+    }
+
+    // Apply AFTER the calculator's normal init has run (it sets
+    // currentPack to a default pack on load). Wait for fonts + a small
+    // settle delay so the canvas re-render uses our pack.
+    function schedule() {
+      // Apply twice — once early and once after fonts ready — so the
+      // initial flash is brief and the final render is clean.
+      setTimeout(applyPack, 300);
+      if (document.fonts && document.fonts.ready) {
+        document.fonts.ready.then(() => setTimeout(applyPack, 200));
+      } else {
+        setTimeout(applyPack, 1500);
+      }
+    }
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', schedule);
+    } else {
+      schedule();
+    }
+  })();
 </script>
 
 <header>
@@ -310,6 +418,18 @@ html.embedded .main{margin-top:16px}
 </header>
 
 <div class="main">
+
+  <!-- Print mode banner — only visible when ?print=<spec> URL param is
+       present (deep link from a Shopify order). Lets Clayton render and
+       print the customer's pack label in one click. -->
+  <div class="print-banner">
+    <h2>Pack Label — Order Fulfillment</h2>
+    <p>Pack loaded from a customer order. Click <strong>Print Label</strong> to send the label image straight to your printer, or <strong>Save as PNG</strong> to download.</p>
+    <div class="print-banner-actions">
+      <button type="button" class="btn-print" onclick="window.print()">Print Label</button>
+      <button type="button" class="btn-png" onclick="downloadPNG()">Save as PNG</button>
+    </div>
+  </div>
 
   <!-- Compact actions row spans both columns at the top -->
   <div class="actions-row is-empty" id="price-card">

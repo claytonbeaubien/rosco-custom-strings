@@ -375,6 +375,34 @@ async function handleCreateDraftOrder(request, env, origin) {
   if (noteList) properties.push({ name: 'Notes (low to high)', value: noteList });
   if (typeList) properties.push({ name: 'String Types', value: typeList });
 
+  // Deep-link to the calculator in "print mode" — encodes the pack spec
+  // into a URL Clayton can click from the order to render and print the
+  // label image. Property name is prefixed with underscore so Shopify
+  // hides it from the customer's order confirmation; merchant only.
+  try {
+    const packSpec = {
+      v: 1,
+      c: pack.string_count || pack.strings.length,
+      s: pack.scale,
+      t: pack.tuning || '',
+      st: pack.strings.map((s) => ({
+        n: s.string_num,
+        no: s.note,
+        g: s.gauge_display || (typeof s.gauge === 'number' ? String(s.gauge) : s.gauge),
+        ty: s.type || 'wound',
+        t: s.tension_lbs,
+      })),
+    };
+    // btoa expects Latin-1; pass through encodeURIComponent + escape to
+    // handle any UTF-8 chars in tuning names safely.
+    const json = JSON.stringify(packSpec);
+    const b64 = btoa(unescape(encodeURIComponent(json)));
+    const labelUrl = `https://claytonbeaubien.github.io/rosco-custom-strings/?print=${encodeURIComponent(b64)}`;
+    properties.push({ name: '_Pack Label (print)', value: labelUrl });
+  } catch (_e) {
+    // Non-fatal — order still works without the deep link.
+  }
+
   const title = String(
     pack.title || `Custom String Pack — ${pack.tuning || ''} ${pack.scale ? pack.scale + '"' : ''}`
   ).trim().slice(0, 200);
