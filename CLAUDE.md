@@ -22,9 +22,9 @@ Currently a standalone HTML/JS/Canvas tool. Being formalized into a deployable p
 
 Checklist when tunings change:
 1. Update `PACKS` in `index.html` (all scale lengths for that tuning).
-2. Update `TUNING_ORDER` (6/7-string) or `TUNING_ORDER_8` (8-string) so the dropdown picks it up.
-3. Update the `SECTIONS` list in `/sessions/festive-loving-turing/build_tuning_pdf.py` — add/remove the `(tuning_name, [notes low→high])` tuple for the right instrument section, and bump the count in the section's subtitle/blurb.
-4. Rebuild the PDF: `python3 /sessions/festive-loving-turing/build_tuning_pdf.py` → writes `/sessions/festive-loving-turing/mnt/rosco-custom-strings/Rosco_Tuning_Reference.pdf`.
+2. Update the right `TUNING_ORDER*` constant so the dropdown picks it up — `TUNING_ORDER` (6/7-string), `TUNING_ORDER_8` (8-string), `TUNING_ORDER_BASS4` (4-string bass), or `TUNING_ORDER_BASS5` (5-string bass).
+3. Update the `SECTIONS` list in `build_tuning_pdf.py` (in the repo root) — add the tuning name to the right instrument section, in the order it should appear in the customer-facing PDF.
+4. Rebuild the PDF: `python3 build_tuning_pdf.py` (from the repo root). It reads PACKS directly from `index.html`, so as long as the tuning is in PACKS and listed in `SECTIONS`, the notes column auto-populates. Output: `Rosco_Tuning_Reference.pdf` next to the script.
 5. Update the Notion page (same content — new row in the instrument's table, bump count in the intro).
 6. Present the regenerated PDF to Clayton with a `computer://` link.
 
