@@ -2027,6 +2027,10 @@ function detectTuningName() {
 
 function renderLabel() {
   updatePackPrice();
+  // 2-up print only makes sense for guitar packs — two 6.75" bass labels
+  // would need a 13.5" page, which doesn't fit on letter paper.
+  const x2btn = document.getElementById('print-x2-btn');
+  if (x2btn) x2btn.style.display = isBassInstrument() ? 'none' : '';
   const canvas = document.getElementById('label-canvas');
   const ctx = canvas.getContext('2d');
   ctx.clearRect(0, 0, CW, CH);
@@ -2147,22 +2151,25 @@ function printLabel(copies) {
   try { dataUrl = canvas.toDataURL('image/png'); }
   catch(e) { alert('Could not generate print image. Try Save as PNG instead.'); return; }
 
+  // Bass packaging is physically larger than guitar; scale the printed
+  // label so it actually fills the bass string envelope.
+  const sizeIn = isBassInstrument() ? 6.75 : 4.65;
+  const doubleIn = sizeIn * 2;
+
   const pw = window.open('', '_blank');
   let body = '';
   let pageCSS = '';
 
   if (copies === 2) {
-    // 2-up: 1×2 grid on a 4.65×9.3 inch page (two labels stacked portrait)
-    pageCSS = '@page{size:4.65in 9.3in;margin:0}';
+    pageCSS = `@page{size:${sizeIn}in ${doubleIn}in;margin:0}`;
     body = `
-      <div style="display:grid;grid-template-columns:4.65in;grid-template-rows:4.65in 4.65in;width:4.65in;height:9.3in">
-        <img src="${dataUrl}" style="width:4.65in;height:4.65in;display:block">
-        <img src="${dataUrl}" style="width:4.65in;height:4.65in;display:block">
+      <div style="display:grid;grid-template-columns:${sizeIn}in;grid-template-rows:${sizeIn}in ${sizeIn}in;width:${sizeIn}in;height:${doubleIn}in">
+        <img src="${dataUrl}" style="width:${sizeIn}in;height:${sizeIn}in;display:block">
+        <img src="${dataUrl}" style="width:${sizeIn}in;height:${sizeIn}in;display:block">
       </div>`;
   } else {
-    // 1-up: single label on a 4.65×4.65 inch page
-    pageCSS = '@page{size:4.65in 4.65in;margin:0}';
-    body = `<img src="${dataUrl}" style="width:4.65in;height:4.65in;display:block">`;
+    pageCSS = `@page{size:${sizeIn}in ${sizeIn}in;margin:0}`;
+    body = `<img src="${dataUrl}" style="width:${sizeIn}in;height:${sizeIn}in;display:block">`;
   }
 
   pw.document.write(`<html><head><style>
@@ -2385,7 +2392,7 @@ window.applyPackForPrintMode = function(spec) {
     </svg>
     <span class="btn-icon-mult">×1</span>
   </button>
-  <button class="btn-icon" onclick="printLabel(2)" title="Print 2-up (two labels stacked portrait)" aria-label="Print 2-up">
+  <button id="print-x2-btn" class="btn-icon" onclick="printLabel(2)" title="Print 2-up (two labels stacked portrait)" aria-label="Print 2-up">
     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
       <polyline points="6 9 6 2 18 2 18 9"/>
       <path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/>
