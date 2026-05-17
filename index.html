@@ -215,26 +215,38 @@ select:focus,input[type=text]:focus{border-color:#2cd5c4;outline:none}
 .setup-specs{max-width:1132px;margin:24px auto;padding:0 24px}
 @media(max-width:1099px){.setup-specs{max-width:640px;padding:0 16px}}
 @media(max-width:599px){.setup-specs{padding:0 12px;margin:16px auto}}
-.setup-specs-card{background:#fff;border:1px solid #e0e0e0;border-radius:12px;padding:18px 28px;box-shadow:0 2px 8px rgba(0,0,0,.04);transition:padding .25s ease}
+.setup-specs-card{background:#fff;border:1px solid #e0e0e0;border-radius:12px;padding:8px 28px;box-shadow:0 2px 8px rgba(0,0,0,.04);transition:padding .25s ease}
 .setup-specs.open .setup-specs-card{padding:18px 28px 22px}
-@media(max-width:599px){.setup-specs-card{padding:14px;border-radius:8px}.setup-specs.open .setup-specs-card{padding:14px 14px 14px}}
-.setup-specs-header{display:flex;align-items:center;justify-content:space-between;gap:16px;cursor:pointer;padding:6px 0;margin:0;border-radius:6px;transition:background .15s ease;outline:none}
+@media(max-width:599px){.setup-specs-card{padding:6px 14px;border-radius:8px}.setup-specs.open .setup-specs-card{padding:14px 14px 14px}}
+.setup-specs-header{cursor:pointer;padding:6px 0;margin:0;border-radius:6px;transition:background .15s ease,padding .25s ease,margin .25s ease,border-color .25s ease;outline:none;border-bottom:1px solid transparent}
 .setup-specs-header:hover{background:#f7f8fa}
 .setup-specs-header:focus-visible{box-shadow:0 0 0 2px #2cd5c4}
-.setup-specs.open .setup-specs-header{margin-bottom:14px;padding-bottom:14px;border-bottom:1px solid #ececec;border-radius:6px 6px 0 0}
-.setup-specs-headtext{min-width:0;flex:1;padding:0 10px}
-.setup-specs-eyebrow{font-size:10px;font-weight:700;letter-spacing:.16em;text-transform:uppercase;color:#159385;margin-bottom:4px;display:flex;align-items:center;gap:6px}
-.setup-specs-caret{display:inline-block;font-size:12px;line-height:1;color:#159385;transition:transform .25s ease;transform:rotate(-90deg)}
-.setup-specs.open .setup-specs-caret{transform:rotate(0deg)}
+.setup-specs.open .setup-specs-header{margin-bottom:14px;padding:0 0 14px;border-bottom-color:#ececec;border-radius:6px 6px 0 0}
+
+/* Collapsed state — just centered "Setup Specs for this Pack ▾" link. */
+.setup-specs-collapsed-link{display:block;text-align:center;color:#159385;font-size:12px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;padding:6px 0;transition:color .15s ease}
+.setup-specs-collapsed-link .setup-specs-caret{display:inline-block;margin-left:6px;font-size:10px;line-height:1}
+.setup-specs-header:hover .setup-specs-collapsed-link{color:#0e6e64}
+.setup-specs.open .setup-specs-collapsed-link{display:none}
+
+/* Expanded state — full header with pack title + Print specs button. */
+.setup-specs-expanded-row{display:none}
+.setup-specs.open .setup-specs-expanded-row{display:flex;align-items:flex-start;justify-content:space-between;gap:16px;padding:0 10px}
+.setup-specs-headtext{min-width:0;flex:1}
+.setup-specs-eyebrow{font-size:10px;font-weight:700;letter-spacing:.16em;text-transform:uppercase;color:#159385;margin-bottom:4px}
 .setup-specs-title{font-size:17px;font-weight:700;color:#111;letter-spacing:-.005em;margin:0 0 2px}
 .setup-specs-sub{font-size:12px;color:#777;letter-spacing:.01em}
-.setup-specs-printbtn{flex-shrink:0;background:#fff;color:#555;border:1px solid #d8d8d8;border-radius:5px;padding:7px 12px;font-size:10px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;cursor:pointer;display:flex;align-items:center;gap:6px;transition:all .12s;font-family:inherit;white-space:nowrap;margin-right:6px}
+.setup-specs-printbtn{flex-shrink:0;background:#fff;color:#555;border:1px solid #d8d8d8;border-radius:5px;padding:7px 12px;font-size:10px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;cursor:pointer;display:flex;align-items:center;gap:6px;transition:all .12s;font-family:inherit;white-space:nowrap}
 .setup-specs-printbtn:hover{border-color:#2cd5c4;color:#2cd5c4}
 .setup-specs-printbtn svg{width:13px;height:13px}
 
 /* Collapsible body — hidden by default, opens on click */
 .setup-specs-body{max-height:0;overflow:hidden;opacity:0;transition:max-height .35s ease,opacity .25s ease}
 .setup-specs.open .setup-specs-body{max-height:4000px;opacity:1}
+
+/* Inline below-tension warning row inside the per-string table */
+.setup-table-note-row td{padding:6px 10px 8px;background:#fdf6e3;border-left:3px solid #f0d9a0;border-bottom:1px solid #f4f4f4;color:#9a6b00;font-size:11px;font-style:italic;line-height:1.45}
+.setup-table-note-row td b{font-style:normal;font-weight:700;color:#7a5400;margin-right:4px}
 
 /* Main per-string table (Nut Slot + Action combined) */
 .setup-main{margin:0}
@@ -266,14 +278,7 @@ select:focus,input[type=text]:focus{border-color:#2cd5c4;outline:none}
 .setup-relief-value .unit{font-size:13px;color:#666;font-weight:500;margin-left:6px}
 .setup-relief-footnote{font-size:11px;color:#888;margin:6px 0 0;letter-spacing:.01em}
 
-/* Tension advisories */
-.setup-advisories{margin-top:20px;padding:14px 16px;background:#fdf6e3;border:1px solid #f0d9a0;border-radius:8px}
-.setup-advisories h4{font-size:11px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:#9a6b00;margin:0 0 8px}
-.setup-advisories ul{margin:0;padding-left:18px;font-size:13px;color:#5a4400;line-height:1.55}
-.setup-advisories li{margin-bottom:4px}
-.setup-advisories li b{color:#3d2e00}
-
-@media(max-width:599px){.setup-specs-header{flex-direction:column;align-items:flex-start}.setup-table{font-size:12px}.setup-table th,.setup-table td{padding:6px 4px}.setup-table .col-spec .mm{display:block;margin:2px 0 0;font-size:11px}}
+@media(max-width:599px){.setup-table{font-size:12px}.setup-table th,.setup-table td{padding:6px 4px}.setup-table .col-spec .mm{display:block;margin:2px 0 0;font-size:11px}}
 html.print-mode .setup-specs{display:none !important}
 @media print{.setup-specs{display:none !important}}
 
@@ -2413,16 +2418,28 @@ function renderSetupSpecs() {
     : `${stringCount}-string guitar`;
 
   // Main per-string table — combined Nut Slot Height + Action, gauge-driven lookup.
+  // Strings whose tension reads below the Rosco target (and outside the OK band)
+  // get an inline note flagging that the action spec from the table is a floor —
+  // a slack string almost always needs higher action to avoid fret rattle.
   const mainRowsHTML = strings.map(s => {
     const chosenInches = gaugeToInches(s.gauge);
     const nutSpec    = specForGauge(chosenInches, isBass, SETUP_SPECS.nutSlot);
     const actionSpec = specForGauge(chosenInches, isBass, SETUP_SPECS.action);
+    const target = isBass
+      ? (ROSCO_BASS_TARGETS[s.string_num] || ROSCO_BASS_DROP_ANCHOR)
+      : (ROSCO_GUITAR_TARGETS[s.string_num] || 22.0);
+    const belowAndOutOfZone =
+      tensionClass(s.tension_lbs, s.string_num) !== 'tension-ok'
+      && s.tension_lbs < target;
+    const noteRow = belowAndOutOfZone
+      ? `<tr class="setup-table-note-row"><td colspan="4"><b>Heads up:</b> string size selected does not provide adequate tension. Action will most likely need to be higher than the spec.</td></tr>`
+      : '';
     return `<tr>
       <td class="col-str">${s.string_num}</td>
       <td class="col-gauge">${s.gauge}</td>
       <td class="col-spec">${formatInchesPretty(nutSpec.in)}"<span class="mm">${nutSpec.mm.toFixed(2)} mm</span></td>
       <td class="col-spec">${formatInchesPretty(actionSpec.in)}"<span class="mm">${actionSpec.mm.toFixed(2)} mm</span></td>
-    </tr>`;
+    </tr>${noteRow}`;
   }).join('');
 
   const mainTableHTML = `
@@ -2479,51 +2496,36 @@ function renderSetupSpecs() {
     </div>
   `;
 
-  // Header (always visible, the entire bar is the click target) + collapsible body.
-  // Print button stops event propagation so clicking it doesn't also toggle the panel.
+  // Two header states, swapped by CSS based on the `.open` class on #setup-specs.
+  // Collapsed: a single centered "Setup Specs for this Pack ▾" link.
+  // Expanded: the full header with pack title + Print specs button.
+  // The Print button stops event propagation so clicking it doesn't toggle the panel.
   inner.innerHTML = `
-    <div class="setup-specs-header" onclick="toggleSetupSpecs()" role="button" tabindex="0" aria-controls="setup-specs-body" title="Click to ${`open / close setup specs`}">
-      <div class="setup-specs-headtext">
-        <div class="setup-specs-eyebrow">Setup Specs for this Pack <span class="setup-specs-caret" aria-hidden="true">▾</span></div>
-        <h3 class="setup-specs-title">${tuningDisplay} · ${scale.toFixed(2)}" scale</h3>
-        <div class="setup-specs-sub">${instrumentLabel}</div>
+    <div class="setup-specs-header" onclick="toggleSetupSpecs()" role="button" tabindex="0" aria-controls="setup-specs-body">
+      <div class="setup-specs-collapsed-link">
+        Setup Specs for this Pack <span class="setup-specs-caret" aria-hidden="true">▾</span>
       </div>
-      <button type="button" class="setup-specs-printbtn" onclick="event.stopPropagation(); printSetupSpecs()" title="Print setup specs for bench use">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <polyline points="6 9 6 2 18 2 18 9"/>
-          <path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/>
-          <rect x="6" y="14" width="12" height="8"/>
-        </svg>
-        Print specs
-      </button>
+      <div class="setup-specs-expanded-row">
+        <div class="setup-specs-headtext">
+          <div class="setup-specs-eyebrow">Setup Specs for this Pack</div>
+          <h3 class="setup-specs-title">${tuningDisplay} · ${scale.toFixed(2)}" scale</h3>
+          <div class="setup-specs-sub">${instrumentLabel}</div>
+        </div>
+        <button type="button" class="setup-specs-printbtn" onclick="event.stopPropagation(); printSetupSpecs()" title="Print setup specs for bench use">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="6 9 6 2 18 2 18 9"/>
+            <path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/>
+            <rect x="6" y="14" width="12" height="8"/>
+          </svg>
+          Print specs
+        </button>
+      </div>
     </div>
     <div class="setup-specs-body" id="setup-specs-body">
       ${mainTableHTML}
       ${extrasHTML}
-      ${renderTensionAdvisories(strings)}
     </div>
   `;
-}
-
-function renderTensionAdvisories(strings) {
-  const isBass = isBassInstrument();
-  const items = strings.map(s => {
-    const cls = tensionClass(s.tension_lbs, s.string_num);
-    if (cls === 'tension-ok') return null;
-    const target = isBass
-      ? (ROSCO_BASS_TARGETS[s.string_num] || ROSCO_BASS_DROP_ANCHOR)
-      : (ROSCO_GUITAR_TARGETS[s.string_num] || 22.0);
-    const below = s.tension_lbs < target;
-    const advice = below
-      ? `below recommended — consider a heavier gauge for clearer attack and better feel.`
-      : `above recommended — consider a lighter gauge for easier bends and less neck stress.`;
-    return `<li><b>String ${s.string_num} (${s.gauge})</b> · ${s.tension_lbs.toFixed(1)} lbs vs ~${target} lbs target · ${advice}</li>`;
-  }).filter(Boolean);
-  if (!items.length) return '';
-  return `<div class="setup-advisories">
-    <h4>Heads up — strings outside the recommended tension zone</h4>
-    <ul>${items.join('')}</ul>
-  </div>`;
 }
 
 function printSetupSpecs() {
@@ -2564,10 +2566,9 @@ function printSetupSpecs() {
       .setup-relief-value{font-size:18px;font-weight:700;color:#111;margin:0;font-variant-numeric:tabular-nums;line-height:1.1}
       .setup-relief-value .unit{font-size:12px;color:#666;font-weight:500;margin-left:6px}
       .setup-relief-footnote{font-size:9px;color:#888;margin:4px 0 0}
-      .setup-advisories{margin-top:14px;padding:10px 12px;background:#fdf6e3;border:1px solid #f0d9a0;border-radius:6px;page-break-inside:avoid}
-      .setup-advisories h4{font-size:10px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:#9a6b00;margin:0 0 6px}
-      .setup-advisories ul{margin:0;padding-left:16px;font-size:10px;color:#5a4400;line-height:1.5}
-      .setup-advisories li b{color:#3d2e00}
+      .setup-table-note-row td{padding:5px 8px 6px;background:#fdf6e3;border-left:3px solid #f0d9a0;border-bottom:1px solid #ececec;color:#9a6b00;font-size:9px;font-style:italic;line-height:1.45}
+      .setup-table-note-row td b{font-style:normal;font-weight:700;color:#7a5400;margin-right:4px}
+      .setup-specs-collapsed-link{display:none}
       .print-footer{margin-top:18px;padding-top:10px;border-top:1px solid #ccc;font-size:9px;color:#888;text-align:center;letter-spacing:.06em}
     </style>
   </head><body>
