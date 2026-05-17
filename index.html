@@ -248,6 +248,13 @@ select:focus,input[type=text]:focus{border-color:#2cd5c4;outline:none}
 .setup-table-note-row td{padding:6px 10px 8px;background:#fdf6e3;border-left:3px solid #f0d9a0;border-bottom:1px solid #f4f4f4;color:#9a6b00;font-size:11px;font-style:italic;line-height:1.45}
 .setup-table-note-row td b{font-style:normal;font-weight:700;color:#7a5400;margin-right:4px}
 
+/* Order of Operations — sequence reminder at the bottom of the panel */
+.setup-order{margin-top:24px;padding-top:18px;border-top:1px solid #ececec;text-align:center}
+.setup-order-label{font-size:10px;font-weight:700;letter-spacing:.16em;text-transform:uppercase;color:#159385;margin-bottom:8px}
+.setup-order-steps{font-size:13px;color:#444;font-weight:600;letter-spacing:.01em;line-height:1.9}
+.setup-order-arrow{color:#bbb;margin:0 4px;font-weight:400}
+@media(max-width:599px){.setup-order-steps{font-size:12px}}
+
 /* Main per-string table (Nut Slot + Action combined) */
 .setup-main{margin:0}
 .setup-main-notes{margin-top:10px;font-size:12px;color:#777;line-height:1.55}
@@ -2534,6 +2541,16 @@ function renderSetupSpecs() {
     <div class="setup-specs-body" id="setup-specs-body">
       ${mainTableHTML}
       ${extrasHTML}
+      <div class="setup-order">
+        <div class="setup-order-label">Order of Operations</div>
+        <div class="setup-order-steps">
+          1. Relief <span class="setup-order-arrow">→</span>
+          2. Nut Slot Heights <span class="setup-order-arrow">→</span>
+          3. Action <span class="setup-order-arrow">→</span>
+          4. Intonation <span class="setup-order-arrow">→</span>
+          5. Pickup Height
+        </div>
+      </div>
     </div>
   `;
 }
@@ -2578,6 +2595,10 @@ function printSetupSpecs() {
       .setup-relief-footnote{font-size:9px;color:#888;margin:4px 0 0}
       .setup-table-note-row td{padding:5px 8px 6px;background:#fdf6e3;border-left:3px solid #f0d9a0;border-bottom:1px solid #ececec;color:#9a6b00;font-size:9px;font-style:italic;line-height:1.45}
       .setup-table-note-row td b{font-style:normal;font-weight:700;color:#7a5400;margin-right:4px}
+      .setup-order{margin-top:14px;padding-top:10px;border-top:1px solid #ccc;text-align:center;page-break-inside:avoid}
+      .setup-order-label{font-size:9px;font-weight:700;letter-spacing:.16em;text-transform:uppercase;color:#159385;margin-bottom:5px}
+      .setup-order-steps{font-size:10px;color:#444;font-weight:600}
+      .setup-order-arrow{color:#999;margin:0 3px;font-weight:400}
       .setup-specs-collapsed-link{display:none}
       .print-footer{margin-top:18px;padding-top:10px;border-top:1px solid #ccc;font-size:9px;color:#888;text-align:center;letter-spacing:.06em}
     </style>
