@@ -210,6 +210,78 @@ select:focus,input[type=text]:focus{border-color:#2cd5c4;outline:none}
 .scale-lookup-result{font-size:13px;margin-top:10px;padding:8px 10px;border-radius:4px;border:1px solid #2cd5c4;background:#e8f9f8;color:#1a1a1a;display:none}
 @media(max-width:599px){.scale-lookup-fields{grid-template-columns:1fr}}
 
+/* Setup Specs — per-pack mechanical setup reference. Sits between the calculator
+   grid and the dark Tensions section; light card so it visually separates from both. */
+.setup-specs{max-width:1132px;margin:24px auto;padding:0 24px}
+@media(max-width:1099px){.setup-specs{max-width:640px;padding:0 16px}}
+@media(max-width:599px){.setup-specs{padding:0 12px;margin:16px auto}}
+.setup-specs-card{background:#fff;border:1px solid #e0e0e0;border-radius:12px;padding:8px 28px;box-shadow:0 2px 8px rgba(0,0,0,.04);transition:padding .25s ease}
+.setup-specs.open .setup-specs-card{padding:18px 28px 22px}
+@media(max-width:599px){.setup-specs-card{padding:6px 14px;border-radius:8px}.setup-specs.open .setup-specs-card{padding:14px 14px 14px}}
+.setup-specs-header{cursor:pointer;padding:6px 0;margin:0;border-radius:6px;transition:background .15s ease,padding .25s ease,margin .25s ease,border-color .25s ease;outline:none;border-bottom:1px solid transparent}
+.setup-specs-header:hover{background:#f7f8fa}
+.setup-specs-header:focus-visible{box-shadow:0 0 0 2px #2cd5c4}
+.setup-specs.open .setup-specs-header{margin-bottom:14px;padding:0 0 14px;border-bottom-color:#ececec;border-radius:6px 6px 0 0}
+
+/* Collapsed state — just centered "Setup Specs for this Pack ▾" link. */
+.setup-specs-collapsed-link{display:block;text-align:center;color:#159385;font-size:12px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;padding:6px 0;transition:color .15s ease}
+.setup-specs-collapsed-link .setup-specs-caret{display:inline-block;margin-left:6px;font-size:10px;line-height:1}
+.setup-specs-header:hover .setup-specs-collapsed-link{color:#0e6e64}
+.setup-specs.open .setup-specs-collapsed-link{display:none}
+
+/* Expanded state — full header with pack title + Print specs button. */
+.setup-specs-expanded-row{display:none}
+.setup-specs.open .setup-specs-expanded-row{display:flex;align-items:flex-start;justify-content:space-between;gap:16px;padding:0 10px}
+.setup-specs-headtext{min-width:0;flex:1}
+.setup-specs-eyebrow{font-size:10px;font-weight:700;letter-spacing:.16em;text-transform:uppercase;color:#159385;margin-bottom:4px}
+.setup-specs-title{font-size:17px;font-weight:700;color:#111;letter-spacing:-.005em;margin:0 0 2px}
+.setup-specs-sub{font-size:12px;color:#777;letter-spacing:.01em}
+.setup-specs-printbtn{flex-shrink:0;background:#fff;color:#555;border:1px solid #d8d8d8;border-radius:5px;padding:7px 12px;font-size:10px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;cursor:pointer;display:flex;align-items:center;gap:6px;transition:all .12s;font-family:inherit;white-space:nowrap}
+.setup-specs-printbtn:hover{border-color:#2cd5c4;color:#2cd5c4}
+.setup-specs-printbtn svg{width:13px;height:13px}
+
+/* Collapsible body — hidden by default, opens on click */
+.setup-specs-body{max-height:0;overflow:hidden;opacity:0;transition:max-height .35s ease,opacity .25s ease}
+.setup-specs.open .setup-specs-body{max-height:4000px;opacity:1}
+
+/* Inline below-tension warning row inside the per-string table */
+.setup-table-note-row td{padding:6px 10px 8px;background:#fdf6e3;border-left:3px solid #f0d9a0;border-bottom:1px solid #f4f4f4;color:#9a6b00;font-size:11px;font-style:italic;line-height:1.45}
+.setup-table-note-row td b{font-style:normal;font-weight:700;color:#7a5400;margin-right:4px}
+
+/* Main per-string table (Nut Slot + Action combined) */
+.setup-main{margin:0}
+.setup-main-notes{margin-top:10px;font-size:12px;color:#777;line-height:1.55}
+.setup-main-notes p{margin:0 0 4px}
+.setup-main-notes p:last-child{margin-bottom:0}
+.setup-main-notes b{color:#444;font-weight:700}
+
+/* Tables shared by main + extras */
+.setup-table{width:100%;border-collapse:collapse;font-size:13px;margin:0}
+.setup-table th{text-align:left;font-size:10px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:#888;padding:6px 8px;border-bottom:1px solid #ececec}
+.setup-table td{padding:8px 8px;border-bottom:1px solid #f4f4f4;color:#333;font-variant-numeric:tabular-nums}
+.setup-table tr:last-child td{border-bottom:none}
+.setup-table .col-str{width:36px;color:#999;font-weight:700;text-align:center}
+.setup-table .col-gauge{width:64px;font-weight:700;color:#111}
+.setup-table .col-spec{font-weight:700;color:#111;text-align:right;white-space:nowrap}
+.setup-table .col-spec .mm{color:#666;font-weight:500;margin-left:6px;font-size:12px}
+.setup-table-compact{font-size:12px}
+.setup-table-compact th{font-size:9px;padding:5px 6px}
+.setup-table-compact td{padding:6px 6px}
+
+/* Compact extras row below the main table */
+.setup-extras{display:grid;grid-template-columns:1fr 1fr 1.4fr;gap:24px;margin-top:24px;padding-top:20px;border-top:1px solid #ececec}
+@media(max-width:899px){.setup-extras{grid-template-columns:1fr;gap:20px}}
+.setup-extra{min-width:0}
+.setup-extra h4{font-size:10px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:#159385;margin:0 0 8px}
+.setup-extra-note{font-size:11px;color:#888;line-height:1.5;margin:8px 0 0;font-style:italic}
+.setup-relief-value{font-size:22px;font-weight:700;color:#111;margin:0;font-variant-numeric:tabular-nums;line-height:1.1}
+.setup-relief-value .unit{font-size:13px;color:#666;font-weight:500;margin-left:6px}
+.setup-relief-footnote{font-size:11px;color:#888;margin:6px 0 0;letter-spacing:.01em}
+
+@media(max-width:599px){.setup-table{font-size:12px}.setup-table th,.setup-table td{padding:6px 4px}.setup-table .col-spec .mm{display:block;margin:2px 0 0;font-size:11px}}
+html.print-mode .setup-specs{display:none !important}
+@media print{.setup-specs{display:none !important}}
+
 /* When embedded in an iframe, hide the calculator's own header (the host
    site has its own), tighten the top spacing, and reset body min-height so
    the body height reflects content only (otherwise body min-height:100vh
@@ -591,6 +663,13 @@ html.print-mode .print-banner{display:block;background:#f4f5f7;border:1px solid 
   </div>
 </div>
 
+<!-- Setup Specs for this Pack — per-pack mechanical setup reference.
+     Rendered/refreshed by renderSetupSpecs() any time the pack changes.
+     Hidden when no pack is loaded. -->
+<section class="setup-specs" id="setup-specs" style="display:none">
+  <div class="setup-specs-card" id="setup-specs-inner"></div>
+</section>
+
 <!-- Rosco Suggested Tensions — client-facing reference chart -->
 <section class="tensions-info" id="rosco-tensions">
   <div class="tensions-info-card">
@@ -794,6 +873,112 @@ const BASS_STRINGS_BY_SCALE = {
     {g:"145", uw:0.00363204, part:"XB145SL"}
   ]
 };
+// ════════════════════════════════════════════
+// SETUP SPECS — per-pack mechanical setup reference
+// Transcribed from "Rosco Guitars Setup Spec Sheet - Feb 2026.pdf".
+// The PDF's "Action — Initial" step is intentionally omitted to simplify
+// the bench checklist; "Action — Final" becomes the single Action step.
+// ════════════════════════════════════════════
+const SETUP_SPECS = {
+  neckRelief: {
+    note: 'Capo @ 1 & 12 — Measure @ 6. Loosen the truss rod (counter-clockwise) for more relief.',
+    electric:  { in: 0.006, mm: 0.15 },
+    acoustic:  { in: 0.008, mm: 0.20 },
+    bass:      { in: 0.008, mm: 0.20 },
+    classical: { in: 0.010, mm: 0.25 },
+  },
+  nutSlot: {
+    note: 'Capo @ 3 — Measure @ 1. Use a file equal to or slightly larger than the string size. If a slot is too low, build up with nut powder + CA glue, or replace the nut.',
+    guitar: [
+      { strNum: 1, range: [0.009, 0.011],        in: 0.004, mm: 0.10 },
+      { strNum: 2, range: [0.011, 0.014],        in: 0.005, mm: 0.13 },
+      { strNum: 3, range: [0.016, 0.018],        in: 0.006, mm: 0.15, note: 'plain' },
+      { strNum: 4, range: [0.024, 0.026],        in: 0.007, mm: 0.18 },
+      { strNum: 5, range: [0.032, 0.036],        in: 0.008, mm: 0.20 },
+      { strNum: 6, range: [0.042, 0.046],        in: 0.009, mm: 0.23 },
+      { strNum: 7, range: [0.056, 0.060],        in: 0.010, mm: 0.25 },
+      { strNum: 8, range: [0.068, 0.074],        in: 0.011, mm: 0.28 },
+    ],
+    bass: [
+      { strNum: 1, range: [0.040, 0.045], in: 0.010, mm: 0.25 },
+      { strNum: 2, range: [0.055, 0.065], in: 0.011, mm: 0.28 },
+      { strNum: 3, range: [0.075, 0.085], in: 0.012, mm: 0.30 },
+      { strNum: 4, range: [0.095, 0.105], in: 0.013, mm: 0.33 },
+      { strNum: 5, range: [0.120, 0.130], in: 0.014, mm: 0.36 },
+      { strNum: 6, range: [0.145, 0.165], in: 0.015, mm: 0.38 },
+    ],
+  },
+  action: {
+    note: 'Open — Measure @ 12.',
+    guitar: [
+      { strNum: 1, range: [0.009, 0.011], in: 0.060,  mm: 1.52 },
+      { strNum: 2, range: [0.011, 0.014], in: 0.0625, mm: 1.59 },
+      { strNum: 3, range: [0.016, 0.018], in: 0.0625, mm: 1.59 },
+      { strNum: 4, range: [0.024, 0.026], in: 0.0625, mm: 1.59 },
+      { strNum: 5, range: [0.032, 0.036], in: 0.065,  mm: 1.65 },
+      { strNum: 6, range: [0.042, 0.046], in: 0.070,  mm: 1.78 },
+      { strNum: 7, range: [0.056, 0.060], in: 0.075,  mm: 1.91 },
+      { strNum: 8, range: [0.068, 0.074], in: 0.080,  mm: 2.03 },
+    ],
+    bass: [
+      { strNum: 1, range: [0.040, 0.045], in: 0.075, mm: 1.91 },
+      { strNum: 2, range: [0.055, 0.065], in: 0.080, mm: 2.03 },
+      { strNum: 3, range: [0.075, 0.085], in: 0.085, mm: 2.16 },
+      { strNum: 4, range: [0.095, 0.105], in: 0.090, mm: 2.29 },
+      { strNum: 5, range: [0.120, 0.130], in: 0.095, mm: 2.41 },
+      { strNum: 6, range: [0.145, 0.165], in: 0.100, mm: 2.54 },
+    ],
+  },
+  intonation: {
+    note: 'Check at the 12th fret harmonic vs the fretted note. Loosen the strings before moving saddles so set screws don’t scratch the bridge.',
+    rules: [
+      { rule: 'Sharp @ 12th', adjustment: 'Move saddle out →',  result: 'Longer scale' },
+      { rule: 'Flat @ 12th',  adjustment: '← Move saddle in',   result: 'Shorter scale' },
+    ],
+  },
+  pickupHeight: {
+    note: 'Starting points only — measured from the top of the pole piece to the bottom of the string, with the string fretted at the highest fret. How it sounds and feels to the player matters more than meeting the spec.',
+    // Grouped by shared spec — the PDF lists 6 pickup rows but most share one of
+    // two values, so the 3-group form is easier to scan than the per-pickup table.
+    groups: [
+      { pickups: 'Strat',                                bass: '.094" (2.38 mm)', treble: '.063" (1.59 mm)' },
+      { pickups: 'HB Bridge · Tele Neck',                bass: '.063" (1.59 mm)', treble: '.063" (1.59 mm)' },
+      { pickups: 'HB Neck · Tele Bridge · P / J Bass',   bass: '.094" (2.38 mm)', treble: '.094" (2.38 mm)' },
+    ],
+  },
+};
+
+// "9" -> .009, "10" -> .010, "045" -> .045, "145T" -> .145, "0085" -> .0085
+function gaugeToInches(gaugeStr) {
+  let s = String(gaugeStr);
+  if (s.endsWith('T')) s = s.slice(0, -1);
+  const d = s.match(/^\d+/);
+  if (!d) return null;
+  const div = d[0].length === 4 ? 10000 : 1000;
+  return parseInt(d[0], 10) / div;
+}
+
+// Look up the spec row that matches a chosen gauge (in inches). The PDF rows are
+// keyed by string-number-plus-typical-range, but for the in-app per-string table
+// we want the spec to follow the actual gauge the customer picked (e.g. a .052
+// low string on a 6-string Drop pack should get the spec for that thicker gauge,
+// not the spec the PDF associates with "string 6 .042-.046").
+// Falls back to the closest bucket by midpoint distance when no bucket contains
+// the gauge exactly — keeps every string showing a meaningful spec rather than "—".
+function specForGauge(gaugeInches, isBass, table) {
+  const rows = isBass ? table.bass : table.guitar;
+  if (gaugeInches == null) return rows[0];
+  const inRange = rows.find(r => gaugeInches >= r.range[0] && gaugeInches <= r.range[1]);
+  if (inRange) return inRange;
+  let best = rows[0], bestDist = Infinity;
+  for (const r of rows) {
+    const mid = (r.range[0] + r.range[1]) / 2;
+    const d = Math.abs(gaugeInches - mid);
+    if (d < bestDist) { bestDist = d; best = r; }
+  }
+  return best;
+}
+
 const GUITAR_SCALES = ['33.0','32.0','31.0','30.0','29.0','28.625','28.0','27.75','27.5','27.0','26.5','25.5','25.0','24.75','24.5','24.25','24.0'];
 const BASS_SCALES   = ['36.0','35.0','34.0','33.25','32.0','30.0'];
 function isBassInstrument() { return stringCount === 4 || stringCount === 5; }
@@ -2027,6 +2212,10 @@ function detectTuningName() {
 
 function renderLabel() {
   updatePackPrice();
+  // Keep the per-pack setup specs section in sync with every pack/gauge/note
+  // change. renderSetupSpecs() handles the no-pack case internally by hiding
+  // the section, so it lives above the early-return below.
+  renderSetupSpecs();
   // 2-up print only makes sense for guitar packs — two 6.75" bass labels
   // would need a 13.5" page, which doesn't fit on letter paper.
   const x2btn = document.getElementById('print-x2-btn');
@@ -2181,6 +2370,213 @@ function printLabel(copies) {
   pw.document.close();
   // Small delay to ensure images are loaded before print dialog
   setTimeout(() => { try { pw.print(); } catch(e) {} }, 600);
+}
+
+// ════════════════════════════════════════════
+// SETUP SPECS — per-pack mechanical setup reference
+// Section lives between the calculator and the dark Tensions block. Header is
+// always visible once a pack is loaded; body collapses by default and toggles
+// open when the user clicks the header.
+// Re-renders on every pack/gauge change via a call at the top of renderLabel().
+// ════════════════════════════════════════════
+
+function toggleSetupSpecs() {
+  document.getElementById('setup-specs').classList.toggle('open');
+}
+
+// Format an inches value the way guitar players read it: .060, .0625, .045, .011.
+function formatInchesPretty(inches) {
+  let s = inches.toString();
+  if (s.startsWith('0.')) {
+    let dec = s.slice(2);
+    while (dec.length < 3) dec += '0';
+    return '.' + dec;
+  }
+  return s;
+}
+
+function renderSetupSpecs() {
+  const section = document.getElementById('setup-specs');
+  if (!section) return;
+  if (!currentPack) { section.style.display = 'none'; return; }
+  section.style.display = '';
+
+  const inner = document.getElementById('setup-specs-inner');
+  const isBass = isBassInstrument();
+  const relief = isBass ? SETUP_SPECS.neckRelief.bass : SETUP_SPECS.neckRelief.electric;
+  // Sort thickest -> thinnest so spec rows match the visual order in the strings
+  // table above (which sorts the same way at index.html:1718).
+  const strings = [...currentPack.strings].sort((a,b) => b.string_num - a.string_num);
+
+  const scale = parseFloat(document.getElementById('scale-sel').value);
+  const overrideName = (document.getElementById('tuning-name-input')?.value || '').trim();
+  const tuningDisplay = overrideName
+    || (typeof detectTuningName === 'function' ? detectTuningName() : '')
+    || currentPack.tuning || 'Custom';
+  const instrumentLabel = isBass
+    ? `${stringCount}-string bass`
+    : `${stringCount}-string guitar`;
+
+  // Main per-string table — combined Nut Slot Height + Action, gauge-driven lookup.
+  // Strings whose tension reads below the Rosco target (and outside the OK band)
+  // get an inline note flagging that the action spec from the table is a floor —
+  // a slack string almost always needs higher action to avoid fret rattle.
+  const mainRowsHTML = strings.map(s => {
+    const chosenInches = gaugeToInches(s.gauge);
+    const nutSpec    = specForGauge(chosenInches, isBass, SETUP_SPECS.nutSlot);
+    const actionSpec = specForGauge(chosenInches, isBass, SETUP_SPECS.action);
+    const target = isBass
+      ? (ROSCO_BASS_TARGETS[s.string_num] || ROSCO_BASS_DROP_ANCHOR)
+      : (ROSCO_GUITAR_TARGETS[s.string_num] || 22.0);
+    const belowAndOutOfZone =
+      tensionClass(s.tension_lbs, s.string_num) !== 'tension-ok'
+      && s.tension_lbs < target;
+    const noteRow = belowAndOutOfZone
+      ? `<tr class="setup-table-note-row"><td colspan="4"><b>Heads up:</b> string size selected does not provide adequate tension. Action will most likely need to be higher than the spec.</td></tr>`
+      : '';
+    return `<tr>
+      <td class="col-str">${s.string_num}</td>
+      <td class="col-gauge">${s.gauge}</td>
+      <td class="col-spec">${formatInchesPretty(nutSpec.in)}"<span class="mm">${nutSpec.mm.toFixed(2)} mm</span></td>
+      <td class="col-spec">${formatInchesPretty(actionSpec.in)}"<span class="mm">${actionSpec.mm.toFixed(2)} mm</span></td>
+    </tr>${noteRow}`;
+  }).join('');
+
+  const mainTableHTML = `
+    <div class="setup-main">
+      <table class="setup-table">
+        <thead><tr>
+          <th class="col-str">#</th>
+          <th class="col-gauge">Gauge</th>
+          <th class="col-spec" style="text-align:right">Nut Slot Height</th>
+          <th class="col-spec" style="text-align:right">Action</th>
+        </tr></thead>
+        <tbody>${mainRowsHTML}</tbody>
+      </table>
+      <div class="setup-main-notes">
+        <p><b>Nut Slot:</b> ${SETUP_SPECS.nutSlot.note}</p>
+        <p><b>Action:</b> ${SETUP_SPECS.action.note}</p>
+      </div>
+    </div>
+  `;
+
+  // Compact supporting blocks below the main table.
+  const extrasHTML = `
+    <div class="setup-extras">
+      <div class="setup-extra">
+        <h4>Neck Relief</h4>
+        <p class="setup-relief-value">${formatInchesPretty(relief.in)}"<span class="unit">${relief.mm.toFixed(2)} mm</span></p>
+        ${isBass ? '' : `<p class="setup-relief-footnote">Acoustic: .008" / 0.20 mm · Classical: .010" / 0.25 mm</p>`}
+        <p class="setup-extra-note">${SETUP_SPECS.neckRelief.note}</p>
+      </div>
+      <div class="setup-extra">
+        <h4>Intonation</h4>
+        <table class="setup-table setup-table-compact">
+          <thead><tr><th>Rule</th><th>Adjustment</th><th>Result</th></tr></thead>
+          <tbody>
+            ${SETUP_SPECS.intonation.rules.map(r =>
+              `<tr><td style="font-weight:700;color:#111">${r.rule}</td><td>${r.adjustment}</td><td style="color:#888">${r.result}</td></tr>`
+            ).join('')}
+          </tbody>
+        </table>
+        <p class="setup-extra-note">${SETUP_SPECS.intonation.note}</p>
+      </div>
+      <div class="setup-extra">
+        <h4>Pickup Height</h4>
+        <table class="setup-table setup-table-compact">
+          <thead><tr><th>Pickup</th><th style="text-align:right">Bass</th><th style="text-align:right">Treble</th></tr></thead>
+          <tbody>
+            ${SETUP_SPECS.pickupHeight.groups.map(g =>
+              `<tr><td style="font-weight:700;color:#111">${g.pickups}</td><td style="text-align:right">${g.bass}</td><td style="text-align:right">${g.treble}</td></tr>`
+            ).join('')}
+          </tbody>
+        </table>
+        <p class="setup-extra-note">${SETUP_SPECS.pickupHeight.note}</p>
+      </div>
+    </div>
+  `;
+
+  // Two header states, swapped by CSS based on the `.open` class on #setup-specs.
+  // Collapsed: a single centered "Setup Specs for this Pack ▾" link.
+  // Expanded: the full header with pack title + Print specs button.
+  // The Print button stops event propagation so clicking it doesn't toggle the panel.
+  inner.innerHTML = `
+    <div class="setup-specs-header" onclick="toggleSetupSpecs()" role="button" tabindex="0" aria-controls="setup-specs-body">
+      <div class="setup-specs-collapsed-link">
+        Setup Specs for this Pack <span class="setup-specs-caret" aria-hidden="true">▾</span>
+      </div>
+      <div class="setup-specs-expanded-row">
+        <div class="setup-specs-headtext">
+          <div class="setup-specs-eyebrow">Setup Specs for this Pack</div>
+          <h3 class="setup-specs-title">${tuningDisplay} · ${scale.toFixed(2)}" scale</h3>
+          <div class="setup-specs-sub">${instrumentLabel}</div>
+        </div>
+        <button type="button" class="setup-specs-printbtn" onclick="event.stopPropagation(); printSetupSpecs()" title="Print setup specs for bench use">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="6 9 6 2 18 2 18 9"/>
+            <path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/>
+            <rect x="6" y="14" width="12" height="8"/>
+          </svg>
+          Print specs
+        </button>
+      </div>
+    </div>
+    <div class="setup-specs-body" id="setup-specs-body">
+      ${mainTableHTML}
+      ${extrasHTML}
+    </div>
+  `;
+}
+
+function printSetupSpecs() {
+  if (!currentPack) return;
+  renderSetupSpecs(); // make sure content reflects current state
+  const inner = document.getElementById('setup-specs-inner');
+  if (!inner) return;
+  const pw = window.open('', '_blank');
+  pw.document.write(`<!doctype html><html><head><title>Setup Specs — Rosco Custom Strings</title>
+    <meta charset="utf-8">
+    <style>
+      @page { size: letter; margin: 0.5in; }
+      *{box-sizing:border-box}
+      body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;color:#111;background:#fff;margin:0;padding:0;font-size:12px;line-height:1.4}
+      .setup-specs-header{display:flex;align-items:flex-start;justify-content:space-between;border-bottom:1px solid #ccc;padding-bottom:8px;margin-bottom:14px}
+      .setup-specs-eyebrow{font-size:9px;font-weight:700;letter-spacing:.18em;text-transform:uppercase;color:#159385;margin-bottom:4px}
+      .setup-specs-title{font-size:16px;font-weight:700;color:#111;margin:0 0 2px}
+      .setup-specs-sub{font-size:11px;color:#666}
+      .setup-specs-printbtn{display:none}
+      .setup-main{margin:0;page-break-inside:avoid}
+      .setup-main-notes{margin-top:8px;font-size:10px;color:#666;line-height:1.45}
+      .setup-main-notes p{margin:0 0 3px}
+      .setup-main-notes b{color:#333;font-weight:700}
+      .setup-table{width:100%;border-collapse:collapse;font-size:11px;margin:0}
+      .setup-table th{text-align:left;font-size:9px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:#666;padding:5px 6px;border-bottom:1px solid #ccc}
+      .setup-table td{padding:5px 6px;border-bottom:1px solid #ececec;color:#222;font-variant-numeric:tabular-nums}
+      .setup-table tr:last-child td{border-bottom:none}
+      .setup-table .col-str{width:28px;color:#888;font-weight:700;text-align:center}
+      .setup-table .col-gauge{width:50px;font-weight:700;color:#111}
+      .setup-table .col-spec{font-weight:700;color:#111;text-align:right;white-space:nowrap}
+      .setup-table .col-spec .mm{color:#666;font-weight:500;margin-left:6px;font-size:10px}
+      .setup-table-compact{font-size:10px}
+      .setup-table-compact th{font-size:8px;padding:4px 5px}
+      .setup-table-compact td{padding:4px 5px}
+      .setup-extras{display:grid;grid-template-columns:1fr 1fr 1.4fr;gap:18px;margin-top:18px;padding-top:14px;border-top:1px solid #ccc;page-break-inside:avoid}
+      .setup-extra h4{font-size:9px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:#159385;margin:0 0 6px}
+      .setup-extra-note{font-size:9px;color:#888;line-height:1.4;margin:6px 0 0;font-style:italic}
+      .setup-relief-value{font-size:18px;font-weight:700;color:#111;margin:0;font-variant-numeric:tabular-nums;line-height:1.1}
+      .setup-relief-value .unit{font-size:12px;color:#666;font-weight:500;margin-left:6px}
+      .setup-relief-footnote{font-size:9px;color:#888;margin:4px 0 0}
+      .setup-table-note-row td{padding:5px 8px 6px;background:#fdf6e3;border-left:3px solid #f0d9a0;border-bottom:1px solid #ececec;color:#9a6b00;font-size:9px;font-style:italic;line-height:1.45}
+      .setup-table-note-row td b{font-style:normal;font-weight:700;color:#7a5400;margin-right:4px}
+      .setup-specs-collapsed-link{display:none}
+      .print-footer{margin-top:18px;padding-top:10px;border-top:1px solid #ccc;font-size:9px;color:#888;text-align:center;letter-spacing:.06em}
+    </style>
+  </head><body>
+    ${inner.innerHTML}
+    <div class="print-footer">RoscoGuitars.com · per-pack setup spec reference</div>
+  </body></html>`);
+  pw.document.close();
+  setTimeout(() => { try { pw.print(); } catch(e){} }, 600);
 }
 
 // ════════════════════════════════════════════
