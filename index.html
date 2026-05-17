@@ -215,9 +215,9 @@ select:focus,input[type=text]:focus{border-color:#2cd5c4;outline:none}
 .setup-specs{max-width:1132px;margin:24px auto;padding:0 24px}
 @media(max-width:1099px){.setup-specs{max-width:640px;padding:0 16px}}
 @media(max-width:599px){.setup-specs{padding:0 12px;margin:16px auto}}
-.setup-specs-card{background:#fff;border:1px solid #e0e0e0;border-radius:12px;padding:26px 28px 24px;box-shadow:0 2px 8px rgba(0,0,0,.04)}
+.setup-specs-card{background:#fff;border:1px solid #e0e0e0;border-radius:12px;padding:24px 28px 22px;box-shadow:0 2px 8px rgba(0,0,0,.04)}
 @media(max-width:599px){.setup-specs-card{padding:18px 14px 14px;border-radius:8px}}
-.setup-specs-header{display:flex;align-items:flex-start;justify-content:space-between;gap:16px;margin-bottom:6px;padding-bottom:14px;border-bottom:1px solid #ececec}
+.setup-specs-header{display:flex;align-items:flex-start;justify-content:space-between;gap:16px;margin-bottom:14px;padding-bottom:14px;border-bottom:1px solid #ececec}
 .setup-specs-headtext{min-width:0}
 .setup-specs-eyebrow{font-size:9px;font-weight:700;letter-spacing:.18em;text-transform:uppercase;color:#159385;margin-bottom:6px}
 .setup-specs-title{font-size:18px;font-weight:700;color:#111;letter-spacing:-.005em;margin:0 0 4px}
@@ -225,34 +225,45 @@ select:focus,input[type=text]:focus{border-color:#2cd5c4;outline:none}
 .setup-specs-printbtn{flex-shrink:0;background:#fff;color:#555;border:1px solid #d8d8d8;border-radius:5px;padding:7px 12px;font-size:10px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;cursor:pointer;display:flex;align-items:center;gap:6px;transition:all .12s;font-family:inherit;white-space:nowrap}
 .setup-specs-printbtn:hover{border-color:#2cd5c4;color:#2cd5c4}
 .setup-specs-printbtn svg{width:13px;height:13px}
-.setup-step{margin-top:20px}
-.setup-step:first-of-type{margin-top:12px}
-.setup-step-head{display:flex;align-items:center;gap:10px;margin-bottom:8px}
-.setup-step-num{display:inline-flex;align-items:center;justify-content:center;width:22px;height:22px;border-radius:50%;background:#159385;color:#fff;font-size:11px;font-weight:700;flex-shrink:0;font-variant-numeric:tabular-nums}
-.setup-step-name{font-size:14px;font-weight:700;color:#111;letter-spacing:-.005em}
-.setup-step-body{margin-left:32px}
-@media(max-width:599px){.setup-step-body{margin-left:0}}
-.setup-step-note{font-size:12px;color:#777;line-height:1.5;margin:8px 0 0;font-style:italic}
-.setup-relief-value{font-size:24px;font-weight:700;color:#111;margin:0;font-variant-numeric:tabular-nums}
-.setup-relief-value .unit{font-size:14px;color:#666;font-weight:500;margin-left:6px}
-.setup-relief-footnote{font-size:11px;color:#888;margin:6px 0 0;letter-spacing:.01em}
+
+/* Main per-string table (Nut Slot + Action combined) */
+.setup-main{margin:0}
+.setup-main-notes{margin-top:10px;font-size:12px;color:#777;line-height:1.55}
+.setup-main-notes p{margin:0 0 4px}
+.setup-main-notes p:last-child{margin-bottom:0}
+.setup-main-notes b{color:#444;font-weight:700}
+
+/* Tables shared by main + extras */
 .setup-table{width:100%;border-collapse:collapse;font-size:13px;margin:0}
 .setup-table th{text-align:left;font-size:10px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:#888;padding:6px 8px;border-bottom:1px solid #ececec}
 .setup-table td{padding:8px 8px;border-bottom:1px solid #f4f4f4;color:#333;font-variant-numeric:tabular-nums}
 .setup-table tr:last-child td{border-bottom:none}
 .setup-table .col-str{width:36px;color:#999;font-weight:700;text-align:center}
 .setup-table .col-gauge{width:64px;font-weight:700;color:#111}
-.setup-table .col-range{color:#888;font-size:12px}
 .setup-table .col-spec{font-weight:700;color:#111;text-align:right;white-space:nowrap}
 .setup-table .col-spec .mm{color:#666;font-weight:500;margin-left:6px;font-size:12px}
-.setup-table .out-of-range .col-gauge{color:#b27600}
-.setup-table .out-of-range .col-gauge::after{content:' ⚠';color:#b27600;font-size:10px}
+.setup-table-compact{font-size:12px}
+.setup-table-compact th{font-size:9px;padding:5px 6px}
+.setup-table-compact td{padding:6px 6px}
+
+/* Compact extras row below the main table */
+.setup-extras{display:grid;grid-template-columns:1fr 1fr 1.4fr;gap:24px;margin-top:24px;padding-top:20px;border-top:1px solid #ececec}
+@media(max-width:899px){.setup-extras{grid-template-columns:1fr;gap:20px}}
+.setup-extra{min-width:0}
+.setup-extra h4{font-size:10px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:#159385;margin:0 0 8px}
+.setup-extra-note{font-size:11px;color:#888;line-height:1.5;margin:8px 0 0;font-style:italic}
+.setup-relief-value{font-size:22px;font-weight:700;color:#111;margin:0;font-variant-numeric:tabular-nums;line-height:1.1}
+.setup-relief-value .unit{font-size:13px;color:#666;font-weight:500;margin-left:6px}
+.setup-relief-footnote{font-size:11px;color:#888;margin:6px 0 0;letter-spacing:.01em}
+
+/* Tension advisories */
 .setup-advisories{margin-top:20px;padding:14px 16px;background:#fdf6e3;border:1px solid #f0d9a0;border-radius:8px}
 .setup-advisories h4{font-size:11px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:#9a6b00;margin:0 0 8px}
 .setup-advisories ul{margin:0;padding-left:18px;font-size:13px;color:#5a4400;line-height:1.55}
 .setup-advisories li{margin-bottom:4px}
 .setup-advisories li b{color:#3d2e00}
-@media(max-width:599px){.setup-specs-header{flex-direction:column;align-items:flex-start}.setup-table{font-size:12px}.setup-table th,.setup-table td{padding:6px 4px}.setup-table .col-range{font-size:11px}.setup-table .col-spec .mm{display:block;margin:2px 0 0;font-size:11px}}
+
+@media(max-width:599px){.setup-specs-header{flex-direction:column;align-items:flex-start}.setup-table{font-size:12px}.setup-table th,.setup-table td{padding:6px 4px}.setup-table .col-spec .mm{display:block;margin:2px 0 0;font-size:11px}}
 html.print-mode .setup-specs{display:none !important}
 @media print{.setup-specs{display:none !important}}
 
@@ -933,10 +944,25 @@ function gaugeToInches(gaugeStr) {
   return parseInt(d[0], 10) / div;
 }
 
-// Look up the PDF spec row for a given string number + spec table (nutSlot / action).
-function specRowFor(strNum, isBass, table) {
+// Look up the spec row that matches a chosen gauge (in inches). The PDF rows are
+// keyed by string-number-plus-typical-range, but for the in-app per-string table
+// we want the spec to follow the actual gauge the customer picked (e.g. a .052
+// low string on a 6-string Drop pack should get the spec for that thicker gauge,
+// not the spec the PDF associates with "string 6 .042-.046").
+// Falls back to the closest bucket by midpoint distance when no bucket contains
+// the gauge exactly — keeps every string showing a meaningful spec rather than "—".
+function specForGauge(gaugeInches, isBass, table) {
   const rows = isBass ? table.bass : table.guitar;
-  return rows.find(r => r.strNum === strNum) || null;
+  if (gaugeInches == null) return rows[0];
+  const inRange = rows.find(r => gaugeInches >= r.range[0] && gaugeInches <= r.range[1]);
+  if (inRange) return inRange;
+  let best = rows[0], bestDist = Infinity;
+  for (const r of rows) {
+    const mid = (r.range[0] + r.range[1]) / 2;
+    const d = Math.abs(gaugeInches - mid);
+    if (d < bestDist) { bestDist = d; best = r; }
+  }
+  return best;
 }
 
 const GUITAR_SCALES = ['33.0','32.0','31.0','30.0','29.0','28.625','28.0','27.75','27.5','27.0','26.5','25.5','25.0','24.75','24.5','24.25','24.0'];
@@ -2371,28 +2397,49 @@ function renderSetupSpecs() {
     ? `${stringCount}-string bass`
     : `${stringCount}-string guitar`;
 
-  const reliefHTML = `
-    <div class="setup-step">
-      <div class="setup-step-head">
-        <span class="setup-step-num">1</span>
-        <span class="setup-step-name">Neck Relief</span>
-      </div>
-      <div class="setup-step-body">
-        <p class="setup-relief-value">${formatInchesPretty(relief.in)}"<span class="unit">${relief.mm.toFixed(2)} mm</span></p>
-        ${isBass ? '' : `<p class="setup-relief-footnote">Acoustic: .008" / 0.20 mm · Classical: .010" / 0.25 mm</p>`}
-        <p class="setup-step-note">${SETUP_SPECS.neckRelief.note}</p>
+  // Main per-string table — combined Nut Slot Height + Action, gauge-driven lookup.
+  const mainRowsHTML = strings.map(s => {
+    const chosenInches = gaugeToInches(s.gauge);
+    const nutSpec    = specForGauge(chosenInches, isBass, SETUP_SPECS.nutSlot);
+    const actionSpec = specForGauge(chosenInches, isBass, SETUP_SPECS.action);
+    return `<tr>
+      <td class="col-str">${s.string_num}</td>
+      <td class="col-gauge">${s.gauge}</td>
+      <td class="col-spec">${formatInchesPretty(nutSpec.in)}"<span class="mm">${nutSpec.mm.toFixed(2)} mm</span></td>
+      <td class="col-spec">${formatInchesPretty(actionSpec.in)}"<span class="mm">${actionSpec.mm.toFixed(2)} mm</span></td>
+    </tr>`;
+  }).join('');
+
+  const mainTableHTML = `
+    <div class="setup-main">
+      <table class="setup-table">
+        <thead><tr>
+          <th class="col-str">#</th>
+          <th class="col-gauge">Gauge</th>
+          <th class="col-spec" style="text-align:right">Nut Slot Height</th>
+          <th class="col-spec" style="text-align:right">Action</th>
+        </tr></thead>
+        <tbody>${mainRowsHTML}</tbody>
+      </table>
+      <div class="setup-main-notes">
+        <p><b>Nut Slot:</b> ${SETUP_SPECS.nutSlot.note}</p>
+        <p><b>Action:</b> ${SETUP_SPECS.action.note}</p>
       </div>
     </div>
   `;
 
-  const intonationHTML = `
-    <div class="setup-step">
-      <div class="setup-step-head">
-        <span class="setup-step-num">4</span>
-        <span class="setup-step-name">Intonation</span>
+  // Compact supporting blocks below the main table.
+  const extrasHTML = `
+    <div class="setup-extras">
+      <div class="setup-extra">
+        <h4>Neck Relief</h4>
+        <p class="setup-relief-value">${formatInchesPretty(relief.in)}"<span class="unit">${relief.mm.toFixed(2)} mm</span></p>
+        ${isBass ? '' : `<p class="setup-relief-footnote">Acoustic: .008" / 0.20 mm · Classical: .010" / 0.25 mm</p>`}
+        <p class="setup-extra-note">${SETUP_SPECS.neckRelief.note}</p>
       </div>
-      <div class="setup-step-body">
-        <table class="setup-table">
+      <div class="setup-extra">
+        <h4>Intonation</h4>
+        <table class="setup-table setup-table-compact">
           <thead><tr><th>Rule</th><th>Adjustment</th><th>Result</th></tr></thead>
           <tbody>
             ${SETUP_SPECS.intonation.rules.map(r =>
@@ -2400,27 +2447,19 @@ function renderSetupSpecs() {
             ).join('')}
           </tbody>
         </table>
-        <p class="setup-step-note">${SETUP_SPECS.intonation.note}</p>
+        <p class="setup-extra-note">${SETUP_SPECS.intonation.note}</p>
       </div>
-    </div>
-  `;
-
-  const pickupHTML = `
-    <div class="setup-step">
-      <div class="setup-step-head">
-        <span class="setup-step-num">5</span>
-        <span class="setup-step-name">Pickup Height</span>
-      </div>
-      <div class="setup-step-body">
-        <table class="setup-table">
-          <thead><tr><th>Pickup</th><th style="text-align:right">Bass side</th><th style="text-align:right">Treble side</th></tr></thead>
+      <div class="setup-extra">
+        <h4>Pickup Height</h4>
+        <table class="setup-table setup-table-compact">
+          <thead><tr><th>Pickup</th><th style="text-align:right">Bass</th><th style="text-align:right">Treble</th></tr></thead>
           <tbody>
             ${SETUP_SPECS.pickupHeight.pickups.map(p =>
               `<tr><td style="font-weight:700;color:#111">${p.name}</td><td style="text-align:right">${p.bass}</td><td style="text-align:right">${p.treble}</td></tr>`
             ).join('')}
           </tbody>
         </table>
-        <p class="setup-step-note">${SETUP_SPECS.pickupHeight.note}</p>
+        <p class="setup-extra-note">${SETUP_SPECS.pickupHeight.note}</p>
       </div>
     </div>
   `;
@@ -2430,7 +2469,7 @@ function renderSetupSpecs() {
       <div class="setup-specs-headtext">
         <div class="setup-specs-eyebrow">Setup Specs for this Pack</div>
         <h3 class="setup-specs-title">${tuningDisplay} · ${scale.toFixed(2)}" scale</h3>
-        <div class="setup-specs-sub">${instrumentLabel} · perform in order shown</div>
+        <div class="setup-specs-sub">${instrumentLabel}</div>
       </div>
       <button type="button" class="setup-specs-printbtn" onclick="printSetupSpecs()" title="Print setup specs for bench use">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -2441,53 +2480,9 @@ function renderSetupSpecs() {
         Print specs
       </button>
     </div>
-    ${reliefHTML}
-    ${renderStepWithStringTable(2, 'Nut Slot Height', SETUP_SPECS.nutSlot, strings, isBass, 'Clearance')}
-    ${renderStepWithStringTable(3, 'Action', SETUP_SPECS.action, strings, isBass, 'Action')}
-    ${intonationHTML}
-    ${pickupHTML}
+    ${mainTableHTML}
+    ${extrasHTML}
     ${renderTensionAdvisories(strings)}
-  `;
-}
-
-function renderStepWithStringTable(stepNum, title, table, strings, isBass, specLabel) {
-  const rowsHTML = strings.map(s => {
-    const spec = specRowFor(s.string_num, isBass, table);
-    if (!spec) {
-      // String number outside the PDF's range (PDF covers 1-8 guitar, 1-6 bass).
-      return `<tr><td class="col-str">${s.string_num}</td><td class="col-gauge">${s.gauge}</td><td class="col-range">—</td><td class="col-spec">—</td></tr>`;
-    }
-    const chosenInches = gaugeToInches(s.gauge);
-    const outOfRange = chosenInches != null && (chosenInches < spec.range[0] || chosenInches > spec.range[1]);
-    const rangeStr = `${formatInchesPretty(spec.range[0])}–${formatInchesPretty(spec.range[1])}`;
-    const specStr = `${formatInchesPretty(spec.in)}"<span class="mm">${spec.mm.toFixed(2)} mm</span>`;
-    return `<tr${outOfRange ? ' class="out-of-range"' : ''}>
-      <td class="col-str">${s.string_num}</td>
-      <td class="col-gauge">${s.gauge}</td>
-      <td class="col-range">${rangeStr}</td>
-      <td class="col-spec">${specStr}</td>
-    </tr>`;
-  }).join('');
-
-  return `
-    <div class="setup-step">
-      <div class="setup-step-head">
-        <span class="setup-step-num">${stepNum}</span>
-        <span class="setup-step-name">${title}</span>
-      </div>
-      <div class="setup-step-body">
-        <table class="setup-table">
-          <thead><tr>
-            <th class="col-str">#</th>
-            <th class="col-gauge">Gauge</th>
-            <th class="col-range">Typical range</th>
-            <th class="col-spec" style="text-align:right">${specLabel}</th>
-          </tr></thead>
-          <tbody>${rowsHTML}</tbody>
-        </table>
-        <p class="setup-step-note">${table.note}</p>
-      </div>
-    </div>
   `;
 }
 
@@ -2529,26 +2524,27 @@ function printSetupSpecs() {
       .setup-specs-title{font-size:16px;font-weight:700;color:#111;margin:0 0 2px}
       .setup-specs-sub{font-size:11px;color:#666}
       .setup-specs-printbtn{display:none}
-      .setup-step{margin-top:14px;page-break-inside:avoid}
-      .setup-step-head{display:flex;align-items:center;gap:8px;margin-bottom:6px}
-      .setup-step-num{display:inline-flex;align-items:center;justify-content:center;width:18px;height:18px;border-radius:50%;background:#159385;color:#fff;font-size:10px;font-weight:700}
-      .setup-step-name{font-size:13px;font-weight:700;color:#111}
-      .setup-step-body{margin-left:26px}
-      .setup-step-note{font-size:10px;color:#666;line-height:1.4;margin:6px 0 0;font-style:italic}
-      .setup-relief-value{font-size:18px;font-weight:700;color:#111;margin:0;font-variant-numeric:tabular-nums}
-      .setup-relief-value .unit{font-size:12px;color:#666;font-weight:500;margin-left:6px}
-      .setup-relief-footnote{font-size:10px;color:#888;margin:4px 0 0}
+      .setup-main{margin:0;page-break-inside:avoid}
+      .setup-main-notes{margin-top:8px;font-size:10px;color:#666;line-height:1.45}
+      .setup-main-notes p{margin:0 0 3px}
+      .setup-main-notes b{color:#333;font-weight:700}
       .setup-table{width:100%;border-collapse:collapse;font-size:11px;margin:0}
       .setup-table th{text-align:left;font-size:9px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:#666;padding:5px 6px;border-bottom:1px solid #ccc}
       .setup-table td{padding:5px 6px;border-bottom:1px solid #ececec;color:#222;font-variant-numeric:tabular-nums}
       .setup-table tr:last-child td{border-bottom:none}
       .setup-table .col-str{width:28px;color:#888;font-weight:700;text-align:center}
       .setup-table .col-gauge{width:50px;font-weight:700;color:#111}
-      .setup-table .col-range{color:#888;font-size:10px}
       .setup-table .col-spec{font-weight:700;color:#111;text-align:right;white-space:nowrap}
       .setup-table .col-spec .mm{color:#666;font-weight:500;margin-left:6px;font-size:10px}
-      .setup-table .out-of-range .col-gauge{color:#b27600}
-      .setup-table .out-of-range .col-gauge::after{content:' ⚠';font-size:9px}
+      .setup-table-compact{font-size:10px}
+      .setup-table-compact th{font-size:8px;padding:4px 5px}
+      .setup-table-compact td{padding:4px 5px}
+      .setup-extras{display:grid;grid-template-columns:1fr 1fr 1.4fr;gap:18px;margin-top:18px;padding-top:14px;border-top:1px solid #ccc;page-break-inside:avoid}
+      .setup-extra h4{font-size:9px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:#159385;margin:0 0 6px}
+      .setup-extra-note{font-size:9px;color:#888;line-height:1.4;margin:6px 0 0;font-style:italic}
+      .setup-relief-value{font-size:18px;font-weight:700;color:#111;margin:0;font-variant-numeric:tabular-nums;line-height:1.1}
+      .setup-relief-value .unit{font-size:12px;color:#666;font-weight:500;margin-left:6px}
+      .setup-relief-footnote{font-size:9px;color:#888;margin:4px 0 0}
       .setup-advisories{margin-top:14px;padding:10px 12px;background:#fdf6e3;border:1px solid #f0d9a0;border-radius:6px;page-break-inside:avoid}
       .setup-advisories h4{font-size:10px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:#9a6b00;margin:0 0 6px}
       .setup-advisories ul{margin:0;padding-left:16px;font-size:10px;color:#5a4400;line-height:1.5}
