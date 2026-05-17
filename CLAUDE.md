@@ -30,21 +30,25 @@ Checklist when tunings change:
 
 Do this proactively whenever the change is made — don't wait for Clayton to ask.
 
-### Workflow: Claude edits, Clayton commits
-Claude edits files freely but **does NOT run `git commit`**. The Cowork bash sandbox can't reliably delete files in `.git/` (FUSE mount limitation), which means git lock files (`.git/index.lock`) accumulate and break commits in flight. After several attempts to work around this, the cleanest pattern is:
+### Workflow: Claude commits + pushes; Clayton reviews on the PR page
+Sessions run in a per-session git worktree under `.claude/worktrees/<name>/` on branch `claude/<name>` (Claude Desktop creates this automatically at session start). Claude edits, commits, and pushes that branch. Clayton reviews the diff on the GitHub PR page and merges when satisfied.
 
-1. Claude edits files. Multiple edits in one task are fine.
-2. Claude tells Clayton when changes are ready to commit, and provides a suggested conventional-commit-style message (e.g. `feat: …`, `fix: …`, `style: …`, `chore: …`).
-3. Clayton reviews the diffs in GitHub Desktop and commits + pushes from there. The "review step" doubles as a safety net (GitHub Desktop has caught a few silent file-truncation bugs from the sandbox-side write tools).
-4. For Worker code in `worker/`, Clayton additionally redeploys via the Cloudflare dashboard or `wrangler deploy` after pushing.
+1. Claude edits files freely. Multiple edits per logical task are fine.
+2. When a coherent chunk is done, Claude stages, commits (conventional commit style: `feat:`, `fix:`, `chore:`, `docs:`, etc.), and pushes the worktree branch. Each commit message ends with the standard `Co-Authored-By: Claude …` footer.
+3. Claude gives Clayton a direct PR URL: `https://github.com/claytonbeaubien/rosco-custom-strings/pull/new/claude/<branch>`. Clayton reviews on github.com and merges.
+4. For Worker code in `worker/`, after the PR merges Clayton additionally redeploys via the Cloudflare dashboard or `wrangler deploy`.
 
-If a session runs into a stale `.git/index.lock`, Clayton clears it from PowerShell:
+After the PR merges, cleanup (Claude can do this from any worktree of the repo, or Clayton can run it locally):
 ```
-Remove-Item C:\Users\Claytron\RoscoAI\rosco_projects\rosco-custom-strings\.git\index.lock -Force
+git worktree remove .claude/worktrees/<name>
+git branch -D claude/<name>
+git push origin --delete claude/<name>
 ```
-(close GitHub Desktop first if it's open; its auto-fetcher has been the most likely culprit for recreating the lock).
+Also delete the matching entry from `C:\Users\Claytron\AppData\Roaming\Claude\git-worktrees.json` (close Claude Desktop first when editing that file).
 
-Note: GitHub Desktop's "Automatically fetch updated changes" is OFF for this repo — leave it off. Manual Fetch via the button works fine and avoids the lock-race issue.
+Why this changed: earlier sessions ran in the Cowork bash sandbox with a FUSE limitation that left `.git/index.lock` files behind, so Clayton committed via GitHub Desktop and Claude didn't touch git. Windows Claude Desktop with worktree isolation doesn't hit that issue, and the worktree makes GitHub Desktop's view of `main` blind to in-progress changes — pushing the worktree branch and reviewing on the PR page is now the clean flow.
+
+Note: GitHub Desktop's "Automatically fetch updated changes" stays OFF for this repo.
 
 ## Owner
 Clayton — Rosco Guitars Ltd
