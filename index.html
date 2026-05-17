@@ -1421,7 +1421,17 @@ function calcPackTotal() {
   const missing = [];
   currentPack.strings.forEach(s => {
     const part = getStringPartCode(s, scale);
-    const entry = part ? PRICE_CATALOGUE[part] : null;
+    let entry = part ? PRICE_CATALOGUE[part] : null;
+    // D'Addario's short-scale (XB*S) and medium-scale (XB*M) singles only cover
+    // ~.065 and up; .045 / .050 etc. aren't sold individually. Same winding as
+    // the XL Long Scale (XLB) equivalent — fall back to that price.
+    if (isBassInstrument() && (!entry || typeof entry.net_cost !== 'number')) {
+      const gs = String(s.gauge);
+      const taper = gs.endsWith('T') ? 'T' : '';
+      const num = taper ? gs.slice(0, -1) : gs;
+      const fallback = PRICE_CATALOGUE['XLB' + num.padStart(3, '0') + taper];
+      if (fallback && typeof fallback.net_cost === 'number') entry = fallback;
+    }
     if (!entry || typeof entry.net_cost !== 'number') {
       missing.push({ string_num: s.string_num, gauge: s.gauge, part });
       return;
