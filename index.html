@@ -215,16 +215,26 @@ select:focus,input[type=text]:focus{border-color:#2cd5c4;outline:none}
 .setup-specs{max-width:1132px;margin:24px auto;padding:0 24px}
 @media(max-width:1099px){.setup-specs{max-width:640px;padding:0 16px}}
 @media(max-width:599px){.setup-specs{padding:0 12px;margin:16px auto}}
-.setup-specs-card{background:#fff;border:1px solid #e0e0e0;border-radius:12px;padding:24px 28px 22px;box-shadow:0 2px 8px rgba(0,0,0,.04)}
-@media(max-width:599px){.setup-specs-card{padding:18px 14px 14px;border-radius:8px}}
-.setup-specs-header{display:flex;align-items:flex-start;justify-content:space-between;gap:16px;margin-bottom:14px;padding-bottom:14px;border-bottom:1px solid #ececec}
-.setup-specs-headtext{min-width:0}
-.setup-specs-eyebrow{font-size:9px;font-weight:700;letter-spacing:.18em;text-transform:uppercase;color:#159385;margin-bottom:6px}
-.setup-specs-title{font-size:18px;font-weight:700;color:#111;letter-spacing:-.005em;margin:0 0 4px}
+.setup-specs-card{background:#fff;border:1px solid #e0e0e0;border-radius:12px;padding:18px 28px;box-shadow:0 2px 8px rgba(0,0,0,.04);transition:padding .25s ease}
+.setup-specs.open .setup-specs-card{padding:18px 28px 22px}
+@media(max-width:599px){.setup-specs-card{padding:14px;border-radius:8px}.setup-specs.open .setup-specs-card{padding:14px 14px 14px}}
+.setup-specs-header{display:flex;align-items:center;justify-content:space-between;gap:16px;cursor:pointer;padding:6px 0;margin:0;border-radius:6px;transition:background .15s ease;outline:none}
+.setup-specs-header:hover{background:#f7f8fa}
+.setup-specs-header:focus-visible{box-shadow:0 0 0 2px #2cd5c4}
+.setup-specs.open .setup-specs-header{margin-bottom:14px;padding-bottom:14px;border-bottom:1px solid #ececec;border-radius:6px 6px 0 0}
+.setup-specs-headtext{min-width:0;flex:1;padding:0 10px}
+.setup-specs-eyebrow{font-size:10px;font-weight:700;letter-spacing:.16em;text-transform:uppercase;color:#159385;margin-bottom:4px;display:flex;align-items:center;gap:6px}
+.setup-specs-caret{display:inline-block;font-size:12px;line-height:1;color:#159385;transition:transform .25s ease;transform:rotate(-90deg)}
+.setup-specs.open .setup-specs-caret{transform:rotate(0deg)}
+.setup-specs-title{font-size:17px;font-weight:700;color:#111;letter-spacing:-.005em;margin:0 0 2px}
 .setup-specs-sub{font-size:12px;color:#777;letter-spacing:.01em}
-.setup-specs-printbtn{flex-shrink:0;background:#fff;color:#555;border:1px solid #d8d8d8;border-radius:5px;padding:7px 12px;font-size:10px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;cursor:pointer;display:flex;align-items:center;gap:6px;transition:all .12s;font-family:inherit;white-space:nowrap}
+.setup-specs-printbtn{flex-shrink:0;background:#fff;color:#555;border:1px solid #d8d8d8;border-radius:5px;padding:7px 12px;font-size:10px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;cursor:pointer;display:flex;align-items:center;gap:6px;transition:all .12s;font-family:inherit;white-space:nowrap;margin-right:6px}
 .setup-specs-printbtn:hover{border-color:#2cd5c4;color:#2cd5c4}
 .setup-specs-printbtn svg{width:13px;height:13px}
+
+/* Collapsible body — hidden by default, opens on click */
+.setup-specs-body{max-height:0;overflow:hidden;opacity:0;transition:max-height .35s ease,opacity .25s ease}
+.setup-specs.open .setup-specs-body{max-height:4000px;opacity:1}
 
 /* Main per-string table (Nut Slot + Action combined) */
 .setup-main{margin:0}
@@ -917,19 +927,18 @@ const SETUP_SPECS = {
   intonation: {
     note: 'Check at the 12th fret harmonic vs the fretted note. Loosen the strings before moving saddles so set screws don’t scratch the bridge.',
     rules: [
-      { rule: 'Sharp @ 12th', adjustment: 'Move saddle out', result: 'Longer scale' },
-      { rule: 'Flat @ 12th',  adjustment: 'Move saddle in',  result: 'Shorter scale' },
+      { rule: 'Sharp @ 12th', adjustment: 'Move saddle out →',  result: 'Longer scale' },
+      { rule: 'Flat @ 12th',  adjustment: '← Move saddle in',   result: 'Shorter scale' },
     ],
   },
   pickupHeight: {
     note: 'Starting points only — measured from the top of the pole piece to the bottom of the string, with the string fretted at the highest fret. How it sounds and feels to the player matters more than meeting the spec.',
-    pickups: [
-      { name: 'Strat',       bass: '0.094" (2.38 mm)', treble: '0.063" (1.59 mm)' },
-      { name: 'HB Bridge',   bass: '0.063" (1.59 mm)', treble: '0.063" (1.59 mm) (baseline)' },
-      { name: 'HB Neck',     bass: '0.094" (2.38 mm)', treble: '0.094" (2.38 mm) (baseline)' },
-      { name: 'Tele Bridge', bass: '0.094" (2.38 mm)', treble: '0.094" (2.38 mm)' },
-      { name: 'Tele Neck',   bass: '0.063" (1.59 mm)', treble: '0.063" (1.59 mm)' },
-      { name: 'P / J Bass',  bass: '0.094" (2.38 mm)', treble: '0.094" (2.38 mm)' },
+    // Grouped by shared spec — the PDF lists 6 pickup rows but most share one of
+    // two values, so the 3-group form is easier to scan than the per-pickup table.
+    groups: [
+      { pickups: 'Strat',                                bass: '.094" (2.38 mm)', treble: '.063" (1.59 mm)' },
+      { pickups: 'HB Bridge · Tele Neck',                bass: '.063" (1.59 mm)', treble: '.063" (1.59 mm)' },
+      { pickups: 'HB Neck · Tele Bridge · P / J Bass',   bass: '.094" (2.38 mm)', treble: '.094" (2.38 mm)' },
     ],
   },
 };
@@ -2360,9 +2369,15 @@ function printLabel(copies) {
 
 // ════════════════════════════════════════════
 // SETUP SPECS — per-pack mechanical setup reference
-// Always-visible section between the calculator and the dark Tensions block.
-// Re-renders on every pack/gauge change via a call at the bottom of renderLabel().
+// Section lives between the calculator and the dark Tensions block. Header is
+// always visible once a pack is loaded; body collapses by default and toggles
+// open when the user clicks the header.
+// Re-renders on every pack/gauge change via a call at the top of renderLabel().
 // ════════════════════════════════════════════
+
+function toggleSetupSpecs() {
+  document.getElementById('setup-specs').classList.toggle('open');
+}
 
 // Format an inches value the way guitar players read it: .060, .0625, .045, .011.
 function formatInchesPretty(inches) {
@@ -2454,8 +2469,8 @@ function renderSetupSpecs() {
         <table class="setup-table setup-table-compact">
           <thead><tr><th>Pickup</th><th style="text-align:right">Bass</th><th style="text-align:right">Treble</th></tr></thead>
           <tbody>
-            ${SETUP_SPECS.pickupHeight.pickups.map(p =>
-              `<tr><td style="font-weight:700;color:#111">${p.name}</td><td style="text-align:right">${p.bass}</td><td style="text-align:right">${p.treble}</td></tr>`
+            ${SETUP_SPECS.pickupHeight.groups.map(g =>
+              `<tr><td style="font-weight:700;color:#111">${g.pickups}</td><td style="text-align:right">${g.bass}</td><td style="text-align:right">${g.treble}</td></tr>`
             ).join('')}
           </tbody>
         </table>
@@ -2464,14 +2479,16 @@ function renderSetupSpecs() {
     </div>
   `;
 
+  // Header (always visible, the entire bar is the click target) + collapsible body.
+  // Print button stops event propagation so clicking it doesn't also toggle the panel.
   inner.innerHTML = `
-    <div class="setup-specs-header">
+    <div class="setup-specs-header" onclick="toggleSetupSpecs()" role="button" tabindex="0" aria-controls="setup-specs-body" title="Click to ${`open / close setup specs`}">
       <div class="setup-specs-headtext">
-        <div class="setup-specs-eyebrow">Setup Specs for this Pack</div>
+        <div class="setup-specs-eyebrow">Setup Specs for this Pack <span class="setup-specs-caret" aria-hidden="true">▾</span></div>
         <h3 class="setup-specs-title">${tuningDisplay} · ${scale.toFixed(2)}" scale</h3>
         <div class="setup-specs-sub">${instrumentLabel}</div>
       </div>
-      <button type="button" class="setup-specs-printbtn" onclick="printSetupSpecs()" title="Print setup specs for bench use">
+      <button type="button" class="setup-specs-printbtn" onclick="event.stopPropagation(); printSetupSpecs()" title="Print setup specs for bench use">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
           <polyline points="6 9 6 2 18 2 18 9"/>
           <path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/>
@@ -2480,9 +2497,11 @@ function renderSetupSpecs() {
         Print specs
       </button>
     </div>
-    ${mainTableHTML}
-    ${extrasHTML}
-    ${renderTensionAdvisories(strings)}
+    <div class="setup-specs-body" id="setup-specs-body">
+      ${mainTableHTML}
+      ${extrasHTML}
+      ${renderTensionAdvisories(strings)}
+    </div>
   `;
 }
 
