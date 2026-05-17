@@ -283,7 +283,6 @@ select:focus,input[type=text]:focus{border-color:#2cd5c4;outline:none}
 .setup-extra-note{font-size:11px;color:#888;line-height:1.5;margin:8px 0 0;font-style:italic}
 .setup-relief-value{font-size:22px;font-weight:700;color:#111;margin:0;font-variant-numeric:tabular-nums;line-height:1.1}
 .setup-relief-value .unit{font-size:13px;color:#666;font-weight:500;margin-left:6px}
-.setup-relief-footnote{font-size:11px;color:#888;margin:6px 0 0;letter-spacing:.01em}
 
 @media(max-width:599px){.setup-table{font-size:12px}.setup-table th,.setup-table td{padding:6px 4px}.setup-table .col-spec .mm{display:block;margin:2px 0 0;font-size:11px}}
 html.print-mode .setup-specs{display:none !important}
@@ -2483,7 +2482,6 @@ function renderSetupSpecs() {
       <div class="setup-extra">
         <h4>Neck Relief</h4>
         <p class="setup-relief-value">${formatInchesPretty(relief.in)}"<span class="unit">${relief.mm.toFixed(2)} mm</span></p>
-        ${isBass ? '' : `<p class="setup-relief-footnote">Acoustic: .008" / 0.20 mm · Classical: .010" / 0.25 mm</p>`}
         <p class="setup-extra-note">${SETUP_SPECS.neckRelief.note}</p>
       </div>
       <div class="setup-extra">
@@ -2592,7 +2590,6 @@ function printSetupSpecs() {
       .setup-extra-note{font-size:9px;color:#888;line-height:1.4;margin:6px 0 0;font-style:italic}
       .setup-relief-value{font-size:18px;font-weight:700;color:#111;margin:0;font-variant-numeric:tabular-nums;line-height:1.1}
       .setup-relief-value .unit{font-size:12px;color:#666;font-weight:500;margin-left:6px}
-      .setup-relief-footnote{font-size:9px;color:#888;margin:4px 0 0}
       .setup-table-note-row td{padding:5px 8px 6px;background:#fdf6e3;border-left:3px solid #f0d9a0;border-bottom:1px solid #ececec;color:#9a6b00;font-size:9px;font-style:italic;line-height:1.45}
       .setup-table-note-row td b{font-style:normal;font-weight:700;color:#7a5400;margin-right:4px}
       .setup-order{margin-top:14px;padding-top:10px;border-top:1px solid #ccc;text-align:center;page-break-inside:avoid}
