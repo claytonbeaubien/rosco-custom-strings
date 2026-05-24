@@ -365,6 +365,13 @@ async function handleCreateDraftOrder(request, env, origin) {
     .map((s) => s.type || '')
     .filter(Boolean)
     .join(' / ');
+  // D'Addario part number per string — used to match Airtable String
+  // Inventory exactly when the order is fulfilled. Sent by the calculator
+  // as `part_number` on each string (the prod_code that priced it).
+  const partList = pack.strings
+    .map((s) => s.part_number || '')
+    .filter(Boolean)
+    .join(' / ');
 
   const estGrams = estimatePackWeightGrams(pack.strings);
   const properties = [
@@ -380,6 +387,13 @@ async function handleCreateDraftOrder(request, env, origin) {
   // surfacing the number here lets Clayton type it into the label dialog
   // manually if needed.
   properties.push({ name: 'Weight (est.)', value: `${estGrams} g` });
+  // D'Addario part numbers — merchant-only. The underscore prefix hides this
+  // from the customer's cart, checkout, and order confirmation (same trick as
+  // `_Pack Label` below); it stays visible in the Shopify admin order and is
+  // read by the Make.com automation to deduct Airtable String Inventory.
+  if (partList) {
+    properties.push({ name: '_Part Numbers (low to high)', value: partList });
+  }
 
   // Deep-link to the calculator in "print mode" — encodes the pack spec
   // into a URL Clayton can click from the order to render and print the
@@ -397,6 +411,7 @@ async function handleCreateDraftOrder(request, env, origin) {
         g: s.gauge_display || (typeof s.gauge === 'number' ? String(s.gauge) : s.gauge),
         ty: s.type || 'wound',
         t: s.tension_lbs,
+        pn: s.part_number || '',
       })),
       // Label-info text the customer entered — drives the banner.
       n: pack.label_name || '',
