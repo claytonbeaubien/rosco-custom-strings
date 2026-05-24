@@ -1338,7 +1338,7 @@ const WORKER_BASE_URL = 'https://rosco-scale-lookup.clayton-18a.workers.dev';
 // what the customer sees in the modal.
 function snapshotPackForCheckout() {
   if (!currentPack) return null;
-  const { total, priced, missing } = calcPackTotal();
+  const { total, priced, missing, parts } = calcPackTotal();
   if (priced === 0) return null;
   if (missing.length > 0) return { _missing: missing };
 
@@ -1363,6 +1363,7 @@ function snapshotPackForCheckout() {
     gauge: s.gauge,
     gauge_display: s.gauge.toString(),
     type: s.type || '',
+    part_number: parts[s.string_num] || null,
     tension_lbs: typeof s.tension_lbs === 'number'
       ? Math.round(s.tension_lbs * 10) / 10
       : null,
@@ -1606,10 +1607,12 @@ function formatMoney(x) {
 }
 
 function calcPackTotal() {
-  if (!currentPack || !PRICE_CATALOGUE) return { total: 0, priced: 0, missing: [] };
+  if (!currentPack || !PRICE_CATALOGUE) return { total: 0, priced: 0, missing: [], parts: {} };
   const scale = parseFloat(document.getElementById('scale-sel').value);
   let total = 0, priced = 0;
   const missing = [];
+  // string_num -> D'Addario part number (prod_code) that priced this string.
+  const parts = {};
   currentPack.strings.forEach(s => {
     const part = getStringPartCode(s, scale);
     let entry = part ? PRICE_CATALOGUE[part] : null;
@@ -1627,11 +1630,15 @@ function calcPackTotal() {
       missing.push({ string_num: s.string_num, gauge: s.gauge, part });
       return;
     }
+    // Canonical D'Addario catalogue code that actually priced this string —
+    // carried through checkout so the order (and Airtable inventory) can
+    // match on an exact part number instead of an ambiguous gauge.
+    parts[s.string_num] = entry.prod_code;
     const markup = PRICE_MARKUP[entry.instrument] || PRICE_MARKUP_DEFAULT;
     total += roundToNickel(entry.net_cost * markup);
     priced++;
   });
-  return { total, priced, missing };
+  return { total, priced, missing, parts };
 }
 
 function updatePackPrice() {
