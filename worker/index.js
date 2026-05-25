@@ -37,15 +37,12 @@ const SHOPIFY_SHOP_DOMAIN = 'jaubtg-0b.myshopify.com';
 // version for ~12 months. See https://shopify.dev/docs/api/usage/versioning
 const SHOPIFY_API_VERSION = '2026-04';
 
-// Variant ID of the single "Custom String Pack" Shopify product. Every
-// draft order created here points its line item at this variant so the
-// order shows the product's branded thumbnail in admin + customer email
-// instead of an empty placeholder. The line item still overrides `title`
-// (per-pack, e.g. "Custom String Pack — Drop C 25.50\"") and `price` (per
-// the calculator's computed total) — both fields take precedence over the
-// variant's defaults on draft order line items. Inventory tracking on the
-// variant is intentionally OFF — Airtable's String Inventory + Make
-// scenario is the source of truth for actual string stock.
+// Variant ID of the "Custom String Pack" Shopify product. NOT currently
+// wired into the line item below — see comment there for why. Kept here
+// so we don't lose track of the variant we created (in case we revisit
+// the thumbnail-via-variant approach using a different price strategy).
+// gid form: gid://shopify/ProductVariant/51857357439272
+// eslint-disable-next-line no-unused-vars
 const CUSTOM_PACK_VARIANT_ID = 51857357439272;
 
 // Anthropic model. Sonnet 4.5 — significantly sharper than Haiku on niche
@@ -631,12 +628,17 @@ async function handleCreateDraftOrder(request, env, origin) {
     draft_order: {
       line_items: [
         {
-          // Point at the "Custom String Pack" product variant so the order
-          // line item shows the product's branded thumbnail in admin + on
-          // the customer's order confirmation, instead of an empty image
-          // placeholder. Title and price below still override the variant's
-          // defaults so each pack reads as its own configuration.
-          variant_id: CUSTOM_PACK_VARIANT_ID,
+          // NOTE: we tried setting `variant_id: CUSTOM_PACK_VARIANT_ID` here
+          // to get a branded thumbnail on the line item, but Shopify's
+          // REST Draft Order API silently inherits the variant's price
+          // ($0.00 on our placeholder variant) and ignores the `price`
+          // override below — every order came through at $0. Reverted to a
+          // pure custom line item so per-pack pricing works again. The
+          // empty image placeholder on the order summary returns until we
+          // sort the right pattern (likely: update variant price on the
+          // fly via GraphQL `productVariantsBulkUpdate` before creating
+          // the draft order, or switch to GraphQL DraftOrderCreate which
+          // honors `originalUnitPrice` on variant line items).
           title,
           price: pack.price.toFixed(2),
           quantity: qty,
