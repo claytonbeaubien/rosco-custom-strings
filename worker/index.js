@@ -37,6 +37,17 @@ const SHOPIFY_SHOP_DOMAIN = 'jaubtg-0b.myshopify.com';
 // version for ~12 months. See https://shopify.dev/docs/api/usage/versioning
 const SHOPIFY_API_VERSION = '2026-04';
 
+// Variant ID of the single "Custom String Pack" Shopify product. Every
+// draft order created here points its line item at this variant so the
+// order shows the product's branded thumbnail in admin + customer email
+// instead of an empty placeholder. The line item still overrides `title`
+// (per-pack, e.g. "Custom String Pack — Drop C 25.50\"") and `price` (per
+// the calculator's computed total) — both fields take precedence over the
+// variant's defaults on draft order line items. Inventory tracking on the
+// variant is intentionally OFF — Airtable's String Inventory + Make
+// scenario is the source of truth for actual string stock.
+const CUSTOM_PACK_VARIANT_ID = 51857357439272;
+
 // Anthropic model. Sonnet 4.5 — significantly sharper than Haiku on niche
 // instrument questions (e.g. recognizing a Fender Jazz Bass as a 34" long-
 // scale bass, not a guitar). Combined with the web_search tool below, Sonnet
@@ -257,6 +268,172 @@ async function handleScaleLookup(request, env, origin) {
   return jsonResponse({ scale_length, string_count, note }, 200, origin);
 }
 
+// ---- Shopify Files: upload pack label image ---------------------------
+
+/**
+ * Uploads the calculator's rendered label canvas (a base64 PNG data URL
+ * captured at click-time) to Shopify Files and returns the public CDN URL.
+ *
+ * Flow (three GraphQL Admin API calls):
+ *   1. `stagedUploadsCreate` — Shopify hands back a one-time Google Cloud
+ *      Storage URL + form parameters to upload the bytes to.
+ *   2. POST the binary to that staged URL as multipart/form-data.
+ *   3. `fileCreate` — Shopify imports the staged file into the merchant's
+ *      Files library. The response usually carries `image.url` immediately
+ *      (Shopify pre-processes small PNGs fast); if not, poll once or twice.
+ *
+ * Returns null on any failure — the calling code treats the image as
+ * optional so a failed upload doesn't block the order from being created.
+ * If null, the Shopify order just won't carry the `Pack Label` property.
+ */
+async function uploadPackLabelToShopify(base64DataUrl, accessToken) {
+  if (typeof base64DataUrl !== 'string' || !base64DataUrl.startsWith('data:image/')) {
+    return null;
+  }
+  const commaIdx = base64DataUrl.indexOf(',');
+  if (commaIdx < 0) return null;
+  const base64Data = base64DataUrl.slice(commaIdx + 1);
+
+  let binary;
+  try {
+    binary = Uint8Array.from(atob(base64Data), (c) => c.charCodeAt(0));
+  } catch (_e) {
+    return null;
+  }
+  const fileSize = binary.length;
+  // Sanity cap — pack labels are typically 20-80 KB. Anything over 2 MB is
+  // suspicious; bail rather than burning a slow upload on bad data.
+  if (fileSize === 0 || fileSize > 2 * 1024 * 1024) return null;
+
+  const filename = `custom-pack-label-${Date.now()}.png`;
+  const graphqlUrl = `https://${SHOPIFY_SHOP_DOMAIN}/admin/api/${SHOPIFY_API_VERSION}/graphql.json`;
+  const headers = {
+    'Content-Type': 'application/json',
+    'X-Shopify-Access-Token': accessToken,
+  };
+
+  // Step 1 — stagedUploadsCreate. Asks Shopify for a one-time upload URL.
+  const stagedQuery = `
+    mutation stagedUploadsCreate($input: [StagedUploadInput!]!) {
+      stagedUploadsCreate(input: $input) {
+        stagedTargets {
+          url
+          resourceUrl
+          parameters { name value }
+        }
+        userErrors { field message }
+      }
+    }
+  `;
+  const stagedVars = {
+    input: [{
+      resource: 'IMAGE',
+      filename,
+      mimeType: 'image/png',
+      httpMethod: 'POST',
+      fileSize: String(fileSize),
+    }],
+  };
+
+  let target;
+  try {
+    const stagedRes = await fetch(graphqlUrl, {
+      method: 'POST',
+      headers,
+      body: JSON.stringify({ query: stagedQuery, variables: stagedVars }),
+    });
+    const stagedJson = await stagedRes.json();
+    target = stagedJson?.data?.stagedUploadsCreate?.stagedTargets?.[0];
+    if (!target?.url || !target?.resourceUrl) return null;
+  } catch (_e) {
+    return null;
+  }
+
+  // Step 2 — POST the binary to Shopify's staged URL. Order of form fields
+  // matters: Shopify's GCS-backed upload expects `parameters` first, then
+  // the file last. (FormData preserves append order.)
+  try {
+    const formData = new FormData();
+    for (const p of target.parameters || []) {
+      formData.append(p.name, p.value);
+    }
+    formData.append('file', new Blob([binary], { type: 'image/png' }), filename);
+    const uploadRes = await fetch(target.url, { method: 'POST', body: formData });
+    if (!uploadRes.ok) return null;
+  } catch (_e) {
+    return null;
+  }
+
+  // Step 3 — fileCreate. Imports the staged blob as a Shopify File asset.
+  const fileQuery = `
+    mutation fileCreate($files: [FileCreateInput!]!) {
+      fileCreate(files: $files) {
+        files {
+          id
+          fileStatus
+          ... on MediaImage { image { url } }
+        }
+        userErrors { field message }
+      }
+    }
+  `;
+  const fileVars = {
+    files: [{
+      originalSource: target.resourceUrl,
+      contentType: 'IMAGE',
+      alt: 'Rosco Custom String Pack label',
+    }],
+  };
+
+  let fileNode;
+  try {
+    const fileRes = await fetch(graphqlUrl, {
+      method: 'POST',
+      headers,
+      body: JSON.stringify({ query: fileQuery, variables: fileVars }),
+    });
+    const fileJson = await fileRes.json();
+    fileNode = fileJson?.data?.fileCreate?.files?.[0];
+    if (!fileNode) return null;
+    if (fileNode.image?.url) return fileNode.image.url;
+  } catch (_e) {
+    return null;
+  }
+
+  // Step 3b — poll once or twice for the CDN URL. Shopify's image
+  // processing is usually <1s for a 20-80 KB PNG but isn't guaranteed
+  // synchronous. We poll up to 4× at 750 ms = ~3s worst case before
+  // giving up and letting the order go through without the property.
+  if (!fileNode.id) return null;
+  const pollQuery = `
+    query getFile($id: ID!) {
+      node(id: $id) {
+        ... on MediaImage {
+          id
+          fileStatus
+          image { url }
+        }
+      }
+    }
+  `;
+  for (let i = 0; i < 4; i++) {
+    await new Promise((r) => setTimeout(r, 750));
+    try {
+      const pollRes = await fetch(graphqlUrl, {
+        method: 'POST',
+        headers,
+        body: JSON.stringify({ query: pollQuery, variables: { id: fileNode.id } }),
+      });
+      const pollJson = await pollRes.json();
+      const url = pollJson?.data?.node?.image?.url;
+      if (url) return url;
+    } catch (_e) {
+      // Keep polling — transient errors shouldn't kill the upload.
+    }
+  }
+  return null;
+}
+
 // ---- Shopify draft order ----------------------------------------------
 
 /**
@@ -395,6 +572,24 @@ async function handleCreateDraftOrder(request, env, origin) {
     properties.push({ name: '_Part Numbers (low to high)', value: partList });
   }
 
+  // Upload the rendered pack label canvas (PNG) to Shopify Files and add
+  // its public CDN URL as a customer-visible `Pack Label` property. This
+  // is a best-effort upload: failure (network blip, image too large, etc)
+  // returns null and we just skip the property — the order still goes
+  // through. Cap added at the helper to avoid wedging checkout on huge
+  // images. Cost: 3-4 GraphQL calls + 1 multipart upload ≈ 1-3s per order.
+  if (pack.imageDataUrl) {
+    try {
+      const labelImageUrl = await uploadPackLabelToShopify(pack.imageDataUrl, accessToken);
+      if (labelImageUrl) {
+        properties.push({ name: 'Pack Label', value: labelImageUrl });
+      }
+    } catch (_e) {
+      // Defensive — helper already swallows its own errors, but belt-and-
+      // suspenders: never let an image upload glitch kill the order.
+    }
+  }
+
   // Deep-link to the calculator in "print mode" — encodes the pack spec
   // into a URL Clayton can click from the order to render and print the
   // label image. Property name is prefixed with underscore so Shopify
@@ -436,6 +631,12 @@ async function handleCreateDraftOrder(request, env, origin) {
     draft_order: {
       line_items: [
         {
+          // Point at the "Custom String Pack" product variant so the order
+          // line item shows the product's branded thumbnail in admin + on
+          // the customer's order confirmation, instead of an empty image
+          // placeholder. Title and price below still override the variant's
+          // defaults so each pack reads as its own configuration.
+          variant_id: CUSTOM_PACK_VARIANT_ID,
           title,
           price: pack.price.toFixed(2),
           quantity: qty,
