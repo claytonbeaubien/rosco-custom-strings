@@ -10,7 +10,7 @@
   "pricing_config": {
     "markup": {
       "guitar": 1.95,
-      "bass": 1.55,
+      "bass": 1.65,
       "acoustic": 1.95
     },
     "catalogue_file": "daddario_catalogue.json",

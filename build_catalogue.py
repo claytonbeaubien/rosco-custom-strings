@@ -34,7 +34,7 @@ OUTPUT_JSON = PROJECT_ROOT / "daddario_catalogue.json"
 
 MARKUP = {  # mirrored in rosco_string_engine.json -> pricing_config.markup
     "guitar": 1.95,
-    "bass":   1.55,
+    "bass":   1.65,
     "acoustic": 1.95,  # reserved; calc doesn't use acoustic yet
 }
 CURRENCY = "CAD"
