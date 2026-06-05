@@ -476,10 +476,10 @@ html.print-mode .print-banner{display:block;background:#f4f5f7;border:1px solid 
   <img src="Images/Rosco Guitars Logo.png" alt="Rosco Guitars" class="logo-img" onerror="this.style.display='none'">
 </header>
 
-<div class="main">
+<!-- Internal job-mode banner — shows which Airtable job this pack is for (?job=…&jn=…&cl=…&gt=…). Placed above .main so the CSS grid doesn't push it to the bottom. -->
+<div id="job-banner" style="display:none"></div>
 
-  <!-- Internal job-mode banner — shows which Airtable job this pack is for (?job=…&jn=…&cl=…&gt=…) -->
-  <div id="job-banner" style="display:none"></div>
+<div class="main">
 
 
   <!-- Print mode banner — only visible when ?print=<spec> URL param is
@@ -1446,6 +1446,46 @@ function snapshotPackForCheckout() {
 
 // ── Internal "Add to Job" mode — opened from an Airtable job button (?job=recXXX) ──
 const JOB_ID = (() => { const j = new URLSearchParams(location.search).get('job'); return /^rec[A-Za-z0-9]{14}$/.test(j || '') ? j : null; })();
+// Pre-select string count + scale + tuning from the Airtable job. The Build String
+// Pack button passes &sc=<scale> and &tn=<tuning>, where tuning is "Name - N"
+// (N = string count), e.g. "Drop C - 6". Called once from init() after the default
+// pack is set, so it overrides the defaults with the guitar's actual setup. Anything
+// that doesn't match a known option is skipped gracefully.
+function applyJobConfigFromURL(){
+  if(!JOB_ID) return;
+  const p = new URLSearchParams(location.search);
+  const scRaw = (p.get('sc') || '').trim();
+  const tnRaw = (p.get('tn') || '').trim();
+  if(!scRaw && !tnRaw) return;
+  let tuningName = tnRaw, count = null;
+  const m = tnRaw.match(/^(.*?)\s*-\s*(\d+)\s*$/);
+  if(m){ tuningName = m[1].trim(); count = parseInt(m[2], 10); }
+  // 1) String count first — it rebuilds the scale options and the tuning list.
+  if([4,5,6,7,8].includes(count) && count !== stringCount){
+    setStringCount(count);
+  }
+  // 2) Scale — match the closest dropdown option by number ("25" -> "25.0").
+  if(scRaw){
+    const target = parseFloat(scRaw.replace(/[^0-9.]/g, ''));
+    const sel = document.getElementById('scale-sel');
+    if(!isNaN(target) && sel){
+      let best = null, bestDiff = Infinity;
+      [...sel.options].forEach(o => { const v = parseFloat(o.value); const d = Math.abs(v - target); if(d < bestDiff){ bestDiff = d; best = o.value; } });
+      if(best != null && bestDiff <= 0.3){ sel.value = best; }
+    }
+  }
+  // 3) Tuning — exact name match within the current string-count's list.
+  if(tuningName){
+    const sel = document.getElementById('tuning-sel');
+    if(sel){
+      const opt = [...sel.options].find(o => o.value.toLowerCase() === tuningName.toLowerCase());
+      if(opt){ sel.value = opt.value; }
+    }
+  }
+  onConfigChange();
+  updateScaleNavBtns();
+  updateTuningNavBtns();
+}
 function snapshotPackForJob(){
   if(!currentPack) return null;
   const scale = refScale();
@@ -1502,7 +1542,7 @@ document.addEventListener('DOMContentLoaded', () => {
       const esc = s => String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
       banner.innerHTML = '<span style="text-transform:uppercase;font-size:11px;letter-spacing:.08em;color:#159385;font-weight:700">Building pack for</span>&nbsp;&nbsp;'
         + bits.map(esc).join('&nbsp;&nbsp;<span style="color:#159385">·</span>&nbsp;&nbsp;');
-      banner.style.cssText = 'background:#e7f5f3;border:1px solid #9ed4cd;color:#0f6f64;border-radius:10px;padding:10px 14px;margin:0 0 16px;font-weight:600;font-size:14px;text-align:center';
+      banner.style.cssText = 'max-width:1132px;width:calc(100% - 32px);margin:18px auto 0;padding:12px 18px;box-sizing:border-box;background:#e7f5f3;border:1px solid #9ed4cd;color:#0f6f64;border-radius:10px;font-weight:600;font-size:15px;text-align:center';
     }
   }
 });
@@ -1866,6 +1906,7 @@ async function init() {
   // DEFAULTS_BY_COUNT entry the string-count buttons use (25.5" Drop C
   // for 6-string). Keeps default-setting logic in one place.
   setStringCount(stringCount);
+  applyJobConfigFromURL();
   buildQR();
   updateScaleNavBtns();
   updateTuningNavBtns();
