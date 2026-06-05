@@ -478,6 +478,10 @@ html.print-mode .print-banner{display:block;background:#f4f5f7;border:1px solid 
 
 <div class="main">
 
+  <!-- Internal job-mode banner — shows which Airtable job this pack is for (?job=…&jn=…&cl=…&gt=…) -->
+  <div id="job-banner" style="display:none"></div>
+
+
   <!-- Print mode banner — only visible when ?print=<spec> URL param is
        present (deep link from a Shopify order). Lets Clayton render and
        print the customer's pack label in one click. -->
@@ -1490,6 +1494,16 @@ document.addEventListener('DOMContentLoaded', () => {
     const buy = document.getElementById('buy-btn'); if(buy) buy.style.display = 'none';
     const atj = document.getElementById('add-to-job-btn'); if(atj) atj.style.display = '';
     document.title = 'Add to Job — Rosco Strings';
+    // Job context banner (job #, client, guitar passed via the Airtable button URL)
+    const p = new URLSearchParams(location.search);
+    const bits = [p.get('jn'), p.get('cl'), p.get('gt')].map(s => (s || '').trim()).filter(Boolean);
+    const banner = document.getElementById('job-banner');
+    if(banner && bits.length){
+      const esc = s => String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+      banner.innerHTML = '<span style="text-transform:uppercase;font-size:11px;letter-spacing:.08em;color:#159385;font-weight:700">Building pack for</span>&nbsp;&nbsp;'
+        + bits.map(esc).join('&nbsp;&nbsp;<span style="color:#159385">·</span>&nbsp;&nbsp;');
+      banner.style.cssText = 'background:#e7f5f3;border:1px solid #9ed4cd;color:#0f6f64;border-radius:10px;padding:10px 14px;margin:0 0 16px;font-weight:600;font-size:14px;text-align:center';
+    }
   }
 });
 
