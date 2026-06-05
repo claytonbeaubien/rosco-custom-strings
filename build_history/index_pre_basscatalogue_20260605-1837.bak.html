@@ -643,13 +643,13 @@ html.print-mode .print-banner{display:block;background:#f4f5f7;border:1px solid 
     </div>
 
     <div class="card gauges-card">
-      <div class="section-title" style="display:flex;align-items:center;justify-content:space-between;gap:10px">String Gauges &amp; Tuning — Click to Adjust<a onclick="document.getElementById('bass-info').scrollIntoView({behavior:'smooth',block:'start'});return false;" style="font-size:11px;font-weight:700;color:#159385;letter-spacing:.04em;cursor:pointer;white-space:nowrap;text-decoration:underline">String Info</a></div>
+      <div class="section-title">String Gauges &amp; Tuning — Click to Adjust</div>
       <div id="string-brand-label" style="font-size:11px;color:#999;margin:-6px 0 10px;letter-spacing:.04em">D'Addario XL Nickel Wound / Plain Steel</div>
       <div id="no-pack" class="no-pack">Select a scale length and tuning to load a pack.</div>
       <table class="str-table" id="str-table" style="display:none">
         <thead>
           <tr>
-            <th>#</th><th>Note / Oct</th><th>Gauge</th><th id="th-type">Type</th><th style="text-align:center">Tension</th><th style="text-align:center">Scale</th>
+            <th>#</th><th>Note / Oct</th><th>Gauge</th><th>Type</th><th style="text-align:center">Tension</th><th style="text-align:center">Scale</th>
           </tr>
           <tr style="background:#e8e8e8">
             <th></th>
@@ -723,30 +723,24 @@ html.print-mode .print-banner{display:block;background:#f4f5f7;border:1px solid 
       </div>
     </div>
 
-    <div class="rules" id="bass-info">
+    <div class="rules">
       <div class="rule">
         <strong>String 3 — plain or wound?</strong>
         On guitar, string 3 stays plain up to a .019 gauge. Once your tuning calls for anything thicker, the calculator switches you to a wound 3rd and bumps the target from 15.5 to 16.0 lbs. Wound strings of similar gauge feel a touch softer at the same tension, so the small lift keeps them even with the rest of the ladder.
       </div>
       <div class="rule">
-        <strong>Reading the bass part numbers &mdash; example: a .125</strong>
-        <ul style="margin-top:6px">
-          <li><b>XLB125</b> &mdash; Long Scale, <b>regular</b> (full winding right to the ball end).</li>
-          <li><b>XLB125T</b> &mdash; Long Scale, <b>Tapered</b> (winding steps down to bare core at the ball / bridge end).</li>
-          <li><b>XB125SL</b> &mdash; <b>Super Long</b> Scale, regular.</li>
-          <li><b>XB125TSL</b> &mdash; <b>Super Long</b> Scale, Tapered.</li>
-        </ul>
-        <p style="margin-top:7px"><b>Decode it:</b> <b>XLB</b> = Long Scale &middot; <b>XB&hellip;SL</b> = Super Long &middot; <b>&hellip;S</b> = Short &middot; <b>&hellip;M</b> = Medium &middot; <b>T</b> = Tapered.</p>
-        <p class="rule-subhead">Which scale? (measure from where the ball end sits in the bridge to the top of the nut)</p>
+        <strong>Tapered (T) vs. Regular</strong>
+        <p>For Bass, the calculator defaults to Tapered for heavy strings because it&rsquo;s the professional standard for modern clarity.</p>
+        <p class="rule-subhead">Go Tapered (T) for:</p>
         <ul>
-          <li><b>Long</b> &mdash; about 34&ndash;35&Prime; basses.</li>
-          <li><b>Super Long</b> &mdash; about 36&Prime;+ basses (e.g. many Dingwalls).</li>
-          <li>Short &asymp; 30&Prime; and Medium &asymp; 32&Prime; cover short-scale basses.</li>
+          <li><b>Maximum Clarity:</b> essential for metal, &ldquo;clank,&rdquo; and low-tuned definition.</li>
+          <li><b>Easy Setup:</b> sits deeper in the bridge and intonates accurately.</li>
+          <li><b>Top-Load Bridges:</b> if your strings hook into the back of the bridge.</li>
         </ul>
-        <p class="rule-subhead">Tapered (T) vs. Regular</p>
+        <p class="rule-subhead">Go Regular (Non-Taper) for:</p>
         <ul>
-          <li><b>Tapered</b> &mdash; the winding steps down to the bare core at the ball / bridge end. The thinner core lets a heavy low string seat on the bridge evenly with the rest and tightens the fundamental for cleaner intonation. Standard on the heaviest low strings; ideal for top-load bridges.</li>
-          <li><b>Regular</b> &mdash; full winding to the ball end. Best for string-through-body basses and a warmer, vintage thump.</li>
+          <li><b>String-Through-Body:</b> if your strings go through the back of the guitar body (tapers can snap at the bend).</li>
+          <li><b>Vintage Tone:</b> if you want a thumpy, old-school sound with less &ldquo;snap.&rdquo;</li>
         </ul>
       </div>
     </div>
@@ -850,7 +844,6 @@ const BASS_STRINGS_BY_SCALE = {
     {g:"55",  uw:0.00053067, part:"XLB055"},
     {g:"60",  uw:0.00063285, part:"XLB060"},
     {g:"65",  uw:0.00074297, part:"XLB065"},
-    {g:"67",  uw:0.00078950, part:"XLB067"},
     {g:"70",  uw:0.00086196, part:"XLB070"},
     {g:"75",  uw:0.00098442, part:"XLB075"},
     {g:"80",  uw:0.00111428, part:"XLB080"},
@@ -866,14 +859,12 @@ const BASS_STRINGS_BY_SCALE = {
     {g:"125",  uw:0.00263846, part:"XLB125"},
     {g:"125T", uw:0.00263846, part:"XLB125T"},
     {g:"130",  uw:0.00284987, part:"XLB130"},
-    {g:"130T", uw:0.00284987, part:"XLB130T"},
     {g:"135",  uw:0.00306910, part:"XLB135"},
     {g:"135T", uw:0.00306910, part:"XLB135T"},
     {g:"145",  uw:0.00354062, part:"XLB145"},
     {g:"145T", uw:0.00354062, part:"XLB145T"},
     {g:"160",  uw:0.00431105, part:"XLB160"},
     {g:"160T", uw:0.00431105, part:"XLB160T"},
-    {g:"165T", uw:0.00458470, part:"XLB165T"},
     {g:"170T", uw:0.00486678, part:"XLB170T"}
   ],
   // --- 35" scale — D'Addario doesn't make a 35" string line.
@@ -904,13 +895,7 @@ const BASS_STRINGS_BY_SCALE = {
     {g:"110", uw:0.00205160, part:"XB110SL"},
     {g:"125", uw:0.00263846, part:"XB125SL"},
     {g:"130", uw:0.00284987, part:"XB130SL"},
-    {g:"145", uw:0.00354062, part:"XB145SL"},
-    {g:"125T", uw:0.00263846, part:"XB125TSL"},
-    {g:"130T", uw:0.00284987, part:"XB130TSL"},
-    {g:"145T", uw:0.00354062, part:"XB145TSL"},
-    {g:"160T", uw:0.00431105, part:"XB160TSL"},
-    {g:"165T", uw:0.00458470, part:"XB165TSL"},
-    {g:"170T", uw:0.00486678, part:"XB170TSL"}
+    {g:"145", uw:0.00354062, part:"XB145SL"}
   ]
 };
 // ════════════════════════════════════════════
@@ -1049,36 +1034,6 @@ function getBassScaleNativeList(scale) {
 function getBassGaugeList() {
   return BASS_STRINGS_BY_SCALE['34.0'];  // full XLB range
 }
-// --- Bass: gauge number (clean) vs specific D'Addario part variants ---
-function bassScaleKey(scale){
-  const n = typeof scale==='number'?scale:parseFloat(scale);
-  if(n<=30.5) return '30.0';
-  if(n<=32.5) return '32.0';
-  if(n<=35.5) return '34.0';
-  return '36.0';
-}
-function bassGaugeNumbers(){
-  const seen=new Set(), out=[];
-  for(const e of BASS_STRINGS_BY_SCALE['34.0']){ const num=e.g.replace('T',''); if(!seen.has(num)){ seen.add(num); out.push(num); } }
-  return out;
-}
-function bassPartsForGauge(num){
-  const out=[]; num=String(num);
-  for(const k of ['34.0','36.0','32.0','30.0']){
-    const list=BASS_STRINGS_BY_SCALE[k]; if(!Array.isArray(list)) continue;
-    for(const e of list){ if(e.g.replace('T','')===num) out.push({part:e.part, g:e.g, uw:e.uw, line:k}); }
-  }
-  return out;
-}
-function bassUwForGauge(num){ const p=bassPartsForGauge(num); return p.length?p[0].uw:null; }
-function bassRecommendedPart(num, scale){
-  const key=bassScaleKey(scale);
-  const parts=bassPartsForGauge(num);
-  const inLine=parts.filter(p=>p.line===key);
-  const pool=inLine.length?inLine:parts;
-  const tap=pool.find(p=>p.g.endsWith('T'));
-  return (tap||pool[0]||{}).part || '';
-}
 // Returns the {g, uw, part} entry for a gauge at a given scale.
 // Preference: scale-native D'Addario variant (so the part number on the label matches
 // what's actually marketed for that scale). Falls back to Long Scale (XLB) — those
@@ -1091,8 +1046,6 @@ function getBassStringByGauge(scale, gauge) {
   if (hit) return hit;
   // 2. Fall back to Long Scale (XLB) — works on any equal-or-shorter bass
   hit = BASS_STRINGS_BY_SCALE['34.0'].find(s => s.g === gs);
-  if (hit) return hit;
-  hit = native.find(s => s.g.replace('T','') === gs) || BASS_STRINGS_BY_SCALE['34.0'].find(s => s.g.replace('T','') === gs);
   return hit || null;
 }
 // ════════════════════════════════════════════
@@ -1119,12 +1072,13 @@ function bestBassGauge(strNum, scale, freq, totalStrings, partScale) {
   // bump (anchor 40 lbs on the lowest string) is gone — players consistently
   // prefer the lighter gauge that the natural target picks.
   const target = ROSCO_BASS_TARGETS[strNum] || ROSCO_BASS_DROP_ANCHOR;
+  const list = getBassGaugeList();  // master XLB list
   const candidates = [];
-  for (const num of bassGaugeNumbers()) {
-    const uw = bassUwForGauge(num);
-    if (uw == null) continue;
-    const T = (uw * Math.pow(2 * scale * freq, 2)) / 386.4;
-    candidates.push({ gauge: num, uw, tension: T, diff: Math.abs(T - target) });
+  for (const g of list) {
+    const item = getBassStringByGauge(partScale, g.g);
+    if (!item) continue;
+    const T = (item.uw * Math.pow(2 * scale * freq, 2)) / 386.4;
+    candidates.push({ gauge: g.g, uw: item.uw, tension: T, diff: Math.abs(T - target) });
   }
   if (candidates.length === 0) return null;
   // Lean-lighter on the lowest string: find the closest-to-target pick, then
@@ -1142,7 +1096,18 @@ function bestBassGauge(strNum, scale, freq, totalStrings, partScale) {
     if (lighter.diff <= ROSCO_BASS_BANDS.ok) pickIdx = closestIdx - 1;
   }
   const c = candidates[pickIdx];
-  return { gauge: c.gauge, uw: c.uw, tension: c.tension, part: bassRecommendedPart(c.gauge, partScale) };
+  // Tapered preference: if a tapered variant exists for this gauge at
+  // the current scale, default to it. Same UW, same tension — the wrap
+  // is trimmed near the ball end for a cleaner saddle break, which is
+  // the industry default on heavy bass strings. Manual user picks are
+  // unaffected; this only runs inside auto-rebalance.
+  if (!c.gauge.endsWith('T')) {
+    const taperedItem = getBassStringByGauge(partScale, c.gauge + 'T');
+    if (taperedItem) {
+      return { gauge: c.gauge + 'T', uw: taperedItem.uw, tension: c.tension };
+    }
+  }
+  return { gauge: c.gauge, uw: c.uw, tension: c.tension };
 }
 // Picks the D'Addario gauge whose tension lands closest to the Rosco target
 // for this string position + note + scale. Mirrors bestBassGauge but for
@@ -1984,7 +1949,6 @@ function loadPack() {
         s.tension_lbs = Math.round(best.tension * 10) / 10;
         // Bass is always wound; guitar uses whatever the best pick was
         s.type = isBassInstrument() ? 'wound' : best.type;
-        if (isBassInstrument()) s.part = best.part;
       }
     });
   }
@@ -2010,7 +1974,7 @@ function buildStringTable(pack) {
     // Bass uses the full D'Addario XLB gauge range at every scale (Long Scale strings
     // physically fit shorter basses too — the UW lookup handles scale-native vs fallback).
     // Guitar uses plain/wound/combined.
-    const gauges = isBassInstrument() ? bassGaugeNumbers().map(n=>({g:n}))
+    const gauges = isBassInstrument() ? getBassGaugeList()
                   : (str.string_num === 2 || str.string_num === 3) ? GAUGES_STR23
                   : (str.type === 'plain' ? GAUGES_PLAIN : GAUGES_WOUND);
     const opts = gauges.map(g =>
@@ -2029,12 +1993,11 @@ function buildStringTable(pack) {
         <button class="g-btn" onclick="navNote(${str.string_num},-1)" title="Higher pitch">▲</button>
       </div></td>
       <td><div class="g-wrap" style="gap:2px"><button class="g-btn" onclick="navGauge(${str.string_num},-1)" title="Smaller gauge">▼</button><select id="g-${str.string_num}" onchange="onGaugeChange(${str.string_num},this.value)">${opts}</select><button class="g-btn" onclick="navGauge(${str.string_num},1)" title="Larger gauge">▲</button></div></td>
-      <td style="text-align:center">${isBassInstrument() ? `<select id="p-${str.string_num}" onchange="onPartChange(${str.string_num},this.value)" style="font-size:10px;text-align:center;color:#159385;font-weight:600;min-width:90px">${bassPartsForGauge(str.gauge).map(p=>`<option value="${p.part}"${p.part===(str.part||bassRecommendedPart(str.gauge, scaleForString(str.string_num,total)))?' selected':''}>${p.part}</option>`).join('')}</select>` : `<span style="color:#aaa;font-size:11px">${str.type.slice(0,1).toUpperCase()}</span>`}</td>
+      <td style="color:#aaa;font-size:11px">${str.type.slice(0,1).toUpperCase()}</td>
       <td class="tension-val ${tCol}" id="t-${str.string_num}">${(+str.tension_lbs).toFixed(1)}</td>
       <td style="color:#999;font-size:11px;text-align:center">${fmtScale(scaleForString(str.string_num, total))}"</td>
     </tr>`;
   }).join('');
-  const _tt = document.getElementById('th-type'); if (_tt) _tt.textContent = isBassInstrument() ? 'Part #' : 'Type';
 }
 
 function noteDisplay(note) {
@@ -2126,18 +2089,11 @@ function onGaugeChange(strNum, gauge) {
     cell.textContent = tRound.toFixed(1);
     cell.className = `tension-val ${tensionClass(tRound, strNum)}`;
   }
-  // Update part dropdown (bass) / type letter (guitar)
+  // Update type indicator cell
   const row = cell ? cell.closest('tr') : null;
   if (row) {
-    const partTd = row.querySelectorAll('td')[3];
-    if (partTd) {
-      if (isBassInstrument()) {
-        str.part = bassRecommendedPart(gauge, scaleForString(strNum, currentPack.strings.length));
-        partTd.innerHTML = `<select id="p-${strNum}" onchange="onPartChange(${strNum},this.value)" style="font-size:10px;text-align:center;color:#159385;font-weight:600;min-width:90px">${bassPartsForGauge(gauge).map(p=>`<option value="${p.part}"${p.part===str.part?' selected':''}>${p.part}</option>`).join('')}</select>`;
-      } else {
-        partTd.innerHTML = `<span style="color:#aaa;font-size:11px">${str.type.slice(0,1).toUpperCase()}</span>`;
-      }
-    }
+    const typeTd = row.querySelectorAll('td')[3];
+    if (typeTd) typeTd.textContent = str.type.slice(0,1).toUpperCase();
   }
   updateTuningNavBtns();
   renderLabel();
@@ -2200,11 +2156,6 @@ function updateTuningNavBtns() {
   if (dn) dn.disabled = sel.selectedIndex === sel.options.length - 1;
 }
 
-function onPartChange(strNum, part){
-  if(!currentPack) return;
-  const str=currentPack.strings.find(s=>s.string_num===strNum);
-  if(str){ str.part=part; renderLabel(); }
-}
 function navGauge(strNum, delta) {
   const sel = document.getElementById('g-' + strNum);
   if (!sel) return;
