@@ -1482,6 +1482,11 @@ function applyJobConfigFromURL(){
       if(opt){ sel.value = opt.value; }
     }
   }
+  // 4) Label info — Name (client), Guitar (make-model), Band (client's band).
+  const setLabel = (id, v) => { const el = document.getElementById(id); if(el && v){ el.value = v; } };
+  setLabel('name-input',  (p.get('cl') || '').trim());
+  setLabel('band-input',  (p.get('gt') || '').trim());
+  setLabel('band2-input', (p.get('bn') || '').trim());
   onConfigChange();
   updateScaleNavBtns();
   updateTuningNavBtns();
