@@ -6,10 +6,14 @@
  *   POST /                     — Scale-length lookup (proxies Anthropic).
  *   POST /create-draft-order   — Creates a Shopify Draft Order for a custom
  *                                string pack and returns the invoice URL.
+ *   POST /add-to-job           — Writes a built pack back onto an Airtable
+ *                                Guitar Job (internal twin of the Shopify
+ *                                flow) so the Service Report auto-fills and
+ *                                String Inventory deducts.
  *
- * Both endpoints share CORS, origin allowlist, and JSON helpers. Secrets
- * (Anthropic key + Shopify client secret) are encrypted Cloudflare secrets
- * so they never appear in the browser bundle.
+ * All endpoints share CORS, origin allowlist, and JSON helpers. Secrets
+ * (Anthropic key + Shopify client secret + Airtable token) are encrypted
+ * Cloudflare secrets so they never appear in the browser bundle.
  *
  * --- Scale lookup (/) ---
  * Request:  { brand: string, model: string, year?: string }
@@ -18,6 +22,11 @@
  * --- Shopify draft order (/create-draft-order) ---
  * Request:  { pack: {...}, quantity: number }   (see handleCreateDraftOrder)
  * Response: { invoice_url: string, draft_order_id: number }
+ *           or { error: string, detail?: string } on failure.
+ *
+ * --- Airtable add-to-job (/add-to-job) ---
+ * Request:  { job: "recXXXX", pack: {...} }   (see handleAddToJob)
+ * Response: { ok: true, job_name: string, linked: number }
  *           or { error: string, detail?: string } on failure.
  */
 
@@ -115,6 +124,9 @@ export default {
     // Route dispatch
     if (path === '/create-draft-order') {
       return handleCreateDraftOrder(request, env, origin);
+    }
+    if (path === '/add-to-job') {
+      return handleAddToJob(request, env, origin);
     }
     if (path === '/') {
       return handleScaleLookup(request, env, origin);
@@ -704,6 +716,80 @@ async function handleCreateDraftOrder(request, env, origin) {
     200,
     origin
   );
+}
+
+// ---- Add a built string pack to an Airtable Guitar Job (/add-to-job) ----
+const AT_BASE = 'appB5AOWKFwyj52WM';
+const AT_JOBS = 'tblk4CXNS4cRWmwJw';
+const AT_INV  = 'tblVHXIHxVJIyLnmK';   // String Inventory (Item Name = D'Addario part #)
+const AT_F = {
+  gauges:  'fldZlrKMP1zomQaIn',  // Installed Gauges   (text, report display)
+  tension: 'fldFqf7zOSqsVqXSM',  // Installed Tension  (text)
+  parts:   'fldm0P61QszTI7wX4',  // Installed Parts    (text, full record)
+  custom:  'fldma6QzMGisAdsav',  // Custom Strings Used (link -> String Inventory; drives deduction)
+  image:   'fldCkNJZUzgJGHByS',  // Strings Installed (Image) (attachment, report pack image)
+};
+
+async function handleAddToJob(request, env, origin) {
+  let body;
+  try { body = await request.json(); } catch { return jsonResponse({ error: 'Invalid request body.' }, 400, origin); }
+  const job = String(body.job || '');
+  const pack = body.pack;
+  if (!/^rec[A-Za-z0-9]{14}$/.test(job)) return jsonResponse({ error: 'Bad job id.' }, 400, origin);
+  if (!pack || !Array.isArray(pack.strings) || pack.strings.length === 0) return jsonResponse({ error: 'No pack.' }, 400, origin);
+  if (!env.AIRTABLE_TOKEN) return jsonResponse({ error: 'Worker missing AIRTABLE_TOKEN.' }, 500, origin);
+
+  const atHeaders = { Authorization: `Bearer ${env.AIRTABLE_TOKEN}`, 'Content-Type': 'application/json' };
+
+  // low -> high == lowest pitch first == highest string_num first
+  const ordered = [...pack.strings].sort((a, b) => (b.string_num || 0) - (a.string_num || 0));
+  const fmtGauge = (g) => { const n = parseInt(String(g).replace(/[^0-9]/g, ''), 10); return isNaN(n) ? String(g) : '.' + String(n).padStart(3, '0'); };
+  const gauges  = ordered.map(s => fmtGauge(s.gauge)).join(' ');
+  const tension = ordered.map(s => (s.tension_lbs != null ? s.tension_lbs : '')).join(' ').trim();
+  const partsTxt = ordered.map(s => s.part_number || '').join(' ').trim();
+
+  // Match each part number -> String Inventory record (Item Name == part #).
+  // Distinct parts only; the Invoice & Deduct automation handles quantity.
+  const linkIds = [];
+  for (const p of [...new Set(ordered.map(s => s.part_number).filter(Boolean))]) {
+    try {
+      const url = `https://api.airtable.com/v0/${AT_BASE}/${AT_INV}?maxRecords=1&filterByFormula=` +
+        encodeURIComponent(`{Item Name}='${String(p).replace(/'/g, "\\'")}'`);
+      const r = await fetch(url, { headers: atHeaders });
+      const j = await r.json();
+      if (j.records && j.records[0]) linkIds.push(j.records[0].id);
+    } catch (_) {}
+  }
+
+  // Write the spec back to the job (overwrite). Clear the image so the new one is the only one.
+  const fields = {};
+  fields[AT_F.gauges]  = gauges;
+  fields[AT_F.tension] = tension;
+  fields[AT_F.parts]   = partsTxt;
+  fields[AT_F.custom]  = linkIds;          // [] clears it if nothing matched
+  if (pack.imageDataUrl) fields[AT_F.image] = []; // clear, re-upload below
+  let jobRec;
+  try {
+    const r = await fetch(`https://api.airtable.com/v0/${AT_BASE}/${AT_JOBS}/${job}`, {
+      method: 'PATCH', headers: atHeaders, body: JSON.stringify({ fields }),
+    });
+    if (!r.ok) return jsonResponse({ error: 'Airtable write failed.', detail: (await r.text()).slice(0, 300) }, 502, origin);
+    jobRec = await r.json();
+  } catch (e) { return jsonResponse({ error: 'Airtable error.', detail: String(e).slice(0, 200) }, 502, origin); }
+
+  // Upload the pack-label PNG straight to the attachment field (Airtable content API).
+  if (typeof pack.imageDataUrl === 'string' && pack.imageDataUrl.startsWith('data:image/')) {
+    try {
+      const b64 = pack.imageDataUrl.slice(pack.imageDataUrl.indexOf(',') + 1);
+      await fetch(`https://content.airtable.com/v0/${AT_BASE}/${job}/${AT_F.image}/uploadAttachment`, {
+        method: 'POST', headers: atHeaders,
+        body: JSON.stringify({ contentType: 'image/png', file: b64, filename: `custom-pack-${Date.now()}.png` }),
+      });
+    } catch (_) {}
+  }
+
+  const jobName = (jobRec && jobRec.fields && jobRec.fields['Job #']) || '';
+  return jsonResponse({ ok: true, job_name: jobName, linked: linkIds.length }, 200, origin);
 }
 
 // ---- weight estimation -------------------------------------------------
