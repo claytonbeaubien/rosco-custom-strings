@@ -1491,6 +1491,17 @@ function applyJobConfigFromURL(){
   updateScaleNavBtns();
   updateTuningNavBtns();
 }
+function guitarPart(gauge, type){
+  // Derive the D'Addario single's part # (PL### plain / NW### wound) from gauge+type.
+  // Validated against the UW table so it always matches a real part (= String Inventory Item Name).
+  const g = parseFloat(String(gauge));
+  if (isNaN(g)) return null;
+  const prefix = (type === 'plain') ? 'PL' : 'NW';
+  const tenths = Math.round(g * 10);
+  const key = (tenths % 10 === 0) ? String(tenths/10).padStart(3,'0') : String(tenths).padStart(4,'0');
+  const part = prefix + key;
+  return (typeof UW !== 'undefined' && UW[part]) ? part : null;
+}
 function snapshotPackForJob(){
   if(!currentPack) return null;
   const scale = refScale();
@@ -1504,7 +1515,7 @@ function snapshotPackForJob(){
     note: s.note,
     gauge: String(s.gauge),
     type: s.type || '',
-    part_number: isBassInstrument() ? (s.part || bassRecommendedPart(s.gauge, scaleForString(s.string_num, total))) : null,
+    part_number: isBassInstrument() ? (s.part || bassRecommendedPart(s.gauge, scaleForString(s.string_num, total))) : guitarPart(s.gauge, s.type),
     tension_lbs: typeof s.tension_lbs === 'number' ? Math.round(s.tension_lbs * 10) / 10 : null,
   }));
   return { tuning: tuningDisplay, scale, string_count: stringCount, instrument: isBassInstrument() ? 'bass' : 'guitar', strings, imageDataUrl };
