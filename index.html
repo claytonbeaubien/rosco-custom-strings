@@ -1518,7 +1518,7 @@ function snapshotPackForJob(){
     part_number: isBassInstrument() ? (s.part || bassRecommendedPart(s.gauge, scaleForString(s.string_num, total))) : guitarPart(s.gauge, s.type),
     tension_lbs: typeof s.tension_lbs === 'number' ? Math.round(s.tension_lbs * 10) / 10 : null,
   }));
-  return { tuning: tuningDisplay, scale, string_count: stringCount, instrument: isBassInstrument() ? 'bass' : 'guitar', strings, imageDataUrl };
+  return { tuning: tuningDisplay, scale, string_count: stringCount, instrument: isBassInstrument() ? 'bass' : 'guitar', strings, price: calcPackTotal().total, imageDataUrl };
 }
 async function onAddToJobClick(){
   if(!JOB_ID) return;

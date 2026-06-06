@@ -727,6 +727,7 @@ const AT_F = {
   tension: 'fldFqf7zOSqsVqXSM',  // Installed Tension  (text)
   parts:   'fldm0P61QszTI7wX4',  // Installed Parts    (text, full record)
   custom:  'fldma6QzMGisAdsav',  // Custom Strings Used (link -> String Inventory; drives deduction)
+  price:   'fldtpvACk9Y6bDs0S',  // Pack Price (currency) -> drives Strings Charge on the invoice
   image:   'fldCkNJZUzgJGHByS',  // Strings Installed (Image) (attachment, report pack image)
 };
 
@@ -767,6 +768,7 @@ async function handleAddToJob(request, env, origin) {
   fields[AT_F.tension] = tension;
   fields[AT_F.parts]   = partsTxt;
   fields[AT_F.custom]  = linkIds;          // [] clears it if nothing matched
+  fields[AT_F.price]   = (typeof pack.price === 'number' && pack.price > 0) ? pack.price : null;  // blank for BYO/unpriced
   if (pack.imageDataUrl) fields[AT_F.image] = []; // clear, re-upload below
   let jobRec;
   try {
