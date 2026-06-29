@@ -2413,6 +2413,16 @@ function drawFitText(ctx, text, cx, cy, maxW, startSz, fontSpec, color='#111111'
   return sz;
 }
 
+// Bass-only: pull the trailing variant letters off the part number
+// (e.g. XLB135T -> "T", XB105SL -> "SL", XB060S -> "S", XLB040 -> "").
+// Shown small after the gauge on the pack label so the string type is visible.
+function bassGaugeSuffix(str){
+  if (!isBassInstrument()) return '';
+  const p = (str && str.part) || '';
+  const m = p.match(/\d([A-Za-z]+)$/);
+  return m ? m[1].toUpperCase() : '';
+}
+
 // ════════════════════════════════════════════
 // RENDER LABEL
 // ════════════════════════════════════════════
@@ -2539,10 +2549,21 @@ function renderLabel() {
       "__SZ__px 'Barlow Condensed'", '#111111');
     ctx.restore();
 
-    // Gauge (bold, larger)
+    // Gauge (bold, larger) + bass variant suffix (T, SL, S, M, ...) drawn small
     ctx.save();
-    drawFitText(ctx, gaugeStr, cx, PILL_Y_GAUGE, 105, 90,
+    const gSz = drawFitText(ctx, gaugeStr, cx, PILL_Y_GAUGE, 105, 90,
       "__SZ__px 'Barlow Condensed'", '#111111');
+    const gSuffix = bassGaugeSuffix(str);
+    if (gSuffix) {
+      ctx.font = gSz + "px 'Barlow Condensed'";
+      const mainW = ctx.measureText(gaugeStr).width;
+      const subSz = Math.max(20, Math.round(gSz * 0.4));
+      ctx.font = subSz + "px 'Barlow Condensed'";
+      ctx.fillStyle = '#111111';
+      ctx.textAlign = 'left';
+      ctx.textBaseline = 'alphabetic';
+      ctx.fillText(gSuffix, cx + mainW / 2 + 6, PILL_Y_GAUGE + gSz * 0.18);
+    }
     ctx.restore();
 
     // Tension (smaller)
