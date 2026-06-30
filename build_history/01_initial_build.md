@@ -1,5 +1,5 @@
 # Cowork Instructions: RG String Calculator Build
-*For Claude Cowork — execute these steps in order. Do not skip validation steps.*
+*For Claude Cowork - execute these steps in order. Do not skip validation steps.*
 
 ---
 
@@ -7,21 +7,21 @@
 
 We are building the Rosco Guitars string tension calculator engine. This involves:
 1. Building a master JSON data file (`rosco_string_engine.json`) containing the D'Addario unit weight table, note frequencies, and Rosco tension targets
-2. Building a local HTML calculator (`rosco_calculator.html`) that uses this data — a browser-based tool Clayton can open anytime to calculate string tension without visiting daddario.com
+2. Building a local HTML calculator (`rosco_calculator.html`) that uses this data - a browser-based tool Clayton can open anytime to calculate string tension without visiting daddario.com
 
 **Both files go in:**
 `C:\Users\Claytron\Rosco Guitars Ltd\Rosco Guitars - Documents\09. Rosco AI\RG String Calculator\`
 
 **Source PDF is in the same folder:**
-`DAddario_Tension_Chart.pdf` — this contains the unit weight table we need
+`DAddario_Tension_Chart.pdf` - this contains the unit weight table we need
 
 **Do NOT touch Airtable during this task. Read-only until explicitly instructed otherwise.**
 
 ---
 
-## Step 1 — Build `rosco_string_engine.json`
+## Step 1 - Build `rosco_string_engine.json`
 
-Create a JSON file with the following structure. All unit weight values come from the D'Addario tension chart PDF. All values below are verified correct — use them exactly.
+Create a JSON file with the following structure. All unit weight values come from the D'Addario tension chart PDF. All values below are verified correct - use them exactly.
 
 ### File: `rosco_string_engine.json`
 
@@ -29,7 +29,7 @@ Create a JSON file with the following structure. All unit weight values come fro
 {
   "meta": {
     "version": "1.0",
-    "description": "Rosco Guitars string tension engine — D'Addario XL unit weights + Rosco tension targets",
+    "description": "Rosco Guitars string tension engine - D'Addario XL unit weights + Rosco tension targets",
     "last_updated": "2026-03-10",
     "formula": "T = (UW * (2 * L * F)^2) / 386.4",
     "tension_unit": "lbs",
@@ -83,7 +83,7 @@ Create a JSON file with the following structure. All unit weight values come fro
 
   "unit_weights": {
     "plain_steel": {
-      "comment": "PL series — D'Addario plain steel, Lock Twist. Values in lbs/inch.",
+      "comment": "PL series - D'Addario plain steel, Lock Twist. Values in lbs/inch.",
       "PL007": 0.00001085,
       "PL008": 0.00001418,
       "PL0085": 0.00001601,
@@ -108,7 +108,7 @@ Create a JSON file with the following structure. All unit weight values come fro
       "PL026": 0.00014975
     },
     "nickel_wound": {
-      "comment": "NW series — D'Addario XL Nickelplated Steel Round Wound. Values in lbs/inch.",
+      "comment": "NW series - D'Addario XL Nickelplated Steel Round Wound. Values in lbs/inch.",
       "NW017": 0.00005524,
       "NW018": 0.00006215,
       "NW019": 0.00006947,
@@ -144,7 +144,7 @@ Create a JSON file with the following structure. All unit weight values come fro
       "NW080": 0.00115011
     },
     "interpolated": {
-      "comment": "Half-size gauges not in the PDF — unit weights calculated by linear interpolation between adjacent PL values. Used for gauges like 9.5, 10.5, 11.5, 12.5, 16.5.",
+      "comment": "Half-size gauges not in the PDF - unit weights calculated by linear interpolation between adjacent PL values. Used for gauges like 9.5, 10.5, 11.5, 12.5, 16.5.",
       "PL0095_interp": 0.00001999,
       "PL0105_interp": 0.00002442,
       "PL0115_interp": 0.00002930,
@@ -217,7 +217,7 @@ Create a JSON file with the following structure. All unit weight values come fro
     "6_string": {
       "1": { "target_lbs": 13.5, "type": "plain", "note": "High E" },
       "2": { "target_lbs": 14.5, "type": "plain", "note": "B" },
-      "3": { "target_lbs": 15.5, "type": "plain", "note": "G — wound if gauge >19p, then target 16 lbs" },
+      "3": { "target_lbs": 15.5, "type": "plain", "note": "G - wound if gauge >19p, then target 16 lbs" },
       "4": { "target_lbs": 18.0, "type": "wound", "note": "D" },
       "5": { "target_lbs": 19.0, "type": "wound", "note": "A" },
       "6": { "target_lbs": 20.0, "type": "wound", "note": "Low E" }
@@ -270,7 +270,7 @@ Save this file to:
 
 ---
 
-## Step 2 — Validate the JSON
+## Step 2 - Validate the JSON
 
 Before building the HTML, run a quick Python validation to confirm the formula produces correct results against the known 25.5" E Standard pack.
 
@@ -297,7 +297,7 @@ test_strings = [
 ]
 expected = [13.1, 14.2, 15.6, 18.4, 19.0, 19.7]
 
-print("Validation — 25.5\" E Standard 6-string")
+print("Validation - 25.5\" E Standard 6-string")
 print(f"{'String':<8} {'Note':<6} {'Gauge':<10} {'Calculated':>12} {'Expected':>10} {'Match':>8}")
 print("-" * 60)
 
@@ -319,7 +319,7 @@ for i, (note, part, stype) in enumerate(test_strings):
     match = "✅" if abs(t - expected[i]) <= 0.2 else "❌"
     print(f"{i+1:<8} {note:<6} {part:<10} {t:>12.1f} {expected[i]:>10.1f} {match:>8}")
 
-print("\nIf all ✅ — engine is validated. Proceed to Step 3.")
+print("\nIf all ✅ - engine is validated. Proceed to Step 3.")
 ```
 
 **Expected output: all 6 strings showing ✅**
@@ -328,17 +328,17 @@ If any show ❌, stop and report back to Clayton in Chat before proceeding.
 
 ---
 
-## Step 3 — Build `rosco_calculator.html`
+## Step 3 - Build `rosco_calculator.html`
 
-Create a single self-contained HTML file. This is Clayton's daily tension calculator — no internet required, opens in any browser.
+Create a single self-contained HTML file. This is Clayton's daily tension calculator - no internet required, opens in any browser.
 
 ### Features required:
-1. **Tension Calculator tab** — Enter scale length + gauge + note → instant tension readout
-2. **Reverse Calculator tab** — Enter scale length + note + target tension → shows which gauge to use
-3. **Clean Rosco-branded design** — dark background, red accent (#CC2222), clean typography
+1. **Tension Calculator tab** - Enter scale length + gauge + note → instant tension readout
+2. **Reverse Calculator tab** - Enter scale length + note + target tension → shows which gauge to use
+3. **Clean Rosco-branded design** - dark background, red accent (#CC2222), clean typography
 
 ### Important implementation notes:
-- All unit weight and frequency data must be **embedded directly in the HTML file** — read from `rosco_string_engine.json` at build time and hardcoded in. The file must work with no external dependencies.
+- All unit weight and frequency data must be **embedded directly in the HTML file** - read from `rosco_string_engine.json` at build time and hardcoded in. The file must work with no external dependencies.
 - Tension formula: `T = (UW × (2 × L × F)²) / 386.4`
 - For the reverse calculator, iterate through available gauges and find the closest match to the target tension, showing the top 3 options
 - Round all tension values to 1 decimal place
@@ -360,7 +360,7 @@ Save to:
 
 ---
 
-## Step 4 — Smoke Test
+## Step 4 - Smoke Test
 
 After both files are created:
 
@@ -384,9 +384,9 @@ Report results back. If all pass, the engine is live and ready for pack generati
 ## What NOT to do in this session
 
 - Do not modify any Airtable records
-- Do not generate string packs yet — that is the next session after validation
+- Do not generate string packs yet - that is the next session after validation
 - Do not create any other files beyond the two specified above
-- Do not install any npm packages or external dependencies — pure HTML/JS only
+- Do not install any npm packages or external dependencies - pure HTML/JS only
 
 ---
 
@@ -402,5 +402,5 @@ Details for that session will come from Clayton via Chat.
 
 ---
 
-*Instructions written by Claude in Chat session — March 10, 2026*
+*Instructions written by Claude in Chat session - March 10, 2026*
 *Validated formula confirmed against Airtable 25.5" E Standard data before writing*

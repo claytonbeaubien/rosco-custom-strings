@@ -119,5 +119,5 @@ The generator POSTs:
 
 `Custom Strings Used` only links parts that **exist** in String Inventory. A few newer parts
 (tapered super-longs `XB125TSL…XB170TSL`, `XLB067`, `XLB130T`, `XLB165T`) aren't in inventory
-yet — Cowork/Clayton is adding them at 0 stock so every pack can match. Unmatched parts still
+yet - Cowork/Clayton is adding them at 0 stock so every pack can match. Unmatched parts still
 land in the text **Installed Parts** field; they just won't deduct until the record exists.

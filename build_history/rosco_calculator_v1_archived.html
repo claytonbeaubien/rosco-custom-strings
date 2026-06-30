@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Rosco Guitars — String Tension Calculator</title>
+  <title>Rosco Guitars - String Tension Calculator</title>
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
@@ -595,7 +595,7 @@
   <button class="tab-btn active" onclick="switchTab('rosco-recommended', this)">Rosco Recommended</button>
   <button class="tab-btn" onclick="switchTab('setbuilder', this)">Custom Set Builder</button>
   <button class="tab-btn" onclick="switchTab('forward', this)">Tension Calculator</button>
-  <button class="tab-btn" onclick="switchTab('reverse', this)">Reverse — Find Gauge</button>
+  <button class="tab-btn" onclick="switchTab('reverse', this)">Reverse - Find Gauge</button>
 </div>
 
 <div class="container">
@@ -635,7 +635,7 @@
           <div class="field">
             <label>Tuning</label>
             <select id="rr-tuning" onchange="rrAutoLoad(); rrUpdateNavBtns()">
-              <option value="">— no packs loaded —</option>
+              <option value="">- no packs loaded -</option>
             </select>
           </div>
           <div class="rr-nav-arrows">
@@ -656,7 +656,7 @@
   <div class="tab-panel" id="tab-setbuilder">
 
     <div class="card">
-      <div class="card-title">Full string set — live tension view</div>
+      <div class="card-title">Full string set - live tension view</div>
 
       <!-- Top controls -->
       <div class="sb-controls">
@@ -689,7 +689,7 @@
 
     <!-- Summary -->
     <div class="sb-summary" id="sb-summary">
-      <div class="sb-summary-gauge-set" id="sb-gauge-set">—</div>
+      <div class="sb-summary-gauge-set" id="sb-gauge-set">-</div>
       <div class="sb-summary-stats" id="sb-stats"></div>
       <div class="sb-overall-status" id="sb-overall"></div>
     </div>
@@ -705,7 +705,7 @@
         <div class="field">
           <label>Scale Length (inches)</label>
           <select id="f-scale" onchange="calcForward()">
-            <option value="">— select —</option>
+            <option value="">- select -</option>
             <option value="24.75">24.75"</option>
             <option value="25.0">25.0"</option>
             <option value="25.5" selected>25.5"</option>
@@ -719,7 +719,7 @@
         <div class="field">
           <label>Tuned Note</label>
           <select id="f-note" onchange="calcForward()">
-            <option value="">— select —</option>
+            <option value="">- select -</option>
           </select>
         </div>
         <div class="field">
@@ -732,7 +732,7 @@
         <div class="field">
           <label>Gauge</label>
           <select id="f-gauge" onchange="calcForward()">
-            <option value="">— select —</option>
+            <option value="">- select -</option>
           </select>
         </div>
       </div>
@@ -753,7 +753,7 @@
         <div class="field">
           <label>Scale Length (inches)</label>
           <select id="r-scale" onchange="calcReverse()">
-            <option value="">— select —</option>
+            <option value="">- select -</option>
             <option value="24.75">24.75"</option>
             <option value="25.0">25.0"</option>
             <option value="25.5" selected>25.5"</option>
@@ -767,7 +767,7 @@
         <div class="field">
           <label>Tuned Note</label>
           <select id="r-note" onchange="calcReverse()">
-            <option value="">— select —</option>
+            <option value="">- select -</option>
           </select>
         </div>
         <div class="field">
@@ -820,7 +820,7 @@ const NOTE_ORDER = [
   "E1","D#1","D1","C#1","C1","B0"
 ];
 
-// Unit weights (lbs/inch) — website-corrected
+// Unit weights (lbs/inch) - website-corrected
 const UW = {
   PL007:0.00001085, PL008:0.00001418, PL0085:0.00001601,
   PL009:0.00001794, PL0095:0.00001999, PL010:0.00002215,
@@ -907,7 +907,7 @@ const GAUGES_WOUND = [
 const ROSCO_TARGET_BY_STRING = {
   1: 13.5,
   2: 14.5,
-  3: 15.5,   // 16.0 if wound — handled in code
+  3: 15.5,   // 16.0 if wound - handled in code
   4: 18.0,
   5: 19.0,
   6: 20.0,
@@ -939,7 +939,7 @@ const SB_DEFAULTS = [
   { note:"F#1" },
 ];
 
-// Pack data — embedded fallback (344 packs, all tunings × all scale lengths)
+// Pack data - embedded fallback (344 packs, all tunings × all scale lengths)
 const PACKS_EMBEDDED = {
 "2475-E Standard-6":{"pack_id":"2475-E Standard-6","scale_length":24.75,"tuning":"E Standard","string_count":6,"strings":[{"string_num":1,"note":"E4","gauge":"9.5","type":"plain","tension_lbs":13.8},{"string_num":2,"note":"B3","gauge":"13","type":"plain","tension_lbs":14.5},{"string_num":3,"note":"G3","gauge":"17","type":"plain","tension_lbs":15.6},{"string_num":4,"note":"D3","gauge":"26w","type":"wound","tension_lbs":17.3},{"string_num":5,"note":"A2","gauge":"36","type":"wound","tension_lbs":17.9},{"string_num":6,"note":"E2","gauge":"52","type":"wound","tension_lbs":20.7}]},
 "2500-E Standard-6":{"pack_id":"2500-E Standard-6","scale_length":25.0,"tuning":"E Standard","string_count":6,"strings":[{"string_num":1,"note":"E4","gauge":"9.5","type":"plain","tension_lbs":14.1},{"string_num":2,"note":"B3","gauge":"13","type":"plain","tension_lbs":14.8},{"string_num":3,"note":"G3","gauge":"17","type":"plain","tension_lbs":15.9},{"string_num":4,"note":"D3","gauge":"26w","type":"wound","tension_lbs":17.7},{"string_num":5,"note":"A2","gauge":"36","type":"wound","tension_lbs":18.3},{"string_num":6,"note":"E2","gauge":"49","type":"wound","tension_lbs":18.9}]},
@@ -1287,7 +1287,7 @@ const PACKS_EMBEDDED = {
 "2900-Drop B-8":{"pack_id":"2900-Drop B-8","scale_length":29.0,"tuning":"Drop B","string_count":8,"strings":[{"string_num":1,"note":"B3","gauge":"10.5","type":"plain","tension_lbs":13.0},{"string_num":2,"note":"F#3","gauge":"15","type":"plain","tension_lbs":14.9},{"string_num":3,"note":"D3","gauge":"19","type":"plain","tension_lbs":15.0},{"string_num":4,"note":"A2","gauge":"30w","type":"wound","tension_lbs":18.2},{"string_num":5,"note":"E2","gauge":"42","type":"wound","tension_lbs":19.1},{"string_num":6,"note":"B1","gauge":"56","type":"wound","tension_lbs":19.1},{"string_num":7,"note":"F#1","gauge":"80","type":"wound","tension_lbs":21.4},{"string_num":8,"note":"B0","gauge":"80","type":"wound","tension_lbs":9.5}]}
 };
 
-// Pack data — merged with any newer packs from JSON on load
+// Pack data - merged with any newer packs from JSON on load
 let PACKS = Object.assign({}, PACKS_EMBEDDED);
 
 // ═══════════════════════════════════════════════
@@ -1298,14 +1298,14 @@ function init() {
   populateNotes('r-note');
   populateGauges('f-gauge', fType);
   sbInit();
-  rrUpdateTunings(); // immediate — embedded packs already loaded
-  loadPacks();       // async — merges any newer packs from JSON
+  rrUpdateTunings(); // immediate - embedded packs already loaded
+  loadPacks();       // async - merges any newer packs from JSON
 }
 
 function populateNotes(selectId) {
   const sel = document.getElementById(selectId);
   const current = sel.value;
-  sel.innerHTML = '<option value="">— select —</option>';
+  sel.innerHTML = '<option value="">- select -</option>';
   NOTE_ORDER.forEach(n => {
     const opt = document.createElement('option');
     opt.value = n; opt.textContent = n;
@@ -1318,7 +1318,7 @@ function populateGauges(selectId, type) {
   const sel = document.getElementById(selectId);
   if (!sel) return;
   const current = sel.value;
-  sel.innerHTML = '<option value="">— select —</option>';
+  sel.innerHTML = '<option value="">- select -</option>';
   const list = type === 'plain' ? GAUGES_PLAIN : GAUGES_WOUND;
   list.forEach(item => {
     const opt = document.createElement('option');
@@ -1634,8 +1634,8 @@ function sbBuildRow(i) {
       </select>
       <span class="sb-ambig-suffix" id="sb-suffix-${num}">${suffixText}</span>
       <div class="sb-tension-cell">
-        <div class="sb-tension-val" id="sb-tval-${num}">—</div>
-        <div class="sb-tension-target" id="sb-ttgt-${num}">target: —</div>
+        <div class="sb-tension-val" id="sb-tval-${num}">-</div>
+        <div class="sb-tension-target" id="sb-ttgt-${num}">target: -</div>
       </div>
       <div class="sb-dot" id="sb-dot-${num}"></div>
     </div>
@@ -1679,7 +1679,7 @@ function sbSetType(num, type) {
   sbRowChanged(num);
 }
 
-// Called when user changes the note — auto-gauge then recalculate
+// Called when user changes the note - auto-gauge then recalculate
 function sbNoteChanged(num) {
   const scale = parseFloat(document.getElementById('sb-scale').value) || 25.5;
   const note = document.getElementById(`sb-note-${num}`).value;
@@ -1705,7 +1705,7 @@ function sbNoteChanged(num) {
   sbRowChanged(num);
 }
 
-// Called when scale changes — auto-gauge all rows then recalculate
+// Called when scale changes - auto-gauge all rows then recalculate
 function sbScaleChanged() {
   const scale = parseFloat(document.getElementById('sb-scale').value) || 25.5;
   for (let i = 1; i <= sbCount; i++) {
@@ -1734,12 +1734,12 @@ function sbScaleChanged() {
   sbRecalcAllTensions();
 }
 
-// Recalculate tensions only (no auto-gauge) — used internally
+// Recalculate tensions only (no auto-gauge) - used internally
 function sbRecalcAllTensions() {
   for (let i = 1; i <= sbCount; i++) sbRowChanged(i);
 }
 
-// Called when gauge dropdown changes — just recalculate tension
+// Called when gauge dropdown changes - just recalculate tension
 function sbRowChanged(num) {
   const scale  = parseFloat(document.getElementById('sb-scale').value);
   const note   = document.getElementById(`sb-note-${num}`).value;
@@ -1755,7 +1755,7 @@ function sbRowChanged(num) {
   tgtEl.textContent = `target: ${target} lbs`;
 
   if (!gauge || !note) {
-    valEl.textContent = '—';
+    valEl.textContent = '-';
     dotEl.style.background = '#333';
     sbUpdateSummary();
     return;
@@ -1765,7 +1765,7 @@ function sbRowChanged(num) {
   const list = type === 'plain' ? GAUGES_PLAIN : GAUGES_WOUND;
   const item = list.find(g => g.g === gauge);
   if (!item || !freq) {
-    valEl.textContent = '—';
+    valEl.textContent = '-';
     dotEl.style.background = '#333';
     sbUpdateSummary();
     return;
@@ -1773,7 +1773,7 @@ function sbRowChanged(num) {
 
   const t = tension(item.uw, scale, freq);
   if (t === null) {
-    valEl.textContent = '—';
+    valEl.textContent = '-';
     dotEl.style.background = '#333';
     sbUpdateSummary();
     return;
@@ -1841,18 +1841,18 @@ function sbUpdateSummary() {
   const overallEl = document.getElementById('sb-overall');
   if (anyBad) {
     overallEl.className = 'sb-overall-status sb-status-bad';
-    overallEl.textContent = '⚠ Review tensions — one or more strings outside ±3 lbs';
+    overallEl.textContent = '⚠ Review tensions - one or more strings outside ±3 lbs';
   } else if (anyWarn) {
     overallEl.className = 'sb-overall-status sb-status-warn';
-    overallEl.textContent = '◆ Close — some strings between ±1.5–3 lbs of target';
+    overallEl.textContent = '◆ Close - some strings between ±1.5–3 lbs of target';
   } else {
     overallEl.className = 'sb-overall-status sb-status-ok';
-    overallEl.textContent = '✓ Rosco Balanced — all strings within ±1.5 lbs of target';
+    overallEl.textContent = '✓ Rosco Balanced - all strings within ±1.5 lbs of target';
   }
 }
 
 // ═══════════════════════════════════════════════
-//  ROSCO RECOMMENDED — PACK LOADING
+//  ROSCO RECOMMENDED - PACK LOADING
 // ═══════════════════════════════════════════════
 
 async function loadPacks() {
@@ -1868,7 +1868,7 @@ async function loadPacks() {
       }
     }
   } catch(e) {
-    // Fetch may fail on file:// protocol — packs will remain empty until added via server
+    // Fetch may fail on file:// protocol - packs will remain empty until added via server
     console.log('Pack loading note:', e.message);
   }
   rrUpdateTunings();
@@ -1887,9 +1887,9 @@ function rrUpdateTunings() {
   const current = sel.value;
   sel.innerHTML = '';
   if (tuningSet.size === 0) {
-    sel.innerHTML = '<option value="">— no packs available —</option>';
+    sel.innerHTML = '<option value="">- no packs available -</option>';
   } else {
-    sel.innerHTML = '<option value="">— select tuning —</option>';
+    sel.innerHTML = '<option value="">- select tuning -</option>';
     for (const t of tuningSet) {
       const opt = document.createElement('option');
       opt.value = t;
@@ -1907,7 +1907,7 @@ function rrStringsChanged() {
   rrAutoLoad();
 }
 
-// Auto-load pack whenever a dropdown changes — fires rrFindPack if tuning is selected
+// Auto-load pack whenever a dropdown changes - fires rrFindPack if tuning is selected
 function rrAutoLoad() {
   const tuningVal = document.getElementById('rr-tuning').value;
   if (tuningVal) {
@@ -1970,7 +1970,7 @@ function rrFindPack() {
   if (!pack) {
     resultEl.innerHTML = `
       <div class="rr-not-found">
-        This combination isn't in our pack library yet — try the <strong>Custom Set Builder</strong> to dial in your own,
+        This combination isn't in our pack library yet - try the <strong>Custom Set Builder</strong> to dial in your own,
         or contact us and we'll add it.
       </div>
     `;
@@ -2004,10 +2004,10 @@ function rrFindPack() {
       ? `<span style="font-size:0.8em;color:#2cd5c4;font-weight:700;font-family:monospace">${s.type === 'plain' ? 'p' : 'w'}</span>`
       : '';
     const tooltipAttr = ambig
-      ? ` title="Available as both plain and wound — this set uses ${s.type}"`
+      ? ` title="Available as both plain and wound - this set uses ${s.type}"`
       : '';
 
-    let tensionDisplay = '—';
+    let tensionDisplay = '-';
     let iconHtml = '';
     if (freq && gItem) {
       const t = tension(gItem.uw, scale, freq);
@@ -2049,7 +2049,7 @@ function rrFindPack() {
   resultEl.innerHTML = `
     <div class="rr-found">
       <div class="rr-pack-header">
-        <div class="rr-pack-title">✓&nbsp; ${tuningVal} — ${scaleDisplay}" — ${strings} String</div>
+        <div class="rr-pack-title">✓&nbsp; ${tuningVal} - ${scaleDisplay}" - ${strings} String</div>
         <div class="rr-pack-subtitle">Rosco Tension-Balanced Set</div>
       </div>
       <table class="rr-table">

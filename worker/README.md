@@ -20,7 +20,7 @@ friendly "couldn't find it" note instead of guessing.
 You need to push new code to the Worker any time `index.js` changes. Two
 ways to do it:
 
-### Option A — Cloudflare dashboard (no install required)
+### Option A - Cloudflare dashboard (no install required)
 
 1. Open the Worker in the Cloudflare dashboard
    ([Workers & Pages → rosco-scale-lookup](https://dash.cloudflare.com))
@@ -30,7 +30,7 @@ ways to do it:
 
 That's it. Takes about 30 seconds.
 
-### Option B — Wrangler CLI (if you'll be redeploying repeatedly)
+### Option B - Wrangler CLI (if you'll be redeploying repeatedly)
 
 One-time setup:
 
@@ -77,7 +77,7 @@ Add new origins by editing the array and redeploying.
 ## Switching the model
 
 Edit the `MODEL` constant at the top of `index.js` and redeploy. Currently
-`claude-haiku-4-5-20251001` — fast, cheap, accurate enough for "what's the
+`claude-haiku-4-5-20251001` - fast, cheap, accurate enough for "what's the
 scale length of a Stratocaster". If you want richer answers for unusual
 models, switch to `claude-sonnet-4-6` (a few times more expensive but
 roughly equivalent reasoning quality on this task).

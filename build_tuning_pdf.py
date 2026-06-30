@@ -1,10 +1,10 @@
 #!/usr/bin/env python3
 """
-build_tuning_pdf.py — regenerate Rosco_Tuning_Reference.pdf from index.html PACKS.
+build_tuning_pdf.py - regenerate Rosco_Tuning_Reference.pdf from index.html PACKS.
 
 Customer-facing reference of every tuning the pack builder supports. Published
 on roscoguitars.com as a free download. Keep this in sync with the PACKS data
-inside index.html — when a tuning is added or removed there, update the
+inside index.html - when a tuning is added or removed there, update the
 SECTIONS list below and rerun this script.
 
 Run:
@@ -81,7 +81,7 @@ SECTIONS = [
         color='#3d6ea3',            # blue
         subtitle='{n} STANDARD TUNINGS · {h} HIDDEN GEMS',
         blurb=('Extended-range options including Meshuggah F (identical pitches to F '
-               'Standard, named for its most famous user) and Double Drop E (High A) — '
+               'Standard, named for its most famous user) and Double Drop E (High A) - '
                'a 7-string Drop F# with a High A added on top.'),
         tunings=['F# Standard','F Standard','Meshuggah F','Drop E','Double Drop E (High A)',
                  'A Standard','Drop D','Drop Eb','Drop F','E Standard','High A'],
@@ -126,7 +126,7 @@ def load_packs() -> dict:
     raise RuntimeError('PACKS line not found in index.html')
 
 
-# Note normalization for display — strip "0" sub-octave clutter? No, the
+# Note normalization for display - strip "0" sub-octave clutter? No, the
 # customer-facing PDF keeps octave numbers. Just pass through.
 def notes_low_to_high(pack: dict) -> list[str]:
     """Return the pack's notes in low→high order (s5 → s1)."""
@@ -173,7 +173,7 @@ TUNING_NOTES = ParagraphStyle('TNotes', parent=styles['Normal'], fontName='Helve
 
 
 # ──────────────────────────────────────────────────────────────────────────
-# Page chrome — header / footer drawn directly on canvas
+# Page chrome - header / footer drawn directly on canvas
 # ──────────────────────────────────────────────────────────────────────────
 def draw_section_chrome(c: canvas.Canvas, doc, *, page_num: int):
     """Header bar at top with small logo and right-aligned 'ROSCO TUNING REFERENCE' /
@@ -246,7 +246,7 @@ def draw_cover(c: canvas.Canvas, counts: dict[str, int]):
     c.setFont('Helvetica', 13)
     c.drawCentredString(w/2, title_y - 0.35*inch, 'For Rosco Custom Strings')
 
-    # Blurb paragraph — two lines centred
+    # Blurb paragraph - two lines centred
     c.setFillColor(HexColor('#444444'))
     c.setFont('Helvetica', 10.5)
     blurb_lines = [
@@ -362,7 +362,7 @@ def render_section_flowables(section: dict, packs: dict) -> list:
         rows.append((tuning, notes_low_to_high(pack)))
     out.append(build_tuning_table(rows, color))
 
-    # Hidden gems sub-section — wrap as KeepTogether so heading + table never split
+    # Hidden gems sub-section - wrap as KeepTogether so heading + table never split
     if section['hidden_gems']:
         gem_subtitle = ParagraphStyle('GemSub', parent=SUBTITLE, textColor=color, fontSize=9)
         gem_rows = []
@@ -374,11 +374,11 @@ def render_section_flowables(section: dict, packs: dict) -> list:
             gem_rows.append((tuning, notes_low_to_high(pack)))
         out.append(KeepTogether([
             Spacer(1, 0.3*inch),
-            Paragraph(f'{section["title"]} — Hidden Gems', H2),
+            Paragraph(f'{section["title"]} - Hidden Gems', H2),
             Paragraph(f'{len(section["hidden_gems"])} TUNINGS · ARTIST & CUSTOM CONFIGURATIONS',
                       gem_subtitle),
             Paragraph(
-                'Named artist and custom tunings we get asked about often — each one comes '
+                'Named artist and custom tunings we get asked about often - each one comes '
                 'with our full auto-balancing treatment.',
                 BLURB,
             ),
@@ -480,7 +480,7 @@ def render_summary_flowables() -> list:
 
 
 # ──────────────────────────────────────────────────────────────────────────
-# Document driver — DIY layout because we want a custom cover page
+# Document driver - DIY layout because we want a custom cover page
 # ──────────────────────────────────────────────────────────────────────────
 class TuningPDF(BaseDocTemplate):
     """Custom doc template: first page is the cover (no chrome), subsequent
@@ -523,7 +523,7 @@ def main():
 
     doc = TuningPDF(str(OUTPUT), counts)
     story = []
-    # First page is cover (already drawn in onPage callback) — but reportlab still
+    # First page is cover (already drawn in onPage callback) - but reportlab still
     # needs a flowable. PageBreak after a zero-height spacer.
     story.append(Spacer(1, 0.01))
     story.append(PageBreak())
@@ -534,7 +534,7 @@ def main():
     for section in SECTIONS:
         story.extend(render_section_flowables(section, packs))
 
-    # Last page — summary
+    # Last page - summary
     story.extend(render_summary_flowables())
 
     doc.build(story)

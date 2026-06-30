@@ -1,4 +1,4 @@
-# Cowork Instructions: Calculator Update — v1.1
+# Cowork Instructions: Calculator Update - v1.1
 *Update the existing rosco_calculator.html file. Do not rebuild from scratch.*
 
 ---
@@ -9,11 +9,11 @@
 `C:\Users\Claytron\Rosco Guitars Ltd\Rosco Guitars - Documents\09. Rosco AI\RG String Calculator\rosco_calculator.html`
 
 **Logo file (in same folder):**
-`Rosco Guitars Logo.png` (or whatever the exact filename is — check the folder)
+`Rosco Guitars Logo.png` (or whatever the exact filename is - check the folder)
 
 ---
 
-## Change 1 — Brand Colors
+## Change 1 - Brand Colors
 
 Replace the current color scheme with the official Rosco Guitars brand colors:
 
@@ -40,7 +40,7 @@ Replace the current color scheme with the official Rosco Guitars brand colors:
 
 ---
 
-## Change 2 — Add Rosco Logo to Header
+## Change 2 - Add Rosco Logo to Header
 
 Replace the current text-only header with the actual logo image.
 
@@ -95,32 +95,32 @@ Replace the current text-only header with the actual logo image.
 
 ---
 
-## Change 3 — Full String Set View (main feature addition)
+## Change 3 - Full String Set View (main feature addition)
 
 Add a **third tab** called "SET BUILDER" between the existing two tabs.
 
 **New tab order:**
-1. TENSION CALCULATOR (existing — single string)
+1. TENSION CALCULATOR (existing - single string)
 2. SET BUILDER (new)
-3. REVERSE — FIND GAUGE (existing)
+3. REVERSE - FIND GAUGE (existing)
 
 ### What the Set Builder tab does:
 
-Displays a full string set as rows — one row per string (6 strings by default). Each row has:
+Displays a full string set as rows - one row per string (6 strings by default). Each row has:
 - String number label (1–6, or 1–7, 1–8)
 - Note dropdown (same note options as existing calculator)
 - String type toggle (PLAIN / WOUND)
-- Gauge dropdown (filtered by type — plain gauges for plain, wound gauges for wound)
+- Gauge dropdown (filtered by type - plain gauges for plain, wound gauges for wound)
 - Calculated tension display (live, updates instantly)
 - Tension status indicator (colored dot: teal = on target ±1.5 lbs, slate = within ±3 lbs, red = outside)
 - Rosco target tension shown small below the calculated tension
 
 At the top of the Set Builder, add:
 - Scale length dropdown (same options as existing calculator)
-- String count selector: 6 / 7 / 8 (buttons — clicking 7 adds row 7, clicking 8 adds rows 7+8)
+- String count selector: 6 / 7 / 8 (buttons - clicking 7 adds row 7, clicking 8 adds rows 7+8)
 
 At the bottom, show:
-- **Set summary line:** e.g. `9 / 12.5 / 16.5 / 26w / 36 / 50` — the full gauge set in order
+- **Set summary line:** e.g. `9 / 12.5 / 16.5 / 26w / 36 / 50` - the full gauge set in order
 - **Average tension** across all strings
 - **Tension range** (lowest to highest)
 - A color-coded overall status: "Rosco Balanced ✓" (all strings within ±1.5 lbs of target) or "Review tensions" (any string outside ±3 lbs)
@@ -156,33 +156,33 @@ Each string row should be a horizontal flex row:
 ```
 
 Style each row with subtle alternating background or a thin separator line between rows.
-Row height should be compact — around 52px per row.
+Row height should be compact - around 52px per row.
 
 The tension value should be large and bold (`font-size: 1.3rem`, `font-weight: 700`).
 The target tension below it should be small and muted (`font-size: 0.7rem`, `color: #667085`).
 
 Status dot colors:
-- `#2cd5c4` — within ±1.5 lbs of target (on target)
-- `#f0a500` — within ±3.0 lbs of target (close)
-- `#e05555` — outside ±3.0 lbs (review)
+- `#2cd5c4` - within ±1.5 lbs of target (on target)
+- `#f0a500` - within ±3.0 lbs of target (close)
+- `#e05555` - outside ±3.0 lbs (review)
 
 ---
 
-## Change 4 — Minor polish
+## Change 4 - Minor polish
 
 - Ensure tab labels are uppercase with letter-spacing: `0.1em`
 - Ensure all dropdown selects use dark background `#2d2d2d`, teal border on focus `#2cd5c4`
 - Add a thin `1px solid #2cd5c4` bottom border to the active tab, remove from inactive
-- The formula display at the bottom of the Tension Calculator tab — make it slightly more prominent, use `#667085` color
+- The formula display at the bottom of the Tension Calculator tab - make it slightly more prominent, use `#667085` color
 
 ---
 
 ## What NOT to change
 
-- The tension formula and all unit weight data — do not touch
-- The existing Tension Calculator tab functionality — only restyle colors, do not change logic
-- The existing Reverse Calculator tab functionality — only restyle colors
-- The JSON file — not involved in this update
+- The tension formula and all unit weight data - do not touch
+- The existing Tension Calculator tab functionality - only restyle colors, do not change logic
+- The existing Reverse Calculator tab functionality - only restyle colors
+- The JSON file - not involved in this update
 
 ---
 
@@ -201,5 +201,5 @@ Report back with a screenshot when done.
 
 ---
 
-*Instructions written in Chat — March 10, 2026*
-*v1.1 update — color rebrand + Set Builder tab addition*
+*Instructions written in Chat - March 10, 2026*
+*v1.1 update - color rebrand + Set Builder tab addition*

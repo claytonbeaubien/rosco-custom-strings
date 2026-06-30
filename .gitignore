@@ -1,4 +1,4 @@
-# Local config (API keys etc — never commit)
+# Local config (API keys etc - never commit)
 config.local.js
 config.local.json
 

@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-build_catalogue.py — Generate daddario_catalogue.json from the D'Addario price list.
+build_catalogue.py - Generate daddario_catalogue.json from the D'Addario price list.
 
 Source:  source_data/Daddario Price List - March-2025.xlsx (sheet "Daddario Price List 2025")
 Output:  daddario_catalogue.json (project root)
@@ -40,7 +40,7 @@ MARKUP = {  # mirrored in rosco_string_engine.json -> pricing_config.markup
 CURRENCY = "CAD"
 
 # Each prefix maps to series/instrument/type metadata. Order matters only when
-# matching codes — we sort by length descending so e.g. NYXLB beats XLB.
+# matching codes - we sort by length descending so e.g. NYXLB beats XLB.
 PREFIX_MAP = {
     "PL":    {"series": "XL",            "instrument": "guitar",   "type": "plain"},
     "NW":    {"series": "XL",            "instrument": "guitar",   "type": "wound"},
@@ -60,7 +60,7 @@ PREFIX_MAP = {
 # Match longest prefixes first so NYXLB wins over XLB, NYNW wins over NW, etc.
 PREFIXES_BY_LENGTH = sorted(PREFIX_MAP.keys(), key=len, reverse=True)
 
-# Manual additions — strings sourced outside the standard D'Addario price sheet
+# Manual additions - strings sourced outside the standard D'Addario price sheet
 # (special-order or distributor extras Clayton actually buys). These are merged
 # in after the spreadsheet pass and survive every xlsx re-run. If a code here
 # collides with a row in the spreadsheet, the manual entry wins so Clayton's
@@ -70,17 +70,17 @@ PREFIXES_BY_LENGTH = sorted(PREFIX_MAP.keys(), key=len, reverse=True)
 # Series/instrument/type/gauge are inferred from the prefix exactly like
 # spreadsheet rows.
 MANUAL_ADDITIONS = [
-    # NW090 — single .090 nickel wound, used as the lowest string in 8-string
+    # NW090 - single .090 nickel wound, used as the lowest string in 8-string
     # and extreme drop-tuning guitar packs. Not on D'Addario's standard
     # March 2025 price sheet but available through Clayton's distributor.
     # Source: invoice screenshot, Apr 2026.
     ("NW090", "SINGLE NICKEL WOUND 090", 12.50, 6.13),
-    # PL021 — single .021 plain steel. Sits between PL020 and PL022 (which
+    # PL021 - single .021 plain steel. Sits between PL020 and PL022 (which
     # D'Addario does sell as singles). Useful for alternate tunings on
     # heavier-gauged top strings. Stocked.
     # Source: invoice screenshot, Apr 2026.
     ("PL021", "SINGLE PLAIN STEEL 021", 1.80, 0.88),
-    # NW065 — single .065 nickel wound. Sits between NW064 and NW066
+    # NW065 - single .065 nickel wound. Sits between NW064 and NW066
     # (both of which D'Addario sells as singles). Useful for filling
     # out 6/7-string low-end ladders. Stocked.
     # Source: invoice screenshot, Apr 2026.

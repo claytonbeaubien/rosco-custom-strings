@@ -1,11 +1,11 @@
-# Auto-detect text files. Force LF line endings everywhere — the repo, the
+# Auto-detect text files. Force LF line endings everywhere - the repo, the
 # Windows working tree, and the Cowork Linux sandbox all see the same bytes.
 # This stops git/GitHub Desktop from flagging spurious "LF to CRLF" changes
 # when files round-trip between the sandbox and Windows tools, and reduces
 # the index lock churn that comes with renormalization on commit.
 * text=auto eol=lf
 
-# Binary assets — never normalize.
+# Binary assets - never normalize.
 *.png binary
 *.jpg binary
 *.jpeg binary

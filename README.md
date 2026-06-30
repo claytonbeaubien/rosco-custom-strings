@@ -13,10 +13,10 @@ Built for internal use and eventually customer-facing ordering via RoscoGuitars.
 
 ## Stack
 - Pure HTML / JavaScript / Canvas
-- `rosco_string_engine.json` — string data source
+- `rosco_string_engine.json` - string data source
 
 ## Roadmap
 - [ ] GitHub Pages deployment (internal use URL)
-- [ ] Airtable integration — save packs to client jobs
+- [ ] Airtable integration - save packs to client jobs
 - [ ] Customer-facing ordering via RoscoGuitars.com
 - [ ] Shopify integration for string pack orders

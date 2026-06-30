@@ -1,4 +1,4 @@
-# RG String Calculator — Project Status
+# RG String Calculator - Project Status
 *Last updated: April 4, 2026*
 *This is the single source of truth for the current state of the string tool project.*
 
@@ -6,7 +6,7 @@
 
 ## Current State
 
-**Status: 🔄 Phase 3 (Front End) active — Pack Generator is the primary tool. Phase 4 (Store Integration) not started.**
+**Status: 🔄 Phase 3 (Front End) active - Pack Generator is the primary tool. Phase 4 (Store Integration) not started.**
 
 The Pack Generator (`rosco_pack_generator.html`) is now the primary tool. It replaced the earlier calculator (V1) which is archived. The JSON engine exists as a source-of-truth reference; the pack generator has all data embedded.
 
@@ -16,7 +16,7 @@ The Pack Generator (`rosco_pack_generator.html`) is now the primary tool. It rep
 
 ```
 rosco_projects\RG String Calculator\
-├── rosco_pack_generator.html          ← ✅ PRIMARY TOOL (V2) — open this
+├── rosco_pack_generator.html          ← ✅ PRIMARY TOOL (V2) - open this
 ├── Images\                            ← background images referenced by pack generator
 ├── Notes.csv                          ← general notes
 ├── data\
@@ -37,9 +37,9 @@ rosco_projects\RG String Calculator\
 
 | File | Status | Description |
 |------|--------|-------------|
-| `rosco_pack_generator.html` | ✅ **PRIMARY** | The main tool — pack generator / recommender (V2) |
-| `data/rosco_string_engine.json` | ✅ Reference | Source-of-truth data engine — 344 packs, unit weights, tension targets |
-| `build_history/rosco_calculator_v1_archived.html` | 🗄️ Archived | Old V1 calculator — superseded by pack generator |
+| `rosco_pack_generator.html` | ✅ **PRIMARY** | The main tool - pack generator / recommender (V2) |
+| `data/rosco_string_engine.json` | ✅ Reference | Source-of-truth data engine - 344 packs, unit weights, tension targets |
+| `build_history/rosco_calculator_v1_archived.html` | 🗄️ Archived | Old V1 calculator - superseded by pack generator |
 | `source_data/` | ✅ Source | D'Addario catalogues, price list, tension chart |
 
 ---
@@ -62,20 +62,20 @@ All instruction docs archived in `build_history/` for reference.
 
 | Phase | Description | Status |
 |-------|-------------|--------|
-| 1 | Data Foundation — JSON engine | ✅ Complete (March 10) |
+| 1 | Data Foundation - JSON engine | ✅ Complete (March 10) |
 | 2 | Recommender Logic | ✅ Complete (March 10) |
-| 3 | Web Tool (HTML front end) | 🔄 In progress — pack generator refinement |
-| 4 | Store Integration — Shopify buy/subscribe buttons | ⏳ Not started |
+| 3 | Web Tool (HTML front end) | 🔄 In progress - pack generator refinement |
+| 4 | Store Integration - Shopify buy/subscribe buttons | ⏳ Not started |
 
 ---
 
 ## Open Questions for Clayton (Phase 4 blockers)
 
 **Product / Pricing:**
-- [ ] Which D'Addario string lines is Rosco sourcing? (EXL? NYXL? Singles?) — affects part number accuracy
+- [ ] Which D'Addario string lines is Rosco sourcing? (EXL? NYXL? Singles?) - affects part number accuracy
 - [ ] Individual string pricing for Custom Builder, or only full pre-built packs?
 - [ ] Are 7-string and 8-string packs validated by Clayton or just tension-calculated?
-- [ ] What happens when someone inputs a scale/tuning with no exact pack match — show nearest or "coming soon"?
+- [ ] What happens when someone inputs a scale/tuning with no exact pack match - show nearest or "coming soon"?
 - [ ] Is Shopify subscription already set up, or does this need to be built?
 
 **Design / UX:**
@@ -93,5 +93,5 @@ All instruction docs archived in `build_history/` for reference.
 
 1. Continue refining `rosco_pack_generator.html`
 2. Answer open questions above
-3. Execute Phase 4 — wire "Buy" / "Subscribe" buttons to Shopify checkout
+3. Execute Phase 4 - wire "Buy" / "Subscribe" buttons to Shopify checkout
 4. (Long term) Move to web deployment on roscoguitars.com
