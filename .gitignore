@@ -8,3 +8,9 @@ Thumbs.db
 
 # Editor
 .vscode/
+
+# Claude Code local
+.claude/
+
+# Local backup snapshots
+*.bak.html
