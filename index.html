@@ -781,29 +781,34 @@ const UW = {
   PL013:0.00003744,PL0135:0.00004037,PL014:0.00004342,PL015:0.00004984,PL0155:0.00005322,PL016:0.00005671,
   PL017:0.00006402,PL018:0.00007177,PL019:0.00007997,PL020:0.00008861,PL021:0.00009770,PL022:0.00010722,
   PL024:0.00012760,PL026:0.00014975,PL0125:0.00003467,PL0165:0.00006037,
-  NW017:0.00005448,NW018:0.00006108,NW019:0.00006806,NW020:0.00007541,NW021:0.00008314,
-  NW022:0.00009125,NW024:0.00010859,NW025:0.00011752,NW026:0.00012680,NW028:0.00014664,NW030:0.00016785,
-  NW032:0.00019042,NW034:0.00021152,NW036:0.00023328,NW037:0.00024576,NW038:0.00025854,NW039:0.00027160,NW040:0.00028490,
-  NW042:0.00031246,NW044:0.00034108,NW046:0.00036970,NW048:0.00040229,NW049:0.00041909,NW050:0.00043622,
-  NW052:0.00047152,NW054:0.00050817,NW056:0.00054615,NW059:0.00060565,NW060:0.00062616,
-  NW062:0.00066817,NW064:0.00071151,NW065:0.00073368,NW066:0.00075619,NW068:0.00080219,NW070:0.00084953,
-  NW072:0.00089818,NW074:0.00094816,NW080:0.00110600,NW090:0.00139978
-  // Derived unit weights. D'Addario catalogues and sells these as XL singles
-  // but its published tension chart skips them, so the values below are fitted
-  // rather than quoted:
-  //   PL0155  plain steel is solid round wire, so uw = 0.2215 * d^2 exactly
-  //           (verified against every published PL value in this table).
-  //   NW025   chart steps .024 -> .026
-  //   NW037   chart steps .036 -> .038
-  //   NW040   chart steps .039 -> .042
-  //   NW050   chart steps .049 -> .052
-  //   Wound values come from a log-log fit against the surrounding XL nickel
-  //   wound series (uw proportional to d^1.89 to d^1.98 depending on the core
-  //   step), stable to under 0.5% across alternate neighbour pairs. Same
-  //   approach already used for the bass .025W and .107 entries.
-  // PL0165 is kept for historical packs only - D'Addario no longer lists a .0165
-  // in the XL plain steel line (only XS Coated), so it is deliberately absent
-  // from GAUGES_PLAIN and cannot be priced.
+  NW017:0.00005524,NW018:0.00006215,NW019:0.00006947,NW020:0.00007495,NW021:0.00008293,
+  NW022:0.00009184,NW024:0.00010857,NW025:0.00011747,NW026:0.00012671,NW028:0.00014666,NW030:0.00017236,
+  NW032:0.00019347,NW034:0.00021590,NW036:0.00023964,NW037:0.00025203,NW038:0.00026471,NW039:0.00027932,NW040:0.00029347,
+  NW042:0.00032279,NW044:0.00035182,NW046:0.00038216,NW048:0.00041382,NW049:0.00043014,NW050:0.00044683,
+  NW052:0.00048109,NW054:0.00053838,NW056:0.00057598,NW059:0.00064191,NW060:0.00066542,
+  NW062:0.00070697,NW064:0.00074984,NW065:0.00077417,NW066:0.00079889,NW068:0.00084614,NW070:0.00089304,
+  NW072:0.00094124,NW074:0.00098869,NW080:0.00115011,NW090:0.00145561
+  // SOURCE: D'Addario "Catalog Supplement / String Tension Specifications",
+  // XL Nickelplated Steel Round Wound and XL Plain Steel tables. Every NW value
+  // above is quoted verbatim from that chart except the six it does not publish:
+  //
+  //   NW025  chart steps .024 -> .026   |  NW037  chart steps .036 -> .038
+  //   NW040  chart steps .039 -> .042   |  NW050  chart steps .049 -> .052
+  //   NW065  chart steps .064 -> .066
+  //     -> log-log fit between the two bracketing published gauges
+  //        (n lands between 1.84 and 2.06 depending on where the core step
+  //        falls), stable to under 0.5% across alternate neighbour pairs.
+  //   NW090  sits above the top of the published range with nothing to bracket
+  //     -> carries NW080's revision ratio (1.03988), which also reproduces the
+  //        d^2 extrapolation to within 0.003%.
+  //
+  // Plain steel is solid round wire, so uw = 0.2215 * d^2 exactly. Every
+  // published PL value in this table already satisfies that, and PL0155 is
+  // computed from it. PL0125 and PL0165 predate this table and sit ~0.15% above
+  // the formula; they are left as-is rather than nudged, since no pack turns on
+  // that margin. PL0165 is kept for historical packs only - D'Addario no longer
+  // lists a .0165 in the XL plain steel line (only XS Coated), so it is
+  // deliberately absent from GAUGES_PLAIN and cannot be priced.
 };
 
 const NOTE_FREQ = {
@@ -823,7 +828,11 @@ const NOTE_FREQ = {
 
 // ════════════════════════════════════════════
 // BASS STRING DATA (D'Addario XL Nickel Round Wound)
-// UW values are D'Addario's published spec sheet values per scale.
+// UW values are D'Addario's published spec sheet values per scale. Note that
+// D'Addario publishes a DIFFERENT unit weight per scale line for the same
+// nominal gauge - XB050S is .00049956 against XLB050 at .00046463 - because the
+// core-to-wrap proportions differ. Each entry below carries its own line's
+// value rather than sharing one number across scales.
 // Each scale length maps to its native D'Addario product line:
 //   30" Short Scale      → XB*S   (limited gauge set)
 //   32" Medium Scale     → XB*M
@@ -833,72 +842,78 @@ const NOTE_FREQ = {
 // ════════════════════════════════════════════
 const BASS_STRINGS_BY_SCALE = {
   // --- 30" Short Scale (XB*S) ---
+  // D'Addario does not sell .045 or .050 short-scale singles (no XB045S/XB050S
+  // in the catalogue), so a pack calling for them ships the XLB equivalent -
+  // which is also what the pricing fallback charges for. These two therefore
+  // carry the XLB unit weight, not the chart's XB*S figure, so the tension the
+  // engine sizes against is the tension of the string that actually arrives.
+  // XB045S matches XLB045 anyway; XB050S would otherwise read 7.5% heavy.
   '30.0': [
-    {g:"45",  uw:0.00035590, part:"XB045S"},
-    {g:"50",  uw:0.00043766, part:"XB050S"},
-    {g:"65",  uw:0.00074297, part:"XB065S"},
-    {g:"70",  uw:0.00086196, part:"XB070S"},
-    {g:"80",  uw:0.00111428, part:"XB080S"},
-    {g:"85",  uw:0.00125140, part:"XB085S"},
-    {g:"100", uw:0.00170893, part:"XB100S"},
-    {g:"105", uw:0.00187560, part:"XB105S"}
+    {g:"45",  uw:0.00037240, part:"XB045S"},
+    {g:"50",  uw:0.00046463, part:"XB050S"},
+    {g:"65",  uw:0.00079569, part:"XB065S"},
+    {g:"70",  uw:0.00106585, part:"XB070S"},
+    {g:"80",  uw:0.00116023, part:"XB080S"},
+    {g:"85",  uw:0.00145122, part:"XB085S"},
+    {g:"100", uw:0.00179687, part:"XB100S"},
+    {g:"105", uw:0.00214990, part:"XB105S"}
   ],
   // --- 32" Medium Scale (XB*M) ---
   '32.0': [
-    {g:"40",  uw:0.00028230, part:"XB040M"},
-    {g:"45",  uw:0.00035590, part:"XB045M"},
-    {g:"50",  uw:0.00043766, part:"XB050M"},
-    {g:"60",  uw:0.00063285, part:"XB060M"},
-    {g:"65",  uw:0.00074297, part:"XB065M"},
-    {g:"70",  uw:0.00086196, part:"XB070M"},
-    {g:"75",  uw:0.00098442, part:"XB075M"},
-    {g:"80",  uw:0.00111428, part:"XB080M"},
-    {g:"85",  uw:0.00125140, part:"XB085M"},
-    {g:"95",  uw:0.00154926, part:"XB095M"},
-    {g:"100", uw:0.00170893, part:"XB100M"},
-    {g:"105", uw:0.00187560, part:"XB105M"}
+    {g:"40",  uw:0.00029322, part:"XB040M"},
+    {g:"45",  uw:0.00037240, part:"XB045M"},
+    {g:"50",  uw:0.00046463, part:"XB050M"},
+    {g:"60",  uw:0.00066713, part:"XB060M"},
+    {g:"65",  uw:0.00079569, part:"XB065M"},
+    {g:"70",  uw:0.00093218, part:"XB070M"},
+    {g:"75",  uw:0.00105407, part:"XB075M"},
+    {g:"80",  uw:0.00116023, part:"XB080M"},
+    {g:"85",  uw:0.00127548, part:"XB085M"},
+    {g:"95",  uw:0.00167838, part:"XB095M"},
+    {g:"100", uw:0.00179687, part:"XB100M"},
+    {g:"105", uw:0.00198395, part:"XB105M"}
   ],
   // --- 34" Long Scale (XLB) - full range ---
   '34.0': [
     {g:"18",  uw:0.00007265, part:"XLB018P"},  // .018P plain steel - official D'Addario unit weight
     {g:"20",  uw:0.00009093, part:"XLB020P"},  // .020P plain steel - official D'Addario unit weight
-    {g:"25",  uw:0.00011875, part:"XLB025W"},  // .025W - uw derived from XLB series curve (chart omits official); cross-checked vs .025 wound singles
-    {g:"28",  uw:0.00014683, part:"XLB028W"},  // .028W - official D'Addario unit weight
-    {g:"32",  uw:0.00018808, part:"XLB032"},
-    {g:"35",  uw:0.00022167, part:"XLB035"},
-    {g:"40",  uw:0.00028230, part:"XLB040"},
-    {g:"42",  uw:0.00031075, part:"XLB042"},
-    {g:"45",  uw:0.00035590, part:"XLB045"},
-    {g:"50",  uw:0.00043766, part:"XLB050"},
-    {g:"52",  uw:0.00047377, part:"XLB052"},
-    {g:"55",  uw:0.00053067, part:"XLB055"},
-    {g:"60",  uw:0.00063285, part:"XLB060"},
-    {g:"65",  uw:0.00074297, part:"XLB065"},
-    {g:"67",  uw:0.00078950, part:"XLB067"},
-    {g:"70",  uw:0.00086196, part:"XLB070"},
-    {g:"75",  uw:0.00098442, part:"XLB075"},
-    {g:"80",  uw:0.00111428, part:"XLB080"},
-    {g:"85",  uw:0.00125140, part:"XLB085"},
-    {g:"90",  uw:0.00139671, part:"XLB090"},
-    {g:"95",  uw:0.00154926, part:"XLB095"},
-    {g:"100", uw:0.00170893, part:"XLB100"},
-    {g:"105", uw:0.00187560, part:"XLB105"},
-    {g:"107", uw:0.00194280, part:"XLB107"},  // .107 - uw interpolated between official .105/.110 (chart omits singles value)
-    {g:"110", uw:0.00205160, part:"XLB110"},
-    {g:"120",  uw:0.00243493, part:"XLB120"},
-    {g:"120T", uw:0.00243493, part:"XLB120T"},
-    {g:"125",  uw:0.00263846, part:"XLB125"},
-    {g:"125T", uw:0.00263846, part:"XLB125T"},
-    {g:"130",  uw:0.00284987, part:"XLB130"},
-    {g:"130T", uw:0.00284987, part:"XLB130T"},
-    {g:"135",  uw:0.00306910, part:"XLB135"},
-    {g:"135T", uw:0.00306910, part:"XLB135T"},
-    {g:"145",  uw:0.00354062, part:"XLB145"},
-    {g:"145T", uw:0.00354062, part:"XLB145T"},
-    {g:"160",  uw:0.00431105, part:"XLB160"},
-    {g:"160T", uw:0.00431105, part:"XLB160T"},
-    {g:"165T", uw:0.00458470, part:"XLB165T"},
-    {g:"170T", uw:0.00486678, part:"XLB170T"}
+    {g:"25",  uw:0.00012482, part:"XLB025W"},  // .025W - chart omits it; carries XLB028W's revision ratio (1.05108)
+    {g:"28",  uw:0.00015433, part:"XLB028W"},  // .028W - official D'Addario unit weight
+    {g:"32",  uw:0.00019000, part:"XLB032"},
+    {g:"35",  uw:0.00022362, part:"XLB035"},
+    {g:"40",  uw:0.00029322, part:"XLB040"},
+    {g:"42",  uw:0.00032252, part:"XLB042"},
+    {g:"45",  uw:0.00037240, part:"XLB045"},
+    {g:"50",  uw:0.00046463, part:"XLB050"},
+    {g:"52",  uw:0.00051322, part:"XLB052"},
+    {g:"55",  uw:0.00054816, part:"XLB055"},
+    {g:"60",  uw:0.00066540, part:"XLB060"},
+    {g:"65",  uw:0.00079569, part:"XLB065"},
+    {g:"67",  uw:0.00084891, part:"XLB067"},
+    {g:"70",  uw:0.00093218, part:"XLB070"},
+    {g:"75",  uw:0.00104973, part:"XLB075"},
+    {g:"80",  uw:0.00116023, part:"XLB080"},
+    {g:"85",  uw:0.00133702, part:"XLB085"},
+    {g:"90",  uw:0.00150277, part:"XLB090"},
+    {g:"95",  uw:0.00169349, part:"XLB095"},
+    {g:"100", uw:0.00179687, part:"XLB100"},
+    {g:"105", uw:0.00198395, part:"XLB105"},
+    {g:"107", uw:0.00209700, part:"XLB107"},  // .107 - chart omits it; log-log fit between published .105 and .110
+    {g:"110", uw:0.00227440, part:"XLB110"},
+    {g:"120",  uw:0.00250280, part:"XLB120"},
+    {g:"120T", uw:0.00250280, part:"XLB120T"},
+    {g:"125",  uw:0.00274810, part:"XLB125"},
+    {g:"125T", uw:0.00274810, part:"XLB125T"},
+    {g:"130",  uw:0.00301941, part:"XLB130"},
+    {g:"130T", uw:0.00301941, part:"XLB130T"},
+    {g:"135",  uw:0.00315944, part:"XLB135"},
+    {g:"135T", uw:0.00315944, part:"XLB135T"},
+    {g:"145",  uw:0.00363204, part:"XLB145"},
+    {g:"145T", uw:0.00363204, part:"XLB145T"},
+    {g:"160",  uw:0.00442236, part:"XLB160"},
+    {g:"160T", uw:0.00442236, part:"XLB160T"},
+    {g:"165T", uw:0.00470308, part:"XLB165T"},
+    {g:"170T", uw:0.00499244, part:"XLB170T"}
   ],
   // --- 35" scale - D'Addario doesn't make a 35" string line.
   //     Most 35" basses use Long Scale strings (top-load bridges have enough silk past the nut).
@@ -912,29 +927,29 @@ const BASS_STRINGS_BY_SCALE = {
   '37.0': 'alias:36.0',
   // --- 36" Superlong Scale (XB*SL) ---
   '36.0': [
-    {g:"40",  uw:0.00028230, part:"XB040SL"},
-    {g:"45",  uw:0.00035590, part:"XB045SL"},
-    {g:"50",  uw:0.00043766, part:"XB050SL"},
-    {g:"60",  uw:0.00063285, part:"XB060SL"},
-    {g:"65",  uw:0.00074297, part:"XB065SL"},
-    {g:"70",  uw:0.00086196, part:"XB070SL"},
-    {g:"75",  uw:0.00098442, part:"XB075SL"},
-    {g:"80",  uw:0.00111428, part:"XB080SL"},
-    {g:"85",  uw:0.00125140, part:"XB085SL"},
-    {g:"90",  uw:0.00139671, part:"XB090SL"},
-    {g:"95",  uw:0.00154926, part:"XB095SL"},
-    {g:"100", uw:0.00170893, part:"XB100SL"},
-    {g:"105", uw:0.00187560, part:"XB105SL"},
-    {g:"110", uw:0.00205160, part:"XB110SL"},
-    {g:"125", uw:0.00263846, part:"XB125SL"},
-    {g:"130", uw:0.00284987, part:"XB130SL"},
-    {g:"145", uw:0.00354062, part:"XB145SL"},
-    {g:"125T", uw:0.00263846, part:"XB125TSL"},
-    {g:"130T", uw:0.00284987, part:"XB130TSL"},
-    {g:"145T", uw:0.00354062, part:"XB145TSL"},
-    {g:"160T", uw:0.00431105, part:"XB160TSL"},
-    {g:"165T", uw:0.00458470, part:"XB165TSL"},
-    {g:"170T", uw:0.00486678, part:"XB170TSL"}
+    {g:"40",  uw:0.00029322, part:"XB040SL"},
+    {g:"45",  uw:0.00037240, part:"XB045SL"},
+    {g:"50",  uw:0.00046463, part:"XB050SL"},
+    {g:"60",  uw:0.00066540, part:"XB060SL"},
+    {g:"65",  uw:0.00079569, part:"XB065SL"},
+    {g:"70",  uw:0.00093218, part:"XB070SL"},
+    {g:"75",  uw:0.00104973, part:"XB075SL"},
+    {g:"80",  uw:0.00116023, part:"XB080SL"},
+    {g:"85",  uw:0.00133702, part:"XB085SL"},
+    {g:"90",  uw:0.00150177, part:"XB090SL"},
+    {g:"95",  uw:0.00169349, part:"XB095SL"},
+    {g:"100", uw:0.00179687, part:"XB100SL"},
+    {g:"105", uw:0.00198395, part:"XB105SL"},
+    {g:"110", uw:0.00227461, part:"XB110SL"},
+    {g:"125", uw:0.00274810, part:"XB125SL"},
+    {g:"130", uw:0.00301941, part:"XB130SL"},
+    {g:"145", uw:0.00363204, part:"XB145SL"},
+    {g:"125T", uw:0.00274810, part:"XB125TSL"},
+    {g:"130T", uw:0.00301941, part:"XB130TSL"},
+    {g:"145T", uw:0.00363204, part:"XB145TSL"},
+    {g:"160T", uw:0.00442236, part:"XB160TSL"},
+    {g:"165T", uw:0.00470308, part:"XB165TSL"},
+    {g:"170T", uw:0.00499244, part:"XB170TSL"}
   ]
 };
 // ════════════════════════════════════════════
@@ -1094,7 +1109,22 @@ function bassPartsForGauge(num){
   }
   return out;
 }
-function bassUwForGauge(num){ const p=bassPartsForGauge(num); return p.length?p[0].uw:null; }
+// Unit weight for a gauge, from the line that actually serves this scale.
+// D'Addario publishes a different unit weight per scale line for the same
+// nominal gauge (XB050S .00049956 against XLB050 .00046463), so the line has to
+// be chosen before the tension is computed - otherwise a 30" short-scale bass
+// gets sized against Long Scale numbers and comes out under-gauged. Falls back
+// to whatever line carries the gauge when the native line does not.
+function bassUwForGauge(num, scale){
+  const parts=bassPartsForGauge(num);
+  if(!parts.length) return null;
+  if(scale!=null){
+    const key=bassScaleKey(scale);
+    const inLine=parts.filter(p=>p.line===key);
+    if(inLine.length) return inLine[0].uw;
+  }
+  return parts[0].uw;
+}
 function bassRecommendedPart(num, scale){
   const key=bassScaleKey(scale);
   const parts=bassPartsForGauge(num);
@@ -1154,7 +1184,7 @@ function bestBassGauge(strNum, scale, freq, totalStrings, partScale) {
   const target = ROSCO_BASS_TARGETS[strNum] || ROSCO_BASS_DROP_ANCHOR;
   const candidates = [];
   for (const num of bassGaugeNumbers()) {
-    const uw = bassUwForGauge(num);
+    const uw = bassUwForGauge(num, partScale);
     if (uw == null) continue;
     const T = (uw * Math.pow(2 * scale * freq, 2)) / 386.4;
     candidates.push({ gauge: num, uw, tension: T, diff: Math.abs(T - target) });
