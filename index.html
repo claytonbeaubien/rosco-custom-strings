@@ -1126,6 +1126,15 @@ function getBassStringByGauge(scale, gauge) {
 // Drop-tuning lowest string bumps to the NEXT string number's target.
 const ROSCO_GUITAR_TARGETS = {1:13.5, 2:14.5, 3:15.5, 4:18.0, 5:19.0, 6:20.0, 7:21.0, 8:22.0};
 const ROSCO_GUITAR_STR3_WOUND = 16.0;
+// Rosco bench rule: plain steel up to .019, wound above that (a client can still
+// hand-pick anything the picker offers). Single source of truth for the strings
+// 2/3 search space, GAUGES_STR23 and enforceWoundRule.
+const ROSCO_PLAIN_MAX = 19;
+// Hysteresis at the plain/wound boundary (lbs). Once the heaviest plain runs
+// short of target, wound has to beat it by more than this to take the slot.
+// Without it the choice turns on hundredths of a pound and a 1% unit-weight
+// revision can flip a set between a plain .019 and a wound .021.
+const ROSCO_PLAIN_HOLD = 0.25;
 // Bass per-string targets (lbs). Drop-tuning lowest string anchors at 40.0.
 const ROSCO_BASS_TARGETS = {1:32.0, 2:34.0, 3:36.0, 4:38.0, 5:40.0};
 const ROSCO_BASS_DROP_ANCHOR = 40.0;
@@ -1175,12 +1184,61 @@ function bestBassGauge(strNum, scale, freq, totalStrings, partScale) {
 // other tuning; players consistently prefer the lighter gauge that the
 // natural target picks over the heavier "anchored" pick that the old
 // drop bump produced.
+// Closest-to-target pick from one gauge list, with no lean-lighter step.
+// isTop flags that the winner is the heaviest gauge the list carries, which is
+// how the strings 2/3 rule detects that the plain range has run out.
+function bestFromGaugeList(list, scale, freq, target) {
+  let best = null, heaviestUw = -Infinity;
+  for (const g of list) {
+    const uw = UW[g.uw];
+    if (!uw) continue;
+    if (uw > heaviestUw) heaviestUw = uw;
+    const tension = (uw * Math.pow(2 * scale * freq, 2)) / 386.4;
+    const diff = Math.abs(tension - target);
+    if (!best || diff < best.diff) {
+      best = {
+        gauge: g.g, uw, tension, diff,
+        type: GAUGES_PLAIN.some(p => p.uw === g.uw) ? 'plain' : 'wound',
+      };
+    }
+  }
+  if (best) best.isTop = (best.uw === heaviestUw);
+  return best;
+}
+
 function bestGuitarGauge(strNum, scale, freq, totalStrings) {
   const defaultTarget = ROSCO_GUITAR_TARGETS[strNum] || 22.0;
+  // Strings 2 and 3 follow the bench rule rather than a free plain-vs-wound
+  // contest: plain steel wins inside its range, and wound is reached for only
+  // when the note needs more tension than the heaviest plain can carry.
+  //
+  // Searching plain and wound together does not work here, because a nickel
+  // wound string is LIGHTER than a plain of the same gauge (NW018 is .00006108
+  // against PL018 at .00007177). That lets a light wound gauge out-score the
+  // plain pick from inside the plain range and hand back, for example, a wound
+  // .018 G on a 25.5" guitar in E standard - a set no one would actually fit.
+  if (strNum === 2 || strNum === 3) {
+    const plainOnly = GAUGES_PLAIN.filter(g => parseFloat(g.g) <= ROSCO_PLAIN_MAX);
+    const plainPick = bestFromGaugeList(plainOnly, scale, freq, defaultTarget);
+    const asResult = c => ({ gauge: c.gauge, uw: c.uw, tension: c.tension, type: c.type });
+    // Inside the plain range, plain wins outright - no wound gauge is allowed to
+    // compete for it.
+    if (plainPick && !(plainPick.isTop && plainPick.tension < defaultTarget)) {
+      return asResult(plainPick);
+    }
+    // The plain range has run out: the heaviest plain lands short of target, so
+    // this note may genuinely need a wound string. Only here do the two compete,
+    // each against its own target, and wound must clear ROSCO_PLAIN_HOLD to take
+    // the slot - a plain .019 a few hundredths under target keeps it.
+    const woundTarget = (strNum === 3) ? ROSCO_GUITAR_STR3_WOUND : defaultTarget;
+    const woundPick = bestFromGaugeList(GAUGES_WOUND, scale, freq, woundTarget);
+    if (!woundPick) return plainPick ? asResult(plainPick) : null;
+    if (!plainPick) return asResult(woundPick);
+    return asResult(woundPick.diff < plainPick.diff - ROSCO_PLAIN_HOLD ? woundPick : plainPick);
+  }
   // Per-string gauge search space
   let list;
   if (strNum === 1) list = GAUGES_PLAIN;
-  else if (strNum === 2 || strNum === 3) list = GAUGES_STR23;
   else list = GAUGES_WOUND;
   const candidates = [];
   for (const g of list) {
@@ -1277,10 +1335,12 @@ const GAUGES_WOUND = [
   {g:"68",uw:"NW068"},{g:"70",uw:"NW070"},{g:"72",uw:"NW072"},{g:"74",uw:"NW074"},{g:"80",uw:"NW080"},{g:"90",uw:"NW090"}
 ];
 
-// Combined gauge list for strings 2 & 3: plain up to 19, then all wound
-// This prevents plain > 19 while still allowing free browsing of all options
+// Combined gauge list for strings 2 & 3: plain up to ROSCO_PLAIN_MAX, then all
+// wound. This is the PICKER list - it deliberately offers every wound gauge so
+// a client-specific set can be built by hand. The recommendation engine applies
+// the stricter bench rule (see bestGuitarGauge).
 const GAUGES_STR23 = [
-  ...GAUGES_PLAIN.filter(g => parseFloat(g.g) <= 19),
+  ...GAUGES_PLAIN.filter(g => parseFloat(g.g) <= ROSCO_PLAIN_MAX),
   ...GAUGES_WOUND
 ];
 
@@ -2192,7 +2252,7 @@ function noteDisplay(note) {
 // ════════════════════════════════════════════
 // Returns {gauge, tension} for the wound string closest to the target tension
 function bestWoundGauge(strNum, scale, freq) {
-  const target = strNum === 2 ? 15 : 16;
+  const target = strNum === 2 ? ROSCO_GUITAR_TARGETS[2] : ROSCO_GUITAR_STR3_WOUND;
   let best = null, bestDiff = Infinity;
   for (const g of GAUGES_WOUND) {
     const uw = UW[g.uw];
@@ -2207,7 +2267,7 @@ function bestWoundGauge(strNum, scale, freq) {
 // Mutates pack.strings in place - call before recording recommendedGauges
 function enforceWoundRule(pack, scale) {
   pack.strings.forEach(str => {
-    if ((str.string_num === 2 || str.string_num === 3) && str.type === 'plain' && parseFloat(str.gauge) > 19) {
+    if ((str.string_num === 2 || str.string_num === 3) && str.type === 'plain' && parseFloat(str.gauge) > ROSCO_PLAIN_MAX) {
       const freq = NOTE_FREQ[str.note];
       if (!freq) return;
       const best = bestWoundGauge(str.string_num, scale, freq);
