@@ -436,6 +436,20 @@ html.print-mode .print-banner{display:block;background:#f4f5f7;border:1px solid 
       return;
     }
 
+    // Fallback so Clayton always knows who a pack is for when printing: if
+    // the customer left the Label Info Name blank at checkout (spec.n is
+    // empty), an optional &cl=<name> param - mirroring the internal Job
+    // flow's &cl= client-name param - fills it in instead. Nothing sets
+    // &cl= on the checkout-generated link yet (the customer's real name
+    // isn't known until Shopify checkout completes, after the link is
+    // already frozen into the order); this is the tool-side half so a
+    // follow-up automation can append &cl=<order customer name> to a
+    // fulfillment link once built.
+    if (!spec.n) {
+      const clParam = (params.get('cl') || '').trim();
+      if (clParam) spec.n = clParam;
+    }
+
     // Add the class right away so the UI flicker on load is suppressed.
     document.documentElement.classList.add('print-mode');
 
@@ -489,7 +503,7 @@ html.print-mode .print-banner{display:block;background:#f4f5f7;border:1px solid 
     <h2>Pack Label - Order Fulfillment</h2>
     <p>Pack loaded from a customer order. Click <strong>Print Label</strong> to send the label image straight to your printer, or <strong>Save as PNG</strong> to download.</p>
     <div class="print-banner-actions">
-      <button type="button" class="btn-print" onclick="window.print()">Print Label</button>
+      <button type="button" class="btn-print" onclick="printLabel(1)">Print Label</button>
       <button type="button" class="btn-png" onclick="downloadPNG()">Save as PNG</button>
     </div>
   </div>
@@ -1875,6 +1889,21 @@ async function loadPriceCatalogue() {
 function getStringPartCode(str, scale) {
   if (!str || !str.gauge) return null;
   if (isBassInstrument()) {
+    // Use the specific D'Addario variant already chosen for this string (the
+    // Rosco-recommended tapered pick from bestBassGauge, or the customer's
+    // manual Part# dropdown override) rather than re-deriving one from the
+    // gauge number alone. getBassStringByGauge does a plain gauge-number
+    // match and always returns the FIRST entry for that gauge in
+    // BASS_STRINGS_BY_SCALE, which is the non-tapered variant whenever both
+    // exist (e.g. gauge "135" -> XLB135 instead of the tapered XLB135T Rosco
+    // actually stocks/recommends for that position). This function's return
+    // value becomes both the price lookup key AND (via calcPackTotal's
+    // `parts` map) the part_number sent to checkout/Shopify/Airtable
+    // inventory deduction, so getting the taper variant wrong here sends the
+    // wrong SKU to fulfillment even when the on-screen recommendation and
+    // label were correct.
+    const part = str.part || bassRecommendedPart(str.gauge, scale);
+    if (part) return part;
     const item = getBassStringByGauge(scale, str.gauge);
     return item ? item.part : null;
   }
