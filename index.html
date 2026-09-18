@@ -174,6 +174,10 @@ select:focus,input[type=text]:focus{border-color:#2cd5c4;outline:none}
 .tensions-info .rule ul:last-child{margin-bottom:0}
 .tensions-info .rule li{margin-bottom:3px;line-height:1.5}
 .tensions-info .rule li b{color:#fff;font-weight:400}
+.tensions-info .rule .fit-table{width:100%;border-collapse:collapse;font-size:12.5px;margin:6px 0 10px}
+.tensions-info .rule .fit-table td{padding:4px 0;color:#d8d8d8}
+.tensions-info .rule .fit-table td:first-child{color:#8a8a8e}
+.tensions-info .rule .fit-table td:last-child{text-align:right;font-weight:600;font-variant-numeric:tabular-nums;color:#fff}
 .tensions-info .bands{display:flex;gap:8px;margin-top:14px;flex-wrap:wrap;justify-content:center}
 .tensions-info .band{font-size:12px;padding:5px 11px;border-radius:99px;font-weight:600;letter-spacing:.02em}
 /* Bands keep their semantic colors but go a touch brighter for dark bg. */
@@ -191,6 +195,11 @@ select:focus,input[type=text]:focus{border-color:#2cd5c4;outline:none}
 .g-wrap select{flex:1;min-width:52px}
 .g-btn{background:none;border:none;color:#bbb;font-size:13px;cursor:pointer;padding:0 2px;line-height:1;transition:color .12s;flex-shrink:0}
 .g-btn:hover{color:#2cd5c4}
+/* Fit flags - orange (drill) / purple (intonation) "SEE BELOW" pointers to the
+   static explainer blocks in the dark Tensions section. Guitar only. */
+.fit-flag{font-size:9px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;white-space:nowrap;margin-left:6px}
+.fit-flag-drill{color:#f0a500}
+.fit-flag-intonation{color:#7c5cbf}
 .preview-label{display:none;font-size:10px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:#888;align-self:flex-start}
 @media(max-width:1023px){.preview-label{display:block}}
 @media(max-width:599px){.str-table{font-size:12px}.str-table th{padding:6px 2px;font-size:8px}.str-table td{padding:8px 2px}.str-table select{font-size:13px;padding:7px 18px 7px 4px;min-height:36px}.str-table td.tension-val{font-size:13px;padding:7px 4px}.g-btn{font-size:20px;padding:4px 2px;min-width:34px;min-height:42px}}
@@ -342,6 +351,29 @@ html.embedded .main{margin-top:16px}
 .buy-modal-error{display:none;margin-top:12px;padding:10px 12px;background:#fff3f3;border:1px solid #f5c2c0;border-radius:6px;color:#a02020;font-size:12.5px;line-height:1.5}
 .buy-modal-error.is-open{display:block}
 .buy-modal-error a{color:#159385;text-decoration:underline;font-weight:600}
+
+/* Setup Specs code-entry modal - the panel's only gate. .specs-gate-row/
+   -error/-actions/-cancel/-proceed are shared field/button styles (named
+   from an earlier design that also had a request-by-email modal; kept as-is
+   since the code modal already uses them and they're generic enough). */
+.specs-gate-row{margin-bottom:12px}
+.specs-gate-row:last-of-type{margin-bottom:0}
+.specs-gate-error{display:none;margin-top:10px;padding:10px 12px;background:#fff3f3;border:1px solid #f5c2c0;border-radius:6px;color:#a02020;font-size:12.5px;line-height:1.5}
+.specs-gate-error.is-open{display:block}
+.specs-gate-actions{display:flex;justify-content:flex-end;gap:10px;margin-top:16px}
+.specs-gate-cancel{background:#fff;color:#444;border:1px solid #ccc;border-radius:6px;padding:9px 16px;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;transition:background .12s}
+.specs-gate-cancel:hover:not(:disabled){background:#f4f4f4}
+.specs-gate-proceed{background:#2cd5c4;color:#0a3a36;border:none;border-radius:6px;padding:9px 18px;font-size:13px;font-weight:800;letter-spacing:.05em;text-transform:uppercase;cursor:pointer;font-family:inherit;transition:background .15s,transform .15s;box-shadow:0 1px 2px rgba(20,140,128,.25)}
+.specs-gate-proceed:hover:not(:disabled){background:#25c0b0;transform:translateY(-1px)}
+.specs-gate-proceed:disabled{opacity:.6;cursor:wait;transform:none}
+.specs-code-backdrop{position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:1002;display:none;align-items:flex-start;justify-content:center;padding:60px 16px 16px;animation:modalFade .15s ease-out;overflow-y:auto}
+.specs-code-backdrop.is-open{display:flex}
+.specs-code-card{background:#fff;border-radius:12px;border-top:3px solid #2cd5c4;padding:22px 26px 20px;max-width:380px;width:100%;box-shadow:0 12px 40px rgba(0,0,0,.28);animation:modalSlide .18s ease-out}
+.specs-code-title{font-size:18px;font-weight:800;color:#1a1a1a;margin-bottom:4px;letter-spacing:-.01em}
+.specs-code-sub{font-size:13px;color:#666;margin-bottom:16px;line-height:1.5}
+.specs-code-request-link{margin-top:14px;text-align:center;font-size:12.5px}
+.specs-code-request-link a{color:#159385;text-decoration:underline;font-weight:600;cursor:pointer}
+.specs-code-request-link a:hover{color:#0e6e64}
 
 /* ---- Print mode (deep-link from a Shopify order) ----
    Activated by ?print=<base64-spec> URL param. Hides the calculator UI
@@ -625,7 +657,7 @@ html.print-mode .print-banner{display:block;background:#f4f5f7;border:1px solid 
         </div>
         <div class="sel-wrap">
           <div class="field">
-            <label>Tuning</label>
+            <label>Tuning <span class="fit-flag fit-flag-intonation" id="tuning-intonation-flag" style="display:none">⚹ SEE BELOW</span></label>
             <select id="tuning-sel" onchange="onConfigChange();updateTuningNavBtns()"></select>
           </div>
           <div class="nav-btns">
@@ -703,13 +735,6 @@ html.print-mode .print-banner{display:block;background:#f4f5f7;border:1px solid 
   </div>
 </div>
 
-<!-- Setup Specs for this Pack - per-pack mechanical setup reference.
-     Rendered/refreshed by renderSetupSpecs() any time the pack changes.
-     Hidden when no pack is loaded. -->
-<section class="setup-specs" id="setup-specs" style="display:none">
-  <div class="setup-specs-card" id="setup-specs-inner"></div>
-</section>
-
 <!-- Rosco Suggested Tensions - client-facing reference chart -->
 <section class="tensions-info" id="rosco-tensions">
   <div class="tensions-info-card">
@@ -747,6 +772,15 @@ html.print-mode .print-banner{display:block;background:#f4f5f7;border:1px solid 
       <div class="rule">
         <strong>String 3 - plain or wound?</strong>
         On guitar, string 3 stays plain up to a .019 gauge. Once your tuning calls for anything thicker, the calculator switches you to a wound 3rd and bumps the target from 15.5 to 16.0 lbs. Wound strings of similar gauge feel a touch softer at the same tension, so the small lift keeps them even with the rest of the ladder.
+        <p class="rule-subhead"><span class="fit-flag fit-flag-drill" style="margin:0 6px 0 0">⚹</span>HEAVY GAUGES &amp; TUNER POSTS</p>
+        <table class="fit-table">
+          <tr><td>.062&Prime;&ndash;.073&Prime;</td><td>1.5mm</td></tr>
+          <tr><td>.074&Prime;&ndash;.083&Prime;</td><td>2mm</td></tr>
+          <tr><td>.084&Prime;+</td><td>2.5mm</td></tr>
+        </table>
+        <p>Stock tuning pegs are drilled for typical gauges, generally up to about .062". Past that, the string may not fit through the post without the hole opened up. A 1.5–2mm bit covers most of what you'll run into here, 2.5mm for the heaviest low strings. We can do it in shop if you'd rather not.</p>
+        <p class="rule-subhead"><span class="fit-flag fit-flag-intonation" style="margin:0 6px 0 0">⚹</span>INTONATION AT LOW TUNINGS</p>
+        <p>Most guitars leave the factory set up and intonated for standard tuning. Drop far enough below that, usually Drop C / C standard or lower, and the low string can run out of adjustment room on stock hardware. Often fixable by pulling the spring under that saddle's intonation screw and running the saddle to its rearmost travel. Past that point the bridge or saddles need modifying, that's a shop job, bring it in and we'll sort it.</p>
       </div>
       <div class="rule">
         <strong>Reading the bass part numbers &mdash; example: a .125</strong>
@@ -778,6 +812,14 @@ html.print-mode .print-banner{display:block;background:#f4f5f7;border:1px solid 
       <span class="band band-bad">Off target &nbsp;beyond that</span>
     </div>
   </div>
+</section>
+
+<!-- Setup Specs for this Pack - per-pack mechanical setup reference.
+     Rendered/refreshed by renderSetupSpecs() any time the pack changes.
+     Hidden when no pack is loaded. Gated behind an access code -
+     see toggleSetupSpecs() / openSpecsCode(). -->
+<section class="setup-specs" id="setup-specs" style="display:none">
+  <div class="setup-specs-card" id="setup-specs-inner"></div>
 </section>
 
 <!-- Hidden QR container -->
@@ -1049,6 +1091,26 @@ function gaugeToInches(gaugeStr) {
   if (!d) return null;
   const div = d[0].length === 4 ? 10000 : 1000;
   return parseInt(d[0], 10) / div;
+}
+
+// Drill-out bit bucket for the tuning-post fit flag (guitar only). Order matters -
+// check the top bucket first since ranges are open-ended above .084".
+function drillFlagBucket(gaugeInches) {
+  if (gaugeInches == null) return null;
+  if (gaugeInches >= 0.084) return '2.5mm';
+  if (gaugeInches >= 0.074) return '2mm';
+  if (gaugeInches >= 0.062) return '1.5mm';
+  return null;
+}
+// Markup for the inline "SEE BELOW" drill flag next to a string's gauge select.
+// Guitar only - bass gets no span at all, not just a hidden one. When a bucket
+// applies the span renders visible; otherwise it's still emitted but hidden
+// via inline style so onGaugeChange can toggle it in place without rebuilding
+// the row (its id stays stable across gauge changes either way).
+function drillFlagMarkup(strNum, gauge) {
+  if (isBassInstrument()) return '';
+  const bucket = drillFlagBucket(gaugeToInches(gauge));
+  return `<span class="fit-flag fit-flag-drill" id="drill-flag-${strNum}"${bucket ? '' : ' style="display:none"'}>⚹ SEE BELOW</span>`;
 }
 
 // Look up the spec row that matches a chosen gauge (in inches). The PDF rows are
@@ -2293,7 +2355,7 @@ function buildStringTable(pack) {
         <select id="n-${str.string_num}" onchange="onNoteChange(${str.string_num},this.value)" style="min-width:54px;text-align:center">${noteOpts}</select>
         <button class="g-btn" onclick="navNote(${str.string_num},-1)" title="Higher pitch">▲</button>
       </div></td>
-      <td><div class="g-wrap" style="gap:2px"><button class="g-btn" onclick="navGauge(${str.string_num},-1)" title="Smaller gauge">▼</button><select id="g-${str.string_num}" onchange="onGaugeChange(${str.string_num},this.value)">${opts}</select><button class="g-btn" onclick="navGauge(${str.string_num},1)" title="Larger gauge">▲</button></div></td>
+      <td><div class="g-wrap" style="gap:2px"><button class="g-btn" onclick="navGauge(${str.string_num},-1)" title="Smaller gauge">▼</button><select id="g-${str.string_num}" onchange="onGaugeChange(${str.string_num},this.value)">${opts}</select><button class="g-btn" onclick="navGauge(${str.string_num},1)" title="Larger gauge">▲</button></div>${drillFlagMarkup(str.string_num, str.gauge)}</td>
       <td style="text-align:center">${isBassInstrument() ? `<select id="p-${str.string_num}" onchange="onPartChange(${str.string_num},this.value)" style="font-size:10px;text-align:center;color:#159385;font-weight:600;min-width:90px">${bassPartsForGauge(str.gauge).map(p=>`<option value="${p.part}"${p.part===(str.part||bassRecommendedPart(str.gauge, scaleForString(str.string_num,total)))?' selected':''}>${p.part}</option>`).join('')}</select>` : `<span style="color:#aaa;font-size:11px">${str.type.slice(0,1).toUpperCase()}</span>`}</td>
       <td class="tension-val ${tCol}" id="t-${str.string_num}">${(+str.tension_lbs).toFixed(1)}</td>
       <td style="color:#999;font-size:11px;text-align:center">${fmtScale(scaleForString(str.string_num, total))}"</td>
@@ -2403,6 +2465,12 @@ function onGaugeChange(strNum, gauge) {
         partTd.innerHTML = `<span style="color:#aaa;font-size:11px">${str.type.slice(0,1).toUpperCase()}</span>`;
       }
     }
+  }
+  // Drill flag doesn't get rebuilt with the row above - toggle it in place.
+  const flagEl = document.getElementById(`drill-flag-${strNum}`);
+  if (flagEl) {
+    const bucket = isBassInstrument() ? null : drillFlagBucket(gaugeToInches(gauge));
+    flagEl.style.display = bucket ? '' : 'none';
   }
   updateTuningNavBtns();
   renderLabel();
@@ -2614,12 +2682,34 @@ function detectTuningName() {
   return '';
 }
 
+// Intonation fit flag next to the Tuning selector (guitar only). Fires when the
+// lowest string sits 4+ semitones below the string count's standard low note -
+// tuning UP never triggers it, since the ratio runs the other way on purpose.
+// Skipped outright on scales >= 27" (longer scales have more saddle travel).
+function updateIntonationFlag() {
+  const el = document.getElementById('tuning-intonation-flag');
+  if (!el) return;
+  if (!currentPack || isBassInstrument() || refScale() >= 27) { el.style.display = 'none'; return; }
+  const total = currentPack.strings.length;
+  const standardNote = total === 6 ? 'E2' : total === 7 ? 'B1' : total === 8 ? 'F#1' : null;
+  const lowest = currentPack.strings.reduce((a, b) => (b.string_num > a.string_num ? b : a));
+  const fStd = standardNote ? NOTE_FREQ[standardNote] : null;
+  const fLow = lowest ? NOTE_FREQ[lowest.note] : null;
+  if (!fStd || !fLow) { el.style.display = 'none'; return; }
+  // Round to 2dp before comparing - NOTE_FREQ is itself rounded to 2 decimal
+  // places, so an exact 4-semitone drop (e.g. standard 6-string Drop C) can
+  // land at 3.997 through floating-point noise and be missed by a strict >=.
+  const semitones = Math.round(12 * Math.log2(fStd / fLow) * 100) / 100;
+  el.style.display = semitones >= 4 ? '' : 'none';
+}
+
 function renderLabel() {
   updatePackPrice();
   // Keep the per-pack setup specs section in sync with every pack/gauge/note
   // change. renderSetupSpecs() handles the no-pack case internally by hiding
   // the section, so it lives above the early-return below.
   renderSetupSpecs();
+  updateIntonationFlag();
   // 2-up print only makes sense for guitar packs - two 6.75" bass labels
   // would need a 13.5" page, which doesn't fit on letter paper.
   const x2btn = document.getElementById('print-x2-btn');
@@ -2796,9 +2886,118 @@ function printLabel(copies) {
 // Re-renders on every pack/gauge change via a call at the top of renderLabel().
 // ════════════════════════════════════════════
 
-function toggleSetupSpecs() {
-  document.getElementById('setup-specs').classList.toggle('open');
+// ════════════════════════════════════════════
+// SETUP SPECS GATE - persistent access code unlocks the panel. "Don't have a
+// code?" is a plain link out to Clayton's GHL form - lead capture and the
+// emailed-code automation live there, not in this tool.
+// Plaintext constant in a public static file is an accepted v1 tradeoff for a
+// friction gate, not real security - no obfuscation intended.
+// ════════════════════════════════════════════
+const SETUP_SPECS_CODE = 'ROSCOTECH';
+// TODO: swap in Clayton's real GHL form URL once he sends it.
+const SETUP_SPECS_CODE_REQUEST_URL = 'https://link.roscoguitars.com/PLACEHOLDER-GHL-FORM';
+const SETUP_SPECS_PING_HOOK = 'https://hook.us2.make.com/3lm6un4ba3gih8w6nt8b9uvqna4w4eif';
+
+function setupSpecsUnlocked() {
+  try { return localStorage.getItem('rg_setup_specs_unlocked') === '1'; } catch (_) { return false; }
 }
+// Same trio renderSetupSpecs() uses for its own title - kept in one place so
+// the silent ping always describes the pack the same way.
+function setupSpecsPackSummary() {
+  if (!currentPack) return '';
+  const scale = refScale();
+  const overrideName = (document.getElementById('tuning-name-input')?.value || '').trim();
+  const tuningDisplay = overrideName
+    || (typeof detectTuningName === 'function' ? detectTuningName() : '')
+    || currentPack.tuning || 'Custom';
+  const instrumentLabel = isBassInstrument() ? `${stringCount}-string bass` : `${stringCount}-string guitar`;
+  return `${tuningDisplay} · ${scale.toFixed(2)}" scale · ${instrumentLabel}`;
+}
+// Fire-and-forget - no loading UI, no error handling, swallow any rejection.
+// email is always blank now - nothing in this tool captures it any more
+// (that lives in GHL), left as a field in case a downstream scenario wants
+// to fill it in later.
+function pingSetupSpecsOpened() {
+  try {
+    fetch(SETUP_SPECS_PING_HOOK, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email: '', packSummary: setupSpecsPackSummary() }),
+    }).catch(() => {});
+  } catch (_) {}
+}
+// Shared by the already-unlocked toggle path and the code modal's success
+// path so the open transition (and its ping) only ever happens in one place.
+function openSetupSpecsPanel() {
+  document.getElementById('setup-specs').classList.add('open');
+  pingSetupSpecsOpened();
+}
+
+function toggleSetupSpecs() {
+  const section = document.getElementById('setup-specs');
+  if (!section) return;
+  if (section.classList.contains('open')) { section.classList.remove('open'); return; }
+  if (setupSpecsUnlocked()) { openSetupSpecsPanel(); return; }
+  openSpecsCode();
+}
+
+// ──────────────────────────────────────────────
+// Code-entry modal - the only gate. Compares a trimmed + uppercased input
+// against SETUP_SPECS_CODE (case-insensitive on purpose, friendlier than an
+// exact match for a code read off a phone screen).
+// ──────────────────────────────────────────────
+function openSpecsCode() {
+  hideSpecsCodeError();
+  const input = document.getElementById('specs-code-input');
+  if (input) input.value = '';
+  document.getElementById('specs-code-backdrop').classList.add('is-open');
+  if (input) setTimeout(() => input.focus(), 0);
+}
+function closeSpecsCode(e) {
+  if (e && e.target && e.target.id !== 'specs-code-backdrop') return;
+  document.getElementById('specs-code-backdrop').classList.remove('is-open');
+}
+function showSpecsCodeError(msg) {
+  const el = document.getElementById('specs-code-error');
+  if (!el) return;
+  el.textContent = msg;
+  el.classList.add('is-open');
+}
+function hideSpecsCodeError() {
+  const el = document.getElementById('specs-code-error');
+  if (!el) return;
+  el.classList.remove('is-open');
+  el.textContent = '';
+}
+function submitSpecsCode() {
+  const input = document.getElementById('specs-code-input');
+  const val = (input.value || '').trim().toUpperCase();
+  if (val && val === SETUP_SPECS_CODE) {
+    try { localStorage.setItem('rg_setup_specs_unlocked', '1'); } catch (_) {}
+    hideSpecsCodeError();
+    document.getElementById('specs-code-backdrop').classList.remove('is-open');
+    openSetupSpecsPanel();
+    return;
+  }
+  // Leave the input as typed so they can see/fix a typo rather than retyping.
+  showSpecsCodeError("That code doesn't look right. Check your email, or request one below.");
+}
+function onSpecsCodeKeydown(e) {
+  if (e.key === 'Enter') { e.preventDefault(); submitSpecsCode(); }
+}
+// Wire the "Don't have a code?" link's href from the constant above so
+// swapping in Clayton's real GHL form URL later is a one-line change.
+document.addEventListener('DOMContentLoaded', () => {
+  const link = document.getElementById('specs-code-request-link');
+  if (link) link.href = SETUP_SPECS_CODE_REQUEST_URL;
+});
+// ESC also closes the code modal (mirrors the generic + buy modal behaviour).
+document.addEventListener('keydown', function(e) {
+  if (e.key === 'Escape') {
+    const bd = document.getElementById('specs-code-backdrop');
+    if (bd && bd.classList.contains('is-open')) bd.classList.remove('is-open');
+  }
+});
 
 // Format an inches value the way guitar players read it: .060, .0625, .045, .011.
 function formatInchesPretty(inches) {
@@ -3200,6 +3399,32 @@ window.applyPackForPrintMode = function(spec) {
     <div class="buy-modal-actions">
       <button class="buy-modal-cancel" type="button" id="buy-modal-cancel" onclick="closeBuyModal()">Cancel</button>
       <button class="buy-modal-proceed" type="button" id="buy-modal-proceed" onclick="submitDraftOrder()">Proceed to Checkout</button>
+    </div>
+  </div>
+</div>
+
+<!-- Setup Specs code-entry gate - the only modal toggleSetupSpecs() opens
+     when locked. "Don't have a code?" is a plain link out to Clayton's GHL
+     form (lead capture + emailed-code automation live there, not here) -
+     see SETUP_SPECS_CODE_REQUEST_URL. See toggleSetupSpecs() / openSpecsCode()
+     / submitSpecsCode(). -->
+<div class="specs-code-backdrop" id="specs-code-backdrop" onclick="closeSpecsCode(event)">
+  <div class="specs-code-card" onclick="event.stopPropagation()" role="dialog" aria-labelledby="specs-code-title" aria-modal="true">
+    <div class="specs-code-title" id="specs-code-title">Enter Access Code</div>
+    <div class="specs-code-sub">Setup Specs are gated behind a quick access code - ask in shop, or request one by email below.</div>
+    <div class="specs-gate-row">
+      <div class="field">
+        <label>Access Code</label>
+        <input type="text" id="specs-code-input" placeholder="e.g. ROSCOTECH" autocomplete="off" autocapitalize="characters" onkeydown="onSpecsCodeKeydown(event)">
+      </div>
+    </div>
+    <div class="specs-gate-error" id="specs-code-error" role="alert"></div>
+    <div class="specs-gate-actions">
+      <button class="specs-gate-cancel" type="button" id="specs-code-cancel" onclick="closeSpecsCode()">Cancel</button>
+      <button class="specs-gate-proceed" type="button" id="specs-code-submit" onclick="submitSpecsCode()">Unlock</button>
+    </div>
+    <div class="specs-code-request-link">
+      <a id="specs-code-request-link" href="#" target="_blank" rel="noopener">Don't have a code? Get one emailed &rarr;</a>
     </div>
   </div>
 </div>
