@@ -121,9 +121,9 @@ header{background:#fff;border-bottom:2px solid #2cd5c4;padding:16px 32px;display
 .form-row.one{grid-template-columns:1fr}
 .field{display:flex;flex-direction:column;gap:6px}
 label{font-size:10px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:#888}
-select,input[type=text],input[type=email]{background:#fff;border:1px solid #ccc;border-radius:5px;color:#111;font-size:14px;padding:9px 11px;width:100%;outline:none;transition:border-color .15s;-webkit-appearance:none;appearance:none}
+select,input[type=text]{background:#fff;border:1px solid #ccc;border-radius:5px;color:#111;font-size:14px;padding:9px 11px;width:100%;outline:none;transition:border-color .15s;-webkit-appearance:none;appearance:none}
 select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='7'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%23999' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 10px center;padding-right:28px;background-color:#fff}
-select:focus,input[type=text]:focus,input[type=email]:focus{border-color:#2cd5c4;outline:none}
+select:focus,input[type=text]:focus{border-color:#2cd5c4;outline:none}
 .str-table{width:100%;border-collapse:collapse;font-size:13px;margin-top:4px}
 .str-table thead tr{background:#f0f0f0}
 .str-table th{padding:8px 5px;text-align:left;font-size:9px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:#888;border-bottom:1px solid #ddd}
@@ -352,15 +352,10 @@ html.embedded .main{margin-top:16px}
 .buy-modal-error.is-open{display:block}
 .buy-modal-error a{color:#159385;text-decoration:underline;font-weight:600}
 
-/* Setup Specs gate - one-time contact-capture modal shown the first time a
-   visitor opens the Setup Specs panel in this browser. Same structural
-   pattern as the buy-flow modal above, own class names since it's a
-   distinct flow. */
-.specs-gate-backdrop{position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:1002;display:none;align-items:flex-start;justify-content:center;padding:60px 16px 16px;animation:modalFade .15s ease-out;overflow-y:auto}
-.specs-gate-backdrop.is-open{display:flex}
-.specs-gate-card{background:#fff;border-radius:12px;border-top:3px solid #2cd5c4;padding:22px 26px 20px;max-width:420px;width:100%;box-shadow:0 12px 40px rgba(0,0,0,.28);animation:modalSlide .18s ease-out}
-.specs-gate-title{font-size:18px;font-weight:800;color:#1a1a1a;margin-bottom:4px;letter-spacing:-.01em}
-.specs-gate-sub{font-size:13px;color:#666;margin-bottom:16px;line-height:1.5}
+/* Setup Specs code-entry modal - the panel's only gate. .specs-gate-row/
+   -error/-actions/-cancel/-proceed are shared field/button styles (named
+   from an earlier design that also had a request-by-email modal; kept as-is
+   since the code modal already uses them and they're generic enough). */
 .specs-gate-row{margin-bottom:12px}
 .specs-gate-row:last-of-type{margin-bottom:0}
 .specs-gate-error{display:none;margin-top:10px;padding:10px 12px;background:#fff3f3;border:1px solid #f5c2c0;border-radius:6px;color:#a02020;font-size:12.5px;line-height:1.5}
@@ -371,9 +366,6 @@ html.embedded .main{margin-top:16px}
 .specs-gate-proceed{background:#2cd5c4;color:#0a3a36;border:none;border-radius:6px;padding:9px 18px;font-size:13px;font-weight:800;letter-spacing:.05em;text-transform:uppercase;cursor:pointer;font-family:inherit;transition:background .15s,transform .15s;box-shadow:0 1px 2px rgba(20,140,128,.25)}
 .specs-gate-proceed:hover:not(:disabled){background:#25c0b0;transform:translateY(-1px)}
 .specs-gate-proceed:disabled{opacity:.6;cursor:wait;transform:none}
-
-/* Setup Specs code-entry modal - the default gate (own ids so it doesn't
-   collide with the request-by-email modal above). Same visual pattern. */
 .specs-code-backdrop{position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:1002;display:none;align-items:flex-start;justify-content:center;padding:60px 16px 16px;animation:modalFade .15s ease-out;overflow-y:auto}
 .specs-code-backdrop.is-open{display:flex}
 .specs-code-card{background:#fff;border-radius:12px;border-top:3px solid #2cd5c4;padding:22px 26px 20px;max-width:380px;width:100%;box-shadow:0 12px 40px rgba(0,0,0,.28);animation:modalSlide .18s ease-out}
@@ -824,8 +816,8 @@ html.print-mode .print-banner{display:block;background:#f4f5f7;border:1px solid 
 
 <!-- Setup Specs for this Pack - per-pack mechanical setup reference.
      Rendered/refreshed by renderSetupSpecs() any time the pack changes.
-     Hidden when no pack is loaded. Gated behind a one-time contact form -
-     see toggleSetupSpecs() / openSpecsGate(). -->
+     Hidden when no pack is loaded. Gated behind an access code -
+     see toggleSetupSpecs() / openSpecsCode(). -->
 <section class="setup-specs" id="setup-specs" style="display:none">
   <div class="setup-specs-card" id="setup-specs-inner"></div>
 </section>
@@ -2895,26 +2887,22 @@ function printLabel(copies) {
 // ════════════════════════════════════════════
 
 // ════════════════════════════════════════════
-// SETUP SPECS GATE - persistent access code unlocks the panel. Two paths in:
-// 1) already know the code -> type it into the code modal, unlock immediately.
-// 2) don't know it -> request-by-email modal POSTs to the Unlock webhook,
-//    which emails the code (Make scenario handles GHL contact + email, no
-//    change needed here) - the modal then points them back at the code modal.
+// SETUP SPECS GATE - persistent access code unlocks the panel. "Don't have a
+// code?" is a plain link out to Clayton's GHL form - lead capture and the
+// emailed-code automation live there, not in this tool.
 // Plaintext constant in a public static file is an accepted v1 tradeoff for a
 // friction gate, not real security - no obfuscation intended.
 // ════════════════════════════════════════════
 const SETUP_SPECS_CODE = 'ROSCOTECH';
-const SETUP_SPECS_GATE_HOOK = 'https://hook.us2.make.com/vigvoi011auwm43dvq7n4lohhfqkuskh';
+// TODO: swap in Clayton's real GHL form URL once he sends it.
+const SETUP_SPECS_CODE_REQUEST_URL = 'https://link.roscoguitars.com/PLACEHOLDER-GHL-FORM';
 const SETUP_SPECS_PING_HOOK = 'https://hook.us2.make.com/3lm6un4ba3gih8w6nt8b9uvqna4w4eif';
 
 function setupSpecsUnlocked() {
   try { return localStorage.getItem('rg_setup_specs_unlocked') === '1'; } catch (_) { return false; }
 }
-function setupSpecsSavedEmail() {
-  try { return localStorage.getItem('rg_setup_specs_email') || ''; } catch (_) { return ''; }
-}
 // Same trio renderSetupSpecs() uses for its own title - kept in one place so
-// the gate POST and the silent ping always describe the pack the same way.
+// the silent ping always describes the pack the same way.
 function setupSpecsPackSummary() {
   if (!currentPack) return '';
   const scale = refScale();
@@ -2926,17 +2914,20 @@ function setupSpecsPackSummary() {
   return `${tuningDisplay} · ${scale.toFixed(2)}" scale · ${instrumentLabel}`;
 }
 // Fire-and-forget - no loading UI, no error handling, swallow any rejection.
+// email is always blank now - nothing in this tool captures it any more
+// (that lives in GHL), left as a field in case a downstream scenario wants
+// to fill it in later.
 function pingSetupSpecsOpened() {
   try {
     fetch(SETUP_SPECS_PING_HOOK, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ email: setupSpecsSavedEmail(), packSummary: setupSpecsPackSummary() }),
+      body: JSON.stringify({ email: '', packSummary: setupSpecsPackSummary() }),
     }).catch(() => {});
   } catch (_) {}
 }
-// Shared by the already-unlocked toggle path and the gate's success path so
-// the open transition (and its ping) only ever happens in one place.
+// Shared by the already-unlocked toggle path and the code modal's success
+// path so the open transition (and its ping) only ever happens in one place.
 function openSetupSpecsPanel() {
   document.getElementById('setup-specs').classList.add('open');
   pingSetupSpecsOpened();
@@ -2951,7 +2942,7 @@ function toggleSetupSpecs() {
 }
 
 // ──────────────────────────────────────────────
-// Code-entry modal - the default gate. Compares a trimmed + uppercased input
+// Code-entry modal - the only gate. Compares a trimmed + uppercased input
 // against SETUP_SPECS_CODE (case-insensitive on purpose, friendlier than an
 // exact match for a code read off a phone screen).
 // ──────────────────────────────────────────────
@@ -2994,122 +2985,17 @@ function submitSpecsCode() {
 function onSpecsCodeKeydown(e) {
   if (e.key === 'Enter') { e.preventDefault(); submitSpecsCode(); }
 }
-function openSpecsCodeRequest() {
-  closeSpecsCode();
-  openSpecsGate();
-}
+// Wire the "Don't have a code?" link's href from the constant above so
+// swapping in Clayton's real GHL form URL later is a one-line change.
+document.addEventListener('DOMContentLoaded', () => {
+  const link = document.getElementById('specs-code-request-link');
+  if (link) link.href = SETUP_SPECS_CODE_REQUEST_URL;
+});
 // ESC also closes the code modal (mirrors the generic + buy modal behaviour).
 document.addEventListener('keydown', function(e) {
   if (e.key === 'Escape') {
     const bd = document.getElementById('specs-code-backdrop');
     if (bd && bd.classList.contains('is-open')) bd.classList.remove('is-open');
-  }
-});
-
-// ──────────────────────────────────────────────
-// Request-by-email modal ("Don't have a code?") - reused from the earlier
-// auto-unlock design, but now it only ever requests the code by email. It no
-// longer unlocks anything itself; on success it swaps to a confirmation view
-// that points back at the code modal.
-// ──────────────────────────────────────────────
-function openSpecsGate() {
-  hideSpecsGateError();
-  const fn = document.getElementById('specs-gate-firstname');
-  const em = document.getElementById('specs-gate-email');
-  const rl = document.getElementById('specs-gate-role');
-  if (fn) fn.value = '';
-  if (em) em.value = '';
-  if (rl) rl.value = 'Player';
-  setSpecsGateSubmitting(false);
-  showSpecsGateFormView();
-  document.getElementById('specs-gate-backdrop').classList.add('is-open');
-}
-function closeSpecsGate(e) {
-  if (e && e.target && e.target.id !== 'specs-gate-backdrop') return;
-  if (specsGateSubmitting) return;
-  document.getElementById('specs-gate-backdrop').classList.remove('is-open');
-}
-function closeSpecsGateAndOpenCode() {
-  document.getElementById('specs-gate-backdrop').classList.remove('is-open');
-  openSpecsCode();
-}
-function showSpecsGateFormView() {
-  const formView = document.getElementById('specs-gate-form-view');
-  const confirmView = document.getElementById('specs-gate-confirm-view');
-  if (formView) formView.style.display = '';
-  if (confirmView) confirmView.style.display = 'none';
-}
-function showSpecsGateConfirmView(email) {
-  const formView = document.getElementById('specs-gate-form-view');
-  const confirmView = document.getElementById('specs-gate-confirm-view');
-  const text = document.getElementById('specs-gate-confirm-text');
-  if (text) text.textContent = `Code sent - check ${email} and enter it to unlock.`;
-  if (formView) formView.style.display = 'none';
-  if (confirmView) confirmView.style.display = '';
-}
-let specsGateSubmitting = false;
-function setSpecsGateSubmitting(isSubmitting) {
-  specsGateSubmitting = isSubmitting;
-  const btn = document.getElementById('specs-gate-submit');
-  const cancelBtn = document.getElementById('specs-gate-cancel');
-  if (btn) { btn.disabled = isSubmitting; btn.textContent = isSubmitting ? 'Sending…' : 'Email Me the Code'; }
-  if (cancelBtn) cancelBtn.disabled = isSubmitting;
-}
-function showSpecsGateError(msg) {
-  const el = document.getElementById('specs-gate-error');
-  if (!el) return;
-  el.textContent = msg;
-  el.classList.add('is-open');
-}
-function hideSpecsGateError() {
-  const el = document.getElementById('specs-gate-error');
-  if (!el) return;
-  el.classList.remove('is-open');
-  el.textContent = '';
-}
-async function submitSpecsGate() {
-  if (specsGateSubmitting) return;
-  const firstName = (document.getElementById('specs-gate-firstname').value || '').trim();
-  const email = (document.getElementById('specs-gate-email').value || '').trim();
-  const role = document.getElementById('specs-gate-role').value;
-  hideSpecsGateError();
-  if (!firstName || !email) {
-    showSpecsGateError('First name and email are required.');
-    return;
-  }
-  setSpecsGateSubmitting(true);
-  const packSummary = setupSpecsPackSummary();
-  let res;
-  try {
-    res = await fetch(SETUP_SPECS_GATE_HOOK, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ email, firstName, role, packSummary }),
-    });
-  } catch (err) {
-    setSpecsGateSubmitting(false);
-    showSpecsGateError("Couldn't reach the server. Check your connection and try again.");
-    return;
-  }
-  if (!res.ok) {
-    setSpecsGateSubmitting(false);
-    showSpecsGateError(`Something went wrong (HTTP ${res.status}). Try again.`);
-    return;
-  }
-  // Doesn't unlock anything itself - the code they're emailed does that via
-  // the code modal. Still save the email so pingSetupSpecsOpened() has it
-  // attached once they do unlock.
-  try { localStorage.setItem('rg_setup_specs_email', email); } catch (_) {}
-  setSpecsGateSubmitting(false);
-  showSpecsGateConfirmView(email);
-}
-// ESC also closes the request modal (mirrors the generic + buy modal behaviour).
-document.addEventListener('keydown', function(e) {
-  if (e.key === 'Escape') {
-    const bd = document.getElementById('specs-gate-backdrop');
-    if (bd && bd.classList.contains('is-open') && !specsGateSubmitting) {
-      bd.classList.remove('is-open');
-    }
   }
 });
 
@@ -3517,8 +3403,11 @@ window.applyPackForPrintMode = function(spec) {
   </div>
 </div>
 
-<!-- Setup Specs code-entry gate - the default modal toggleSetupSpecs() opens
-     when locked. See toggleSetupSpecs() / openSpecsCode() / submitSpecsCode(). -->
+<!-- Setup Specs code-entry gate - the only modal toggleSetupSpecs() opens
+     when locked. "Don't have a code?" is a plain link out to Clayton's GHL
+     form (lead capture + emailed-code automation live there, not here) -
+     see SETUP_SPECS_CODE_REQUEST_URL. See toggleSetupSpecs() / openSpecsCode()
+     / submitSpecsCode(). -->
 <div class="specs-code-backdrop" id="specs-code-backdrop" onclick="closeSpecsCode(event)">
   <div class="specs-code-card" onclick="event.stopPropagation()" role="dialog" aria-labelledby="specs-code-title" aria-modal="true">
     <div class="specs-code-title" id="specs-code-title">Enter Access Code</div>
@@ -3535,55 +3424,7 @@ window.applyPackForPrintMode = function(spec) {
       <button class="specs-gate-proceed" type="button" id="specs-code-submit" onclick="submitSpecsCode()">Unlock</button>
     </div>
     <div class="specs-code-request-link">
-      <a href="#" onclick="event.preventDefault(); openSpecsCodeRequest();">Don't have a code? Get one emailed &rarr;</a>
-    </div>
-  </div>
-</div>
-
-<!-- Setup Specs "request the code by email" modal - reached from the code
-     modal's "Don't have a code?" link. POSTs to the Unlock webhook (which
-     emails the code) and swaps to a confirmation view; it does not unlock
-     anything itself. See openSpecsGate() / submitSpecsGate(). -->
-<div class="specs-gate-backdrop" id="specs-gate-backdrop" onclick="closeSpecsGate(event)">
-  <div class="specs-gate-card" onclick="event.stopPropagation()" role="dialog" aria-labelledby="specs-gate-title" aria-modal="true">
-    <div id="specs-gate-form-view">
-      <div class="specs-gate-title" id="specs-gate-title">Get your code by email</div>
-      <div class="specs-gate-sub">Tell us who you are and we'll email you the access code.</div>
-      <div class="specs-gate-row">
-        <div class="field">
-          <label>First Name</label>
-          <input type="text" id="specs-gate-firstname" placeholder="First name">
-        </div>
-      </div>
-      <div class="specs-gate-row">
-        <div class="field">
-          <label>Email</label>
-          <input type="email" id="specs-gate-email" placeholder="you@example.com">
-        </div>
-      </div>
-      <div class="specs-gate-row">
-        <div class="field">
-          <label>Role</label>
-          <select id="specs-gate-role">
-            <option value="Player">Player</option>
-            <option value="Tech">Tech</option>
-            <option value="Shop Owner">Shop Owner</option>
-          </select>
-        </div>
-      </div>
-      <div class="specs-gate-error" id="specs-gate-error" role="alert"></div>
-      <div class="specs-gate-actions">
-        <button class="specs-gate-cancel" type="button" id="specs-gate-cancel" onclick="closeSpecsGate()">Cancel</button>
-        <button class="specs-gate-proceed" type="button" id="specs-gate-submit" onclick="submitSpecsGate()">Email Me the Code</button>
-      </div>
-    </div>
-    <div id="specs-gate-confirm-view" style="display:none">
-      <div class="specs-gate-title">Code sent</div>
-      <div class="specs-gate-sub" id="specs-gate-confirm-text">Code sent - check your email and enter it to unlock.</div>
-      <div class="specs-gate-actions">
-        <button class="specs-gate-cancel" type="button" onclick="closeSpecsGate()">Close</button>
-        <button class="specs-gate-proceed" type="button" onclick="closeSpecsGateAndOpenCode()">Enter Code</button>
-      </div>
+      <a id="specs-code-request-link" href="#" target="_blank" rel="noopener">Don't have a code? Get one emailed &rarr;</a>
     </div>
   </div>
 </div>
