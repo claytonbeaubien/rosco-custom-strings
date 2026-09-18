@@ -195,11 +195,15 @@ select:focus,input[type=text]:focus{border-color:#2cd5c4;outline:none}
 .g-wrap select{flex:1;min-width:52px}
 .g-btn{background:none;border:none;color:#bbb;font-size:13px;cursor:pointer;padding:0 2px;line-height:1;transition:color .12s;flex-shrink:0}
 .g-btn:hover{color:#2cd5c4}
-/* Fit flags - orange (drill) / purple (intonation) "SEE BELOW" pointers to the
-   static explainer blocks in the dark Tensions section. Guitar only. */
+/* Fit flags - orange (drill) / purple (intonation) pointers to the static
+   explainer blocks in the dark Tensions section. Guitar only. .fit-flag is
+   the small inline pointer next to the dropdown; .fit-mark is the larger
+   asterisk on the explainer heading itself, sized up so it reads as the
+   landing target when someone scans down the page looking for a match. */
 .fit-flag{font-size:9px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;white-space:nowrap;margin-left:6px}
 .fit-flag-drill{color:#f0a500}
 .fit-flag-intonation{color:#7c5cbf}
+.fit-mark{font-size:24px;font-weight:800;line-height:1;vertical-align:-3px;margin-right:8px;display:inline-block}
 .preview-label{display:none;font-size:10px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:#888;align-self:flex-start}
 @media(max-width:1023px){.preview-label{display:block}}
 @media(max-width:599px){.str-table{font-size:12px}.str-table th{padding:6px 2px;font-size:8px}.str-table td{padding:8px 2px}.str-table select{font-size:13px;padding:7px 18px 7px 4px;min-height:36px}.str-table td.tension-val{font-size:13px;padding:7px 4px}.g-btn{font-size:20px;padding:4px 2px;min-width:34px;min-height:42px}}
@@ -657,7 +661,7 @@ html.print-mode .print-banner{display:block;background:#f4f5f7;border:1px solid 
         </div>
         <div class="sel-wrap">
           <div class="field">
-            <label>Tuning <span class="fit-flag fit-flag-intonation" id="tuning-intonation-flag" style="display:none">⚹ SEE BELOW</span></label>
+            <label>Tuning <span class="fit-flag fit-flag-intonation" id="tuning-intonation-flag" style="display:none">⚹ INTONATION NOTE BELOW</span></label>
             <select id="tuning-sel" onchange="onConfigChange();updateTuningNavBtns()"></select>
           </div>
           <div class="nav-btns">
@@ -772,14 +776,14 @@ html.print-mode .print-banner{display:block;background:#f4f5f7;border:1px solid 
       <div class="rule">
         <strong>String 3 - plain or wound?</strong>
         On guitar, string 3 stays plain up to a .019 gauge. Once your tuning calls for anything thicker, the calculator switches you to a wound 3rd and bumps the target from 15.5 to 16.0 lbs. Wound strings of similar gauge feel a touch softer at the same tension, so the small lift keeps them even with the rest of the ladder.
-        <p class="rule-subhead"><span class="fit-flag fit-flag-drill" style="margin:0 6px 0 0">⚹</span>HEAVY GAUGES &amp; TUNER POSTS</p>
+        <p class="rule-subhead"><span class="fit-mark fit-flag-drill">⚹</span>HEAVY GAUGES &amp; TUNER POSTS</p>
         <table class="fit-table">
           <tr><td>.062&Prime;&ndash;.073&Prime;</td><td>1.5mm</td></tr>
           <tr><td>.074&Prime;&ndash;.083&Prime;</td><td>2mm</td></tr>
           <tr><td>.084&Prime;+</td><td>2.5mm</td></tr>
         </table>
         <p>Stock tuning pegs are drilled for typical gauges, generally up to about .062". Past that, the string may not fit through the post without the hole opened up. A 1.5–2mm bit covers most of what you'll run into here, 2.5mm for the heaviest low strings. We can do it in shop if you'd rather not.</p>
-        <p class="rule-subhead"><span class="fit-flag fit-flag-intonation" style="margin:0 6px 0 0">⚹</span>INTONATION AT LOW TUNINGS</p>
+        <p class="rule-subhead"><span class="fit-mark fit-flag-intonation">⚹</span>INTONATION AT LOW TUNINGS</p>
         <p>Most guitars leave the factory set up and intonated for standard tuning. Drop far enough below that, usually Drop C / C standard or lower, and the low string can run out of adjustment room on stock hardware. Often fixable by pulling the spring under that saddle's intonation screw and running the saddle to its rearmost travel. Past that point the bridge or saddles need modifying, that's a shop job, bring it in and we'll sort it.</p>
       </div>
       <div class="rule">
@@ -1102,15 +1106,15 @@ function drillFlagBucket(gaugeInches) {
   if (gaugeInches >= 0.062) return '1.5mm';
   return null;
 }
-// Markup for the inline "SEE BELOW" drill flag next to a string's gauge select.
-// Guitar only - bass gets no span at all, not just a hidden one. When a bucket
-// applies the span renders visible; otherwise it's still emitted but hidden
-// via inline style so onGaugeChange can toggle it in place without rebuilding
-// the row (its id stays stable across gauge changes either way).
+// Markup for the inline "GAUGE NOTE BELOW" drill flag next to a string's gauge
+// select. Guitar only - bass gets no span at all, not just a hidden one. When a
+// bucket applies the span renders visible; otherwise it's still emitted but
+// hidden via inline style so onGaugeChange can toggle it in place without
+// rebuilding the row (its id stays stable across gauge changes either way).
 function drillFlagMarkup(strNum, gauge) {
   if (isBassInstrument()) return '';
   const bucket = drillFlagBucket(gaugeToInches(gauge));
-  return `<span class="fit-flag fit-flag-drill" id="drill-flag-${strNum}"${bucket ? '' : ' style="display:none"'}>⚹ SEE BELOW</span>`;
+  return `<span class="fit-flag fit-flag-drill" id="drill-flag-${strNum}"${bucket ? '' : ' style="display:none"'}>⚹ GAUGE NOTE BELOW</span>`;
 }
 
 // Look up the spec row that matches a chosen gauge (in inches). The PDF rows are
