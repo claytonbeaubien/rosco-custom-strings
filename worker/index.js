@@ -538,23 +538,33 @@ async function handleCreateDraftOrder(request, env, origin) {
 
   // 2. Build line-item properties from the pack spec. These show up under
   // the line item in the Shopify order and on the customer's receipt.
-  const gaugeList = pack.strings
+  //
+  // pack.strings arrives ordered string_num 1..N (1 = thinnest/highest
+  // pitch, same convention as the string engine data). "Low to high" in
+  // Clayton's usage means low string (thick gauge, low pitch) first, so
+  // sort descending by string_num for these display lists - matches the
+  // on-page string table, which sorts the same way (see buildStringTable
+  // in index.html).
+  const displayOrderStrings = [...pack.strings].sort(
+    (a, b) => (b.string_num || 0) - (a.string_num || 0)
+  );
+  const gaugeList = displayOrderStrings
     .map((s) => s.gauge_display || (typeof s.gauge === 'number'
       ? `.${String(Math.round(s.gauge * 1000)).padStart(3, '0')}`
       : '?'))
     .join(' / ');
-  const noteList = pack.strings
+  const noteList = displayOrderStrings
     .map((s) => s.note || '')
     .filter(Boolean)
     .join(' ');
-  const typeList = pack.strings
+  const typeList = displayOrderStrings
     .map((s) => s.type || '')
     .filter(Boolean)
     .join(' / ');
   // D'Addario part number per string - used to match Airtable String
   // Inventory exactly when the order is fulfilled. Sent by the calculator
   // as `part_number` on each string (the prod_code that priced it).
-  const partList = pack.strings
+  const partList = displayOrderStrings
     .map((s) => s.part_number || '')
     .filter(Boolean)
     .join(' / ');
