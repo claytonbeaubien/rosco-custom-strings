@@ -2901,8 +2901,8 @@ function printLabel(copies) {
 // friction gate, not real security - no obfuscation intended.
 // ════════════════════════════════════════════
 const SETUP_SPECS_CODE = 'ROSCOTECH';
-// TODO: swap in Clayton's real GHL form URL once he sends it.
-const SETUP_SPECS_CODE_REQUEST_URL = 'https://link.roscoguitars.com/PLACEHOLDER-GHL-FORM';
+// Clayton's GHL "Rosco Tech Unlock" form - GHL captures the lead and emails the code.
+const SETUP_SPECS_CODE_REQUEST_URL = 'https://crm.roscoguitars.com/widget/form/MPAFJ7MRyq9IDC6o4qNV';
 const SETUP_SPECS_PING_HOOK = 'https://hook.us2.make.com/3lm6un4ba3gih8w6nt8b9uvqna4w4eif';
 
 function setupSpecsUnlocked() {
@@ -2997,6 +2997,14 @@ function onSpecsCodeKeydown(e) {
 document.addEventListener('DOMContentLoaded', () => {
   const link = document.getElementById('specs-code-request-link');
   if (link) link.href = SETUP_SPECS_CODE_REQUEST_URL;
+});
+// Form opens in a new tab. When they come back with the code, drop the cursor
+// straight into the code box if the modal is still open.
+document.addEventListener('visibilitychange', () => {
+  if (document.visibilityState !== 'visible') return;
+  const bd = document.getElementById('specs-code-backdrop');
+  const input = document.getElementById('specs-code-input');
+  if (bd && bd.classList.contains('is-open') && input) input.focus();
 });
 // ESC also closes the code modal (mirrors the generic + buy modal behaviour).
 document.addEventListener('keydown', function(e) {
