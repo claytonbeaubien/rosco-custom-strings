@@ -150,8 +150,8 @@ select:focus,input[type=text]:focus{border-color:#2cd5c4;outline:none}
    for editorial separation from the calculator above. Outer .tensions-info
    is full-width with vertical padding; inner .tensions-info-card holds the
    980px content constraint. All inner colors flipped to dark-mode. */
-.tensions-info{max-width:1132px;margin:24px auto 48px;padding:64px 24px;background:#0f1012;color:#e8e8e8;border-radius:12px;box-shadow:0 4px 16px rgba(0,0,0,.10)}
-@media(max-width:1099px){.tensions-info{max-width:640px;margin:0 auto;padding:48px 24px;border-radius:0;box-shadow:none}}
+.tensions-info{max-width:1132px;margin:24px auto 48px;padding:15px 24px;background:#0f1012;color:#e8e8e8;border-radius:12px;box-shadow:0 4px 16px rgba(0,0,0,.10)}
+@media(max-width:1099px){.tensions-info{max-width:640px;margin:0 auto;padding:15px 24px;border-radius:0;box-shadow:none}}
 .tensions-info-card{max-width:980px;margin:0 auto;padding:0;background:transparent;border:none;box-shadow:none;border-radius:0}
 .tensions-info h2{font-size:22px;font-weight:700;letter-spacing:-.01em;color:#fff;margin-bottom:4px}
 .tensions-info .eyebrow{font-size:10px;font-weight:700;letter-spacing:.18em;text-transform:uppercase;color:#2cd5c4;margin-bottom:8px}
@@ -185,30 +185,31 @@ select:focus,input[type=text]:focus{border-color:#2cd5c4;outline:none}
 .tensions-info .band-ok{background:rgba(44,213,196,.18);color:#5be3d3}
 .tensions-info .band-warn{background:rgba(240,165,0,.20);color:#f5c14d}
 .tensions-info .band-bad{background:rgba(224,85,85,.20);color:#ff8a8a}
-/* Collapsible, like Setup Specs. Open by default; collapsed shows just a
-   centered "Rosco Suggested Tensions ▾" bar. State is remembered per browser. */
+/* Section bars - Tensions and Setup Specs share one pattern: a slim bar with a
+   centered label + caret that looks identical open or closed (only the caret
+   flips), so the same click target opens and closes it. Both start closed. */
 .tensions-head{position:relative;cursor:pointer;outline:none;border-radius:6px}
 .tensions-head:focus-visible{box-shadow:0 0 0 2px #2cd5c4}
-.tensions-caret{font-size:12px;color:#8a8a8e;margin-left:8px;vertical-align:middle;transition:color .15s}
-.tensions-head:hover .tensions-caret{color:#2cd5c4}
-.tensions-collapsed-link{display:none;text-align:center;color:#2cd5c4;font-size:12px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;padding:6px 0;transition:color .15s}
-.tensions-collapsed-link .tensions-caret{color:inherit;font-size:10px;margin-left:6px}
-.tensions-head:hover .tensions-collapsed-link{color:#5be3d3}
-.tensions-info:not(.open){padding:10px 24px}
-.tensions-info:not(.open) .tensions-collapsed-link{display:block}
-.tensions-info:not(.open) .tensions-expanded-head,
-.tensions-info:not(.open) .tensions-body{display:none}
-/* Swap button - moves Setup Specs above/below this section. Only shown once a
-   pack is loaded (body.has-setup-specs), since there's nothing to swap before that. */
-.sections-swap{display:none;position:absolute;top:0;right:0;align-items:center;gap:5px;background:transparent;border:1px solid #3a3b40;color:#bdbdc0;border-radius:5px;padding:6px 10px;font-size:10px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;cursor:pointer;font-family:inherit;transition:all .12s}
+.tensions-info h2.tensions-bar-label{display:block;margin:0;text-align:center;color:#2cd5c4;font-size:12px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;padding:6px 0;transition:color .15s}
+.tensions-head:hover .tensions-bar-label{color:#5be3d3}
+.bar-caret{display:inline-block;margin-left:6px;font-size:10px;line-height:1;transition:transform .2s ease}
+.tensions-info.open .bar-caret,.setup-specs.open .bar-caret{transform:rotate(180deg)}
+.tensions-body{display:none;margin-top:15px;padding:32px 0 50px;border-top:1px solid #2a2b30}
+.tensions-info.open .tensions-body{display:block}
+@media(max-width:1099px){.tensions-body{padding:28px 0 38px}}
+/* Swap button - lives in both bars, flips which section sits on top. The one
+   in the Tensions bar only shows once a pack is loaded (body.has-setup-specs),
+   since Setup Specs doesn't exist before that. */
+.sections-swap{display:inline-flex;position:absolute;top:50%;right:0;transform:translateY(-50%);align-items:center;gap:5px;background:transparent;border:1px solid #3a3b40;color:#bdbdc0;border-radius:5px;padding:6px 10px;font-size:10px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;cursor:pointer;font-family:inherit;transition:border-color .12s,color .12s}
 .sections-swap:hover{border-color:#2cd5c4;color:#2cd5c4}
-.tensions-info:not(.open) .sections-swap{top:50%;transform:translateY(-50%)}
-body.has-setup-specs .sections-swap{display:inline-flex}
-body.has-setup-specs .tensions-expanded-head{padding-right:84px}
+.setup-specs .sections-swap{border-color:#d8d8d8;color:#777;right:4px}
+.setup-specs .sections-swap:hover{border-color:#2cd5c4;color:#159385}
+.tensions-info .sections-swap{display:none}
+body.has-setup-specs .tensions-info .sections-swap{display:inline-flex}
 @media(max-width:599px){
   .sections-swap .swap-text{display:none}
-  body.has-setup-specs .tensions-expanded-head{padding-right:40px}
-  body.has-setup-specs .tensions-info:not(.open) .tensions-collapsed-link{text-align:left}
+  .sections-swap{padding:6px 8px}
+  .tensions-info h2.tensions-bar-label,.setup-specs-bar-label{letter-spacing:.1em;padding-left:36px;padding-right:36px}
 }
 .fit-flag{cursor:pointer}
 .no-pack{color:#999;font-style:italic;font-size:13px;padding:8px 0}
@@ -255,23 +256,17 @@ body.has-setup-specs .tensions-expanded-head{padding-right:84px}
 .setup-specs{max-width:1132px;margin:24px auto;padding:0 24px}
 @media(max-width:1099px){.setup-specs{max-width:640px;padding:0 16px}}
 @media(max-width:599px){.setup-specs{padding:0 12px;margin:16px auto}}
-.setup-specs-card{background:#fff;border:1px solid #e0e0e0;border-radius:12px;padding:8px 28px;box-shadow:0 2px 8px rgba(0,0,0,.04);transition:padding .25s ease}
-.setup-specs.open .setup-specs-card{padding:18px 28px 22px}
-@media(max-width:599px){.setup-specs-card{padding:6px 14px;border-radius:8px}.setup-specs.open .setup-specs-card{padding:14px 14px 14px}}
-.setup-specs-header{cursor:pointer;padding:6px 0;margin:0;border-radius:6px;transition:background .15s ease,padding .25s ease,margin .25s ease,border-color .25s ease;outline:none;border-bottom:1px solid transparent}
+.setup-specs-card{background:#fff;border:1px solid #e0e0e0;border-radius:12px;padding:8px 28px;box-shadow:0 2px 8px rgba(0,0,0,.04)}
+@media(max-width:599px){.setup-specs-card{padding:6px 14px;border-radius:8px}}
+/* Bar - same look open or closed, see "Section bars" above. */
+.setup-specs-header{position:relative;cursor:pointer;padding:6px 0;margin:0;border-radius:6px;transition:background .15s ease;outline:none}
 .setup-specs-header:hover{background:#f7f8fa}
 .setup-specs-header:focus-visible{box-shadow:0 0 0 2px #2cd5c4}
-.setup-specs.open .setup-specs-header{margin-bottom:14px;padding:0 0 14px;border-bottom-color:#ececec;border-radius:6px 6px 0 0}
+.setup-specs-bar-label{display:block;text-align:center;color:#159385;font-size:12px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;padding:6px 0;transition:color .15s ease}
+.setup-specs-header:hover .setup-specs-bar-label{color:#0e6e64}
 
-/* Collapsed state - just centered "Setup Specs for this Pack ▾" link. */
-.setup-specs-collapsed-link{display:block;text-align:center;color:#159385;font-size:12px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;padding:6px 0;transition:color .15s ease}
-.setup-specs-collapsed-link .setup-specs-caret{display:inline-block;margin-left:6px;font-size:10px;line-height:1}
-.setup-specs-header:hover .setup-specs-collapsed-link{color:#0e6e64}
-.setup-specs.open .setup-specs-collapsed-link{display:none}
-
-/* Expanded state - full header with pack title + Print specs button. */
-.setup-specs-expanded-row{display:none}
-.setup-specs.open .setup-specs-expanded-row{display:flex;align-items:flex-start;justify-content:space-between;gap:16px;padding:0 10px}
+/* First thing inside the open body - pack title + Print specs button. */
+.setup-specs-titlerow{display:flex;align-items:flex-start;justify-content:space-between;gap:16px;margin-top:8px;padding:16px 10px 14px;border-top:1px solid #ececec}
 .setup-specs-headtext{min-width:0;flex:1}
 .setup-specs-eyebrow{font-size:10px;font-weight:700;letter-spacing:.16em;text-transform:uppercase;color:#159385;margin-bottom:4px}
 .setup-specs-title{font-size:17px;font-weight:700;color:#111;letter-spacing:-.005em;margin:0 0 2px}
@@ -282,7 +277,7 @@ body.has-setup-specs .tensions-expanded-head{padding-right:84px}
 
 /* Collapsible body - hidden by default, opens on click */
 .setup-specs-body{max-height:0;overflow:hidden;opacity:0;transition:max-height .35s ease,opacity .25s ease}
-.setup-specs.open .setup-specs-body{max-height:4000px;opacity:1}
+.setup-specs.open .setup-specs-body{max-height:4000px;opacity:1;padding-bottom:14px}
 
 /* Inline below-tension warning row inside the per-string table */
 .setup-table-note-row td{padding:6px 10px 8px;background:#fdf6e3;border-left:3px solid #f0d9a0;border-bottom:1px solid #f4f4f4;color:#9a6b00;font-size:11px;font-style:italic;line-height:1.45}
@@ -771,19 +766,16 @@ html.print-mode .print-banner{display:block;background:#f4f5f7;border:1px solid 
 </div>
 
 <!-- Rosco Suggested Tensions - client-facing reference chart -->
-<section class="tensions-info open" id="rosco-tensions">
+<section class="tensions-info" id="rosco-tensions">
   <div class="tensions-info-card">
-    <div class="tensions-head" onclick="toggleTensions()" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();toggleTensions()}" role="button" tabindex="0" aria-controls="tensions-body" aria-expanded="true">
-      <div class="tensions-collapsed-link">Rosco Suggested Tensions <span class="tensions-caret" aria-hidden="true">▾</span></div>
-      <div class="tensions-expanded-head">
-        <div class="eyebrow">The Rosco Standard</div>
-        <h2>Rosco Suggested Tensions<span class="tensions-caret" aria-hidden="true">▴</span></h2>
-      </div>
-      <button type="button" class="sections-swap" onclick="event.stopPropagation(); swapInfoSections()" title="Swap places with Setup Specs">
+    <div class="tensions-head" onclick="toggleTensions()" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();toggleTensions()}" role="button" tabindex="0" aria-controls="tensions-body" aria-expanded="false">
+      <h2 class="tensions-bar-label">Rosco Suggested Tensions <span class="bar-caret" aria-hidden="true">▾</span></h2>
+      <button type="button" class="sections-swap" onclick="event.stopPropagation(); swapInfoSections(this)" title="Swap places with Setup Specs">
         <span aria-hidden="true">⇅</span><span class="swap-text">Swap</span>
       </button>
     </div>
     <div class="tensions-body" id="tensions-body">
+    <div class="eyebrow">The Rosco Standard</div>
     <p>Every Rosco custom pack is built around a <strong>progressive tension ladder.</strong> Each string feels a little stiffer as you move from treble to bass, so no single string stands out as unusually loose or tight under your fingers. You choose the scale and tuning, we show you a good starting point to achieve that even tension. Adjust as desired.</p>
 
     <div class="ladder-grid">
@@ -2974,21 +2966,27 @@ function pingSetupSpecsOpened() {
 // Shared by the already-unlocked toggle path and the code modal's success
 // path so the open transition (and its ping) only ever happens in one place.
 function openSetupSpecsPanel() {
-  document.getElementById('setup-specs').classList.add('open');
+  setSetupSpecsOpen(true);
   pingSetupSpecsOpened();
+}
+function setSetupSpecsOpen(open) {
+  const section = document.getElementById('setup-specs');
+  section.classList.toggle('open', open);
+  const head = section.querySelector('.setup-specs-header');
+  if (head) head.setAttribute('aria-expanded', open ? 'true' : 'false');
 }
 
 function toggleSetupSpecs() {
   const section = document.getElementById('setup-specs');
   if (!section) return;
-  if (section.classList.contains('open')) { section.classList.remove('open'); return; }
+  if (section.classList.contains('open')) { setSetupSpecsOpen(false); return; }
   if (setupSpecsUnlocked()) { openSetupSpecsPanel(); return; }
   openSpecsCode();
 }
 
 // ──────────────────────────────────────────────
-// Rosco Suggested Tensions - collapse + swap with Setup Specs. Both are
-// per-browser conveniences in localStorage; defaults are open, tensions first.
+// Rosco Suggested Tensions - collapse + swap with Setup Specs. Both sections
+// start closed on every load; only the order is remembered (localStorage).
 // ──────────────────────────────────────────────
 function setTensionsOpen(open) {
   const section = document.getElementById('rosco-tensions');
@@ -2996,7 +2994,6 @@ function setTensionsOpen(open) {
   section.classList.toggle('open', open);
   const head = section.querySelector('.tensions-head');
   if (head) head.setAttribute('aria-expanded', open ? 'true' : 'false');
-  try { localStorage.setItem('rg_tensions_collapsed', open ? '0' : '1'); } catch (_) {}
 }
 function toggleTensions() {
   const section = document.getElementById('rosco-tensions');
@@ -3015,23 +3012,20 @@ function placeInfoSections(specsFirst) {
   if (!t || !s) return;
   if (specsFirst) t.before(s); else t.after(s);
 }
-function swapInfoSections() {
+function swapInfoSections(btn) {
   const t = document.getElementById('rosco-tensions');
   const s = document.getElementById('setup-specs');
   if (!t || !s) return;
   const specsFirst = !(s.compareDocumentPosition(t) & Node.DOCUMENT_POSITION_FOLLOWING);
   placeInfoSections(specsFirst);
   try { localStorage.setItem('rg_specs_first', specsFirst ? '1' : '0'); } catch (_) {}
-  // The button travels with the tensions section; keep it on screen.
-  t.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  // Keep the section whose Swap was clicked on screen as it moves.
+  const moved = (btn && btn.closest('section')) || t;
+  moved.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
 }
 (function restoreInfoSections() {
-  let collapsed = false, specsFirst = false;
-  try {
-    collapsed = localStorage.getItem('rg_tensions_collapsed') === '1';
-    specsFirst = localStorage.getItem('rg_specs_first') === '1';
-  } catch (_) {}
-  if (collapsed) setTensionsOpen(false);
+  let specsFirst = false;
+  try { specsFirst = localStorage.getItem('rg_specs_first') === '1'; } catch (_) {}
   if (specsFirst) placeInfoSections(true);
 })();
 document.addEventListener('click', (e) => {
@@ -3216,22 +3210,28 @@ function renderSetupSpecs() {
     </div>
   `;
 
-  // Two header states, swapped by CSS based on the `.open` class on #setup-specs.
-  // Collapsed: a single centered "Setup Specs for this Pack ▾" link.
-  // Expanded: the full header with pack title + Print specs button.
-  // The Print button stops event propagation so clicking it doesn't toggle the panel.
+  // The bar looks the same open or closed (the caret flips via the `.open` class
+  // on #setup-specs), so one click target toggles it. Pack title + Print specs
+  // sit at the top of the body. Buttons in the bar stop propagation so they
+  // don't also toggle the panel.
+  const isOpen = document.getElementById('setup-specs').classList.contains('open');
   inner.innerHTML = `
-    <div class="setup-specs-header" onclick="toggleSetupSpecs()" role="button" tabindex="0" aria-controls="setup-specs-body">
-      <div class="setup-specs-collapsed-link">
-        Setup Specs for this Pack <span class="setup-specs-caret" aria-hidden="true">▾</span>
+    <div class="setup-specs-header" onclick="toggleSetupSpecs()" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();toggleSetupSpecs()}" role="button" tabindex="0" aria-controls="setup-specs-body" aria-expanded="${isOpen}">
+      <div class="setup-specs-bar-label">
+        Setup Specs for this Pack <span class="bar-caret" aria-hidden="true">▾</span>
       </div>
-      <div class="setup-specs-expanded-row">
+      <button type="button" class="sections-swap" onclick="event.stopPropagation(); swapInfoSections(this)" title="Swap places with Rosco Suggested Tensions">
+        <span aria-hidden="true">⇅</span><span class="swap-text">Swap</span>
+      </button>
+    </div>
+    <div class="setup-specs-body" id="setup-specs-body">
+      <div class="setup-specs-titlerow">
         <div class="setup-specs-headtext">
           <div class="setup-specs-eyebrow">Setup Specs for this Pack</div>
           <h3 class="setup-specs-title">${tuningDisplay} · ${scale.toFixed(2)}" scale</h3>
           <div class="setup-specs-sub">${instrumentLabel}</div>
         </div>
-        <button type="button" class="setup-specs-printbtn" onclick="event.stopPropagation(); printSetupSpecs()" title="Print setup specs for bench use">
+        <button type="button" class="setup-specs-printbtn" onclick="printSetupSpecs()" title="Print setup specs for bench use">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
             <polyline points="6 9 6 2 18 2 18 9"/>
             <path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/>
@@ -3240,8 +3240,6 @@ function renderSetupSpecs() {
           Print specs
         </button>
       </div>
-    </div>
-    <div class="setup-specs-body" id="setup-specs-body">
       ${mainTableHTML}
       ${extrasHTML}
       <div class="setup-order">
@@ -3270,7 +3268,8 @@ function printSetupSpecs() {
       @page { size: letter; margin: 0.5in; }
       *{box-sizing:border-box}
       body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;color:#111;background:#fff;margin:0;padding:0;font-size:12px;line-height:1.4}
-      .setup-specs-header{display:flex;align-items:flex-start;justify-content:space-between;border-bottom:1px solid #ccc;padding-bottom:8px;margin-bottom:14px}
+      .setup-specs-header{display:none}
+      .setup-specs-titlerow{display:flex;align-items:flex-start;justify-content:space-between;border-bottom:1px solid #ccc;padding-bottom:8px;margin-bottom:14px}
       .setup-specs-eyebrow{font-size:9px;font-weight:700;letter-spacing:.18em;text-transform:uppercase;color:#159385;margin-bottom:4px}
       .setup-specs-title{font-size:16px;font-weight:700;color:#111;margin:0 0 2px}
       .setup-specs-sub{font-size:11px;color:#666}
@@ -3301,7 +3300,6 @@ function printSetupSpecs() {
       .setup-order-label{font-size:9px;font-weight:700;letter-spacing:.16em;text-transform:uppercase;color:#159385;margin-bottom:5px}
       .setup-order-steps{font-size:10px;color:#444;font-weight:600}
       .setup-order-arrow{color:#999;margin:0 3px;font-weight:400}
-      .setup-specs-collapsed-link{display:none}
       .print-footer{margin-top:18px;padding-top:10px;border-top:1px solid #ccc;font-size:9px;color:#888;text-align:center;letter-spacing:.06em}
     </style>
   </head><body>
