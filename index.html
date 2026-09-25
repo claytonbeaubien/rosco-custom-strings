@@ -185,6 +185,32 @@ select:focus,input[type=text]:focus{border-color:#2cd5c4;outline:none}
 .tensions-info .band-ok{background:rgba(44,213,196,.18);color:#5be3d3}
 .tensions-info .band-warn{background:rgba(240,165,0,.20);color:#f5c14d}
 .tensions-info .band-bad{background:rgba(224,85,85,.20);color:#ff8a8a}
+/* Collapsible, like Setup Specs. Open by default; collapsed shows just a
+   centered "Rosco Suggested Tensions ▾" bar. State is remembered per browser. */
+.tensions-head{position:relative;cursor:pointer;outline:none;border-radius:6px}
+.tensions-head:focus-visible{box-shadow:0 0 0 2px #2cd5c4}
+.tensions-caret{font-size:12px;color:#8a8a8e;margin-left:8px;vertical-align:middle;transition:color .15s}
+.tensions-head:hover .tensions-caret{color:#2cd5c4}
+.tensions-collapsed-link{display:none;text-align:center;color:#2cd5c4;font-size:12px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;padding:6px 0;transition:color .15s}
+.tensions-collapsed-link .tensions-caret{color:inherit;font-size:10px;margin-left:6px}
+.tensions-head:hover .tensions-collapsed-link{color:#5be3d3}
+.tensions-info:not(.open){padding:10px 24px}
+.tensions-info:not(.open) .tensions-collapsed-link{display:block}
+.tensions-info:not(.open) .tensions-expanded-head,
+.tensions-info:not(.open) .tensions-body{display:none}
+/* Swap button - moves Setup Specs above/below this section. Only shown once a
+   pack is loaded (body.has-setup-specs), since there's nothing to swap before that. */
+.sections-swap{display:none;position:absolute;top:0;right:0;align-items:center;gap:5px;background:transparent;border:1px solid #3a3b40;color:#bdbdc0;border-radius:5px;padding:6px 10px;font-size:10px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;cursor:pointer;font-family:inherit;transition:all .12s}
+.sections-swap:hover{border-color:#2cd5c4;color:#2cd5c4}
+.tensions-info:not(.open) .sections-swap{top:50%;transform:translateY(-50%)}
+body.has-setup-specs .sections-swap{display:inline-flex}
+body.has-setup-specs .tensions-expanded-head{padding-right:84px}
+@media(max-width:599px){
+  .sections-swap .swap-text{display:none}
+  body.has-setup-specs .tensions-expanded-head{padding-right:40px}
+  body.has-setup-specs .tensions-info:not(.open) .tensions-collapsed-link{text-align:left}
+}
+.fit-flag{cursor:pointer}
 .no-pack{color:#999;font-style:italic;font-size:13px;padding:8px 0}
 .sel-wrap{display:flex;align-items:flex-end;gap:4px}
 .sel-wrap .field{flex:1;min-width:0}
@@ -430,10 +456,12 @@ html.print-mode .print-banner{display:block;background:#f4f5f7;border:1px solid 
       // and create a feedback loop).
       const main = document.querySelector('.main');
       const tensions = document.querySelector('.tensions-info');
+      const specs = document.getElementById('setup-specs');
       const footer = document.querySelector('.internal-tools');
       let h = 0;
       if (main)     h = Math.max(h, main.offsetTop + main.offsetHeight);
       if (tensions) h = Math.max(h, tensions.offsetTop + tensions.offsetHeight);
+      if (specs && specs.offsetHeight) h = Math.max(h, specs.offsetTop + specs.offsetHeight);
       if (footer)   h = Math.max(h, footer.offsetTop + footer.offsetHeight + 16);
       // Round to the nearest 4px to avoid tiny pixel-level oscillations
       // that would keep the iframe re-rendering forever.
@@ -700,7 +728,7 @@ html.print-mode .print-banner{display:block;background:#f4f5f7;border:1px solid 
     </div>
 
     <div class="card gauges-card">
-      <div class="section-title" style="display:flex;align-items:center;justify-content:space-between;gap:10px">String Gauges &amp; Tuning - Click to Adjust<a onclick="document.getElementById('bass-info').scrollIntoView({behavior:'smooth',block:'start'});return false;" style="font-size:11px;font-weight:700;color:#159385;letter-spacing:.04em;cursor:pointer;white-space:nowrap;text-decoration:underline">String Info</a></div>
+      <div class="section-title" style="display:flex;align-items:center;justify-content:space-between;gap:10px">String Gauges &amp; Tuning - Click to Adjust<a onclick="showStringInfo();return false;" style="font-size:11px;font-weight:700;color:#159385;letter-spacing:.04em;cursor:pointer;white-space:nowrap;text-decoration:underline">String Info</a></div>
       <div id="string-brand-label" style="font-size:11px;color:#999;margin:-6px 0 10px;letter-spacing:.04em">D'Addario XL Nickel Wound / Plain Steel</div>
       <div id="no-pack" class="no-pack">Select a scale length and tuning to load a pack.</div>
       <div class="str-table-scroll">
@@ -743,10 +771,19 @@ html.print-mode .print-banner{display:block;background:#f4f5f7;border:1px solid 
 </div>
 
 <!-- Rosco Suggested Tensions - client-facing reference chart -->
-<section class="tensions-info" id="rosco-tensions">
+<section class="tensions-info open" id="rosco-tensions">
   <div class="tensions-info-card">
-    <div class="eyebrow">The Rosco Standard</div>
-    <h2>Rosco Suggested Tensions</h2>
+    <div class="tensions-head" onclick="toggleTensions()" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();toggleTensions()}" role="button" tabindex="0" aria-controls="tensions-body" aria-expanded="true">
+      <div class="tensions-collapsed-link">Rosco Suggested Tensions <span class="tensions-caret" aria-hidden="true">▾</span></div>
+      <div class="tensions-expanded-head">
+        <div class="eyebrow">The Rosco Standard</div>
+        <h2>Rosco Suggested Tensions<span class="tensions-caret" aria-hidden="true">▴</span></h2>
+      </div>
+      <button type="button" class="sections-swap" onclick="event.stopPropagation(); swapInfoSections()" title="Swap places with Setup Specs">
+        <span aria-hidden="true">⇅</span><span class="swap-text">Swap</span>
+      </button>
+    </div>
+    <div class="tensions-body" id="tensions-body">
     <p>Every Rosco custom pack is built around a <strong>progressive tension ladder.</strong> Each string feels a little stiffer as you move from treble to bass, so no single string stands out as unusually loose or tight under your fingers. You choose the scale and tuning, we show you a good starting point to achieve that even tension. Adjust as desired.</p>
 
     <div class="ladder-grid">
@@ -818,6 +855,7 @@ html.print-mode .print-banner{display:block;background:#f4f5f7;border:1px solid 
       <span class="band band-warn">Near target &nbsp;≤ 4 lbs (guitar) &nbsp;/ &nbsp;≤ 7 lbs (bass)</span>
       <span class="band band-bad">Off target &nbsp;beyond that</span>
     </div>
+    </div><!-- /.tensions-body -->
   </div>
 </section>
 
@@ -2949,6 +2987,58 @@ function toggleSetupSpecs() {
 }
 
 // ──────────────────────────────────────────────
+// Rosco Suggested Tensions - collapse + swap with Setup Specs. Both are
+// per-browser conveniences in localStorage; defaults are open, tensions first.
+// ──────────────────────────────────────────────
+function setTensionsOpen(open) {
+  const section = document.getElementById('rosco-tensions');
+  if (!section) return;
+  section.classList.toggle('open', open);
+  const head = section.querySelector('.tensions-head');
+  if (head) head.setAttribute('aria-expanded', open ? 'true' : 'false');
+  try { localStorage.setItem('rg_tensions_collapsed', open ? '0' : '1'); } catch (_) {}
+}
+function toggleTensions() {
+  const section = document.getElementById('rosco-tensions');
+  if (section) setTensionsOpen(!section.classList.contains('open'));
+}
+// "String Info" link and the "NOTE BELOW" fit flags point into the tensions
+// section, so open it first if it's collapsed.
+function showStringInfo() {
+  setTensionsOpen(true);
+  const target = document.getElementById('bass-info');
+  if (target) target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+function placeInfoSections(specsFirst) {
+  const t = document.getElementById('rosco-tensions');
+  const s = document.getElementById('setup-specs');
+  if (!t || !s) return;
+  if (specsFirst) t.before(s); else t.after(s);
+}
+function swapInfoSections() {
+  const t = document.getElementById('rosco-tensions');
+  const s = document.getElementById('setup-specs');
+  if (!t || !s) return;
+  const specsFirst = !(s.compareDocumentPosition(t) & Node.DOCUMENT_POSITION_FOLLOWING);
+  placeInfoSections(specsFirst);
+  try { localStorage.setItem('rg_specs_first', specsFirst ? '1' : '0'); } catch (_) {}
+  // The button travels with the tensions section; keep it on screen.
+  t.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+}
+(function restoreInfoSections() {
+  let collapsed = false, specsFirst = false;
+  try {
+    collapsed = localStorage.getItem('rg_tensions_collapsed') === '1';
+    specsFirst = localStorage.getItem('rg_specs_first') === '1';
+  } catch (_) {}
+  if (collapsed) setTensionsOpen(false);
+  if (specsFirst) placeInfoSections(true);
+})();
+document.addEventListener('click', (e) => {
+  if (e.target.closest && e.target.closest('.fit-flag')) showStringInfo();
+});
+
+// ──────────────────────────────────────────────
 // Code-entry modal - the only gate. Compares a trimmed + uppercased input
 // against SETUP_SPECS_CODE (case-insensitive on purpose, friendlier than an
 // exact match for a code read off a phone screen).
@@ -3028,6 +3118,7 @@ function formatInchesPretty(inches) {
 function renderSetupSpecs() {
   const section = document.getElementById('setup-specs');
   if (!section) return;
+  document.body.classList.toggle('has-setup-specs', !!currentPack);
   if (!currentPack) { section.style.display = 'none'; return; }
   section.style.display = '';
 
