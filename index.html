@@ -153,7 +153,7 @@ select:focus,input[type=text]:focus{border-color:#2cd5c4;outline:none}
 .tensions-info{max-width:1132px;margin:24px auto 48px;padding:15px 24px;background:#0f1012;color:#e8e8e8;border-radius:12px;box-shadow:0 4px 16px rgba(0,0,0,.10)}
 @media(max-width:1099px){.tensions-info{max-width:640px;margin:0 auto;padding:15px 16px;border-radius:0;box-shadow:none}}
 @media(max-width:599px){.tensions-info{padding:15px 12px}}
-.tensions-info-card{max-width:980px;margin:0 auto;padding:0;background:transparent;border:none;box-shadow:none;border-radius:0}
+.tensions-info-card{padding:0;background:transparent;border:none;box-shadow:none;border-radius:0}
 .tensions-info h2{font-size:22px;font-weight:700;letter-spacing:-.01em;color:#fff;margin-bottom:4px}
 .tensions-info .eyebrow{font-size:10px;font-weight:700;letter-spacing:.18em;text-transform:uppercase;color:#2cd5c4;margin-bottom:8px}
 .tensions-info p{color:#bdbdc0;font-size:14px;line-height:1.6;margin-bottom:14px}
@@ -204,7 +204,7 @@ select:focus,input[type=text]:focus{border-color:#2cd5c4;outline:none}
    instances always match exactly regardless of content. */
 .sections-swap{display:inline-flex;position:absolute;top:50%;right:4px;transform:translateY(-50%);align-items:center;justify-content:center;width:30px;height:28px;background:transparent;border:1px solid #3a3b40;color:#bdbdc0;border-radius:5px;font-size:15px;line-height:1;cursor:pointer;font-family:inherit;transition:border-color .12s,color .12s}
 .sections-swap:hover{border-color:#2cd5c4;color:#2cd5c4}
-.setup-specs .sections-swap{right:-24px;border-color:#d8d8d8;color:#777}
+.setup-specs .sections-swap{right:0;border-color:#d8d8d8;color:#777}
 .setup-specs .sections-swap:hover{border-color:#2cd5c4;color:#159385}
 .tensions-info .sections-swap{display:none}
 body.has-setup-specs .tensions-info .sections-swap{display:inline-flex}
@@ -253,10 +253,10 @@ body.has-setup-specs .tensions-info .sections-swap{display:inline-flex}
 
 /* Setup Specs - per-pack mechanical setup reference. Sits between the calculator
    grid and the dark Tensions section; light card so it visually separates from both. */
-.setup-specs{max-width:1132px;margin:24px auto;padding:0 24px}
-@media(max-width:1099px){.setup-specs{max-width:640px;padding:0 16px}}
-@media(max-width:599px){.setup-specs{padding:0 12px;margin:16px auto}}
-.setup-specs-card{max-width:980px;margin:0 auto;background:#fff;border:1px solid #e0e0e0;border-radius:12px;padding:8px 28px;box-shadow:0 2px 8px rgba(0,0,0,.04)}
+.setup-specs{max-width:1132px;margin:24px auto;padding:0}
+@media(max-width:1099px){.setup-specs{max-width:640px}}
+@media(max-width:599px){.setup-specs{margin:16px auto}}
+.setup-specs-card{background:#fff;border:1px solid #e0e0e0;border-radius:12px;padding:8px 28px;box-shadow:0 2px 8px rgba(0,0,0,.04)}
 @media(max-width:599px){.setup-specs-card{padding:6px 14px;border-radius:8px}}
 /* Bar - same look open or closed, see "Section bars" above. */
 .setup-specs-header{position:relative;cursor:pointer;padding:6px 0;margin:0;border-radius:6px;transition:background .15s ease;outline:none}
