@@ -30,15 +30,15 @@ Checklist when tunings change:
 
 Do this proactively whenever the change is made - don't wait for Clayton to ask.
 
-### Workflow: Claude commits + pushes; Clayton reviews on the PR page
-Sessions run in a per-session git worktree under `.claude/worktrees/<name>/` on branch `claude/<name>` (Claude Desktop creates this automatically at session start). Claude edits, commits, and pushes that branch. Clayton reviews the diff on the GitHub PR page and merges when satisfied.
+### Workflow: Claude commits, pushes, opens the PR, and merges it; Clayton reviews live
+Sessions run in a per-session git worktree under `.claude/worktrees/<name>/` on branch `claude/<name>` (Claude Desktop creates this automatically at session start). Claude edits, commits, pushes that branch, opens the PR, and merges it straight away. Clayton reviews the change live on GitHub Pages, not on the PR page (his call, 2026-09-24). Don't stop to ask before merging.
 
 1. Claude edits files freely. Multiple edits per logical task are fine.
 2. When a coherent chunk is done, Claude stages, commits (conventional commit style: `feat:`, `fix:`, `chore:`, `docs:`, etc.), and pushes the worktree branch. Each commit message ends with the standard `Co-Authored-By: Claude …` footer.
-3. Claude gives Clayton a direct PR URL: `https://github.com/claytonbeaubien/rosco-custom-strings/pull/new/claude/<branch>`. Clayton reviews on github.com and merges.
+3. Claude opens the PR (`gh pr create`), merges it (`gh pr merge --merge`), then runs the cleanup below. Report the PR link and merge commit to Clayton.
 4. For Worker code in `worker/`, after the PR merges Clayton additionally redeploys via the Cloudflare dashboard or `wrangler deploy`.
 
-After the PR merges, cleanup (Claude can do this from any worktree of the repo, or Clayton can run it locally):
+After the PR merges, Claude does the cleanup (from any worktree of the repo):
 ```
 git worktree remove .claude/worktrees/<name>
 git branch -D claude/<name>
