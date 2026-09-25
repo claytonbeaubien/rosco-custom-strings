@@ -151,7 +151,8 @@ select:focus,input[type=text]:focus{border-color:#2cd5c4;outline:none}
    is full-width with vertical padding; inner .tensions-info-card holds the
    980px content constraint. All inner colors flipped to dark-mode. */
 .tensions-info{max-width:1132px;margin:24px auto 48px;padding:15px 24px;background:#0f1012;color:#e8e8e8;border-radius:12px;box-shadow:0 4px 16px rgba(0,0,0,.10)}
-@media(max-width:1099px){.tensions-info{max-width:640px;margin:0 auto;padding:15px 24px;border-radius:0;box-shadow:none}}
+@media(max-width:1099px){.tensions-info{max-width:640px;margin:0 auto;padding:15px 16px;border-radius:0;box-shadow:none}}
+@media(max-width:599px){.tensions-info{padding:15px 12px}}
 .tensions-info-card{max-width:980px;margin:0 auto;padding:0;background:transparent;border:none;box-shadow:none;border-radius:0}
 .tensions-info h2{font-size:22px;font-weight:700;letter-spacing:-.01em;color:#fff;margin-bottom:4px}
 .tensions-info .eyebrow{font-size:10px;font-weight:700;letter-spacing:.18em;text-transform:uppercase;color:#2cd5c4;margin-bottom:8px}
@@ -199,16 +200,15 @@ select:focus,input[type=text]:focus{border-color:#2cd5c4;outline:none}
 @media(max-width:1099px){.tensions-body{padding:28px 0 38px}}
 /* Swap button - lives in both bars, flips which section sits on top. The one
    in the Tensions bar only shows once a pack is loaded (body.has-setup-specs),
-   since Setup Specs doesn't exist before that. */
-.sections-swap{display:inline-flex;position:absolute;top:50%;right:0;transform:translateY(-50%);align-items:center;gap:5px;background:transparent;border:1px solid #3a3b40;color:#bdbdc0;border-radius:5px;padding:6px 10px;font-size:10px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;cursor:pointer;font-family:inherit;transition:border-color .12s,color .12s}
+   since Setup Specs doesn't exist before that. Icon-only, fixed size so both
+   instances always match exactly regardless of content. */
+.sections-swap{display:inline-flex;position:absolute;top:50%;right:4px;transform:translateY(-50%);align-items:center;justify-content:center;width:30px;height:28px;background:transparent;border:1px solid #3a3b40;color:#bdbdc0;border-radius:5px;font-size:15px;line-height:1;cursor:pointer;font-family:inherit;transition:border-color .12s,color .12s}
 .sections-swap:hover{border-color:#2cd5c4;color:#2cd5c4}
-.setup-specs .sections-swap{border-color:#d8d8d8;color:#777;right:4px}
+.setup-specs .sections-swap{right:-24px;border-color:#d8d8d8;color:#777}
 .setup-specs .sections-swap:hover{border-color:#2cd5c4;color:#159385}
 .tensions-info .sections-swap{display:none}
 body.has-setup-specs .tensions-info .sections-swap{display:inline-flex}
 @media(max-width:599px){
-  .sections-swap .swap-text{display:none}
-  .sections-swap{padding:6px 8px}
   .tensions-info h2.tensions-bar-label,.setup-specs-bar-label{letter-spacing:.1em;padding-left:36px;padding-right:36px}
 }
 .fit-flag{cursor:pointer}
@@ -256,7 +256,7 @@ body.has-setup-specs .tensions-info .sections-swap{display:inline-flex}
 .setup-specs{max-width:1132px;margin:24px auto;padding:0 24px}
 @media(max-width:1099px){.setup-specs{max-width:640px;padding:0 16px}}
 @media(max-width:599px){.setup-specs{padding:0 12px;margin:16px auto}}
-.setup-specs-card{background:#fff;border:1px solid #e0e0e0;border-radius:12px;padding:8px 28px;box-shadow:0 2px 8px rgba(0,0,0,.04)}
+.setup-specs-card{max-width:980px;margin:0 auto;background:#fff;border:1px solid #e0e0e0;border-radius:12px;padding:8px 28px;box-shadow:0 2px 8px rgba(0,0,0,.04)}
 @media(max-width:599px){.setup-specs-card{padding:6px 14px;border-radius:8px}}
 /* Bar - same look open or closed, see "Section bars" above. */
 .setup-specs-header{position:relative;cursor:pointer;padding:6px 0;margin:0;border-radius:6px;transition:background .15s ease;outline:none}
@@ -770,8 +770,8 @@ html.print-mode .print-banner{display:block;background:#f4f5f7;border:1px solid 
   <div class="tensions-info-card">
     <div class="tensions-head" onclick="toggleTensions()" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();toggleTensions()}" role="button" tabindex="0" aria-controls="tensions-body" aria-expanded="false">
       <h2 class="tensions-bar-label">Rosco Suggested Tensions <span class="bar-caret" aria-hidden="true">▾</span></h2>
-      <button type="button" class="sections-swap" onclick="event.stopPropagation(); swapInfoSections(this)" title="Swap places with Setup Specs">
-        <span aria-hidden="true">⇅</span><span class="swap-text">Swap</span>
+      <button type="button" class="sections-swap" onclick="event.stopPropagation(); swapInfoSections(this)" title="Swap places with Setup Specs" aria-label="Swap places with Setup Specs">
+        <span aria-hidden="true">⇅</span>
       </button>
     </div>
     <div class="tensions-body" id="tensions-body">
@@ -3220,8 +3220,8 @@ function renderSetupSpecs() {
       <div class="setup-specs-bar-label">
         Setup Specs for this Pack <span class="bar-caret" aria-hidden="true">▾</span>
       </div>
-      <button type="button" class="sections-swap" onclick="event.stopPropagation(); swapInfoSections(this)" title="Swap places with Rosco Suggested Tensions">
-        <span aria-hidden="true">⇅</span><span class="swap-text">Swap</span>
+      <button type="button" class="sections-swap" onclick="event.stopPropagation(); swapInfoSections(this)" title="Swap places with Rosco Suggested Tensions" aria-label="Swap places with Rosco Suggested Tensions">
+        <span aria-hidden="true">⇅</span>
       </button>
     </div>
     <div class="setup-specs-body" id="setup-specs-body">
