@@ -1,8 +1,14 @@
 # RG String Calculator - Project Status
-*Last updated: April 4, 2026*
+*Last updated: 2026-10-05*
 *This is the single source of truth for the current state of the string tool project.*
 
 ---
+
+## Latest (2026-10-05)
+- **Bass singles on the lowest guitar string.** D'Addario guitar wound singles stop at .090 (NW090). The gauge picker on the lowest wound string of any guitar pack (6/7/8) now also lists XLB bass singles: .095, .100, .105, .107, .110, .120, marked "(bass)". Picker only, the recommendation engine never picks them. XLB chosen because it's the only XL bass line with every gauge (no XB110S/XB110M). Priced at the bass markup (XLB110 = $11.85), part # flows to checkout and Add to Job as XLB###, Type column shows "XLB", new 3mm drill bucket at .095+, String Info copy mentions nut slot + ball end fit.
+- Tested in headless Chromium: 8-string Drop E 28", low string .110 = 31.3 lb, priced, part XLB110, survives note change and table rebuild, no console errors.
+- **Status:** shipped via PR on branch `claude/bass-singles-low-string`, live on GitHub Pages.
+- Open: Clayton to confirm the gauge list (stop at .120? add .125/.130?) and whether to offer it on string 7 too.
 
 ## Current State
 
