@@ -1,8 +1,16 @@
 # RG String Calculator - Project Status
-*Last updated: 2026-10-05*
+*Last updated: 2026-10-06*
 *This is the single source of truth for the current state of the string tool project.*
 
 ---
+
+## Bass tension review (2026-10-06)
+- Clayton: 40 lb feels right on bass in real setups, but the tool flags it. Cause: bass ladder is 32/34/36/38/40 with bands ok 3 / warn 7, so 40 lb on the G reads red, on the D orange.
+- Engine math is correct (matches D'Addario published EXL170: G45 42.8, D65 51.3, E100 36.5). The targets are the issue: current ladder sits at D'Addario Super Light balanced level (EXL220BT ~34 lb flat) and builds E std as 40-52-75-100.
+- D'Addario's own balanced sets are flat, not progressive: EXL220BT ~34, EXL170BT ~42.5, EXL160BT ~53 lb per string.
+- APPROVED by Clayton 2026-10-06, handed to Bender: ROSCO_BASS_TARGETS {1:40, 2:40, 3:41, 4:41, 5:42}, drop anchor 42. E std 34" then builds 45-60-80-105 (= EXL170BT), B std 5 adds .145. Also update the ladder table + band copy in the Tensions section. Change is in `index.html` (~line 1285), Bender push.
+- **SHIPPED 2026-10-06.** Targets now 40/40/41/41/42, drop anchor 42, ladder table updated. Bands left at ok 3 / warn 7, so band copy didn't change. Tested in headless Chromium at 34": E std 45/60/80/105 = 42.8/42.9/42.0/40.3 all green; Drop D low .120 = 40.4; 5-string B std adds .145 = 41.4; C std 55/70/100/130. `tensionClass(40, 1)` now green (was red). Checkout snapshot carries XLB part #s and price ($38.50 for E std 4). No tunings changed, so no PDF or Notion rebuild.
+- Note: no stock gauge lands right at 40 lb on the G at 34" E std (.042 = 37.1 green, .045 = 42.8 green, .040 = 33.7 orange).
 
 ## Latest (2026-10-05)
 - **Bass singles on the lowest guitar string.** D'Addario guitar wound singles stop at .090 (NW090). The gauge picker on the lowest wound string of any guitar pack (6/7/8) now also lists XLB bass singles: .095, .100, .105, .107, .110, .120, marked "(bass)". Picker only, the recommendation engine never picks them. XLB chosen because it's the only XL bass line with every gauge (no XB110S/XB110M). Priced at the bass markup (XLB110 = $11.85), part # flows to checkout and Add to Job as XLB###, Type column shows "XLB", new 3mm drill bucket at .095+, String Info copy mentions nut slot + ball end fit.
