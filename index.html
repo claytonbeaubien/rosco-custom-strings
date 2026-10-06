@@ -812,9 +812,11 @@ html.print-mode .print-banner{display:block;background:#f4f5f7;border:1px solid 
         <table class="fit-table">
           <tr><td>.062&Prime;&ndash;.073&Prime;</td><td>1.5mm</td></tr>
           <tr><td>.074&Prime;&ndash;.083&Prime;</td><td>2mm</td></tr>
-          <tr><td>.084&Prime;+</td><td>2.5mm</td></tr>
+          <tr><td>.084&Prime;&ndash;.094&Prime;</td><td>2.5mm</td></tr>
+          <tr><td>.095&Prime;+</td><td>3mm</td></tr>
         </table>
         <p>Stock tuning pegs are drilled for typical gauges, generally up to about .062". Past that, the string may not fit through the post without the hole opened up. A 1.5–2mm bit covers most of what you'll run into here, 2.5mm for the heaviest low strings. We can do it in shop if you'd rather not.</p>
+        <p>Past .090 there are no guitar singles, so the lowest string can take a bass single (marked "bass" in the gauge list). Those need a 3mm hole, a wider nut slot, and have a bigger ball end, so check it seats in your bridge or string-through ferrules.</p>
         <p class="rule-subhead"><span class="fit-mark fit-flag-intonation">⚹</span>INTONATION AT LOW TUNINGS</p>
         <p>Most guitars leave the factory set up and intonated for standard tuning. Drop far enough below that, usually Drop C / C standard or lower, and the low string can run out of adjustment room on stock hardware. Often fixable by pulling the spring under that saddle's intonation screw and running the saddle to its rearmost travel. Past that point the bridge or saddles need modifying, that's a shop job, bring it in and we'll sort it.</p>
       </div>
@@ -1134,6 +1136,7 @@ function gaugeToInches(gaugeStr) {
 // check the top bucket first since ranges are open-ended above .084".
 function drillFlagBucket(gaugeInches) {
   if (gaugeInches == null) return null;
+  if (gaugeInches >= 0.095) return '3mm';
   if (gaugeInches >= 0.084) return '2.5mm';
   if (gaugeInches >= 0.074) return '2mm';
   if (gaugeInches >= 0.062) return '1.5mm';
@@ -1487,6 +1490,26 @@ const GAUGES_STR23 = [
   ...GAUGES_WOUND
 ];
 
+// ════════════════════════════════════════════
+// BASS SINGLES ON THE LOWEST GUITAR STRING
+// D'Addario's guitar wound singles stop at .090 (NW090). Baritone and
+// extended-range packs sometimes need heavier, and past .090 the only XL
+// option is a bass single. These show in the gauge PICKER for the lowest
+// string of a guitar pack only; the recommendation engine never picks them.
+// Line is XLB (Long Scale): the only XL bass line that carries every gauge
+// here (no XB107S/XB110S/XB110M exists). Scale line doesn't matter on a guitar,
+// the string gets cut at the post at full wound diameter either way.
+// UW values come straight from BASS_STRINGS_BY_SCALE['34.0'].
+// ════════════════════════════════════════════
+const BASS_SINGLE_GAUGES_FOR_GUITAR = ['95','100','105','107','110','120'];
+const GAUGES_BASS_SINGLES = BASS_SINGLE_GAUGES_FOR_GUITAR.map(n => {
+  const e = BASS_STRINGS_BY_SCALE['34.0'].find(x => x.g === n);
+  UW[e.part] = e.uw;   // so UW-keyed lookups (tension, part #, pricing) resolve
+  return { g: n, uw: e.part, bass: true };
+});
+const GAUGES_WOUND_ALL = [...GAUGES_WOUND, ...GAUGES_BASS_SINGLES];
+function isBassSingle(gauge) { return GAUGES_BASS_SINGLES.some(g => g.g === String(gauge)); }
+
 
 // Ordered note list for custom tuning selectors (high → low)
 const NOTES_ORDERED = [
@@ -1715,6 +1738,8 @@ function applyJobConfigFromURL(){
   updateTuningNavBtns();
 }
 function guitarPart(gauge, type){
+  // Bass single on the low string of a guitar pack -> its XLB part #.
+  if (type !== 'plain') { const bs = GAUGES_BASS_SINGLES.find(x => x.g === String(gauge)); if (bs) return bs.uw; }
   // Derive the D'Addario single's part # (PL### plain / NW### wound) from gauge+type.
   // Validated against the UW table so it always matches a real part (= String Inventory Item Name).
   const g = parseFloat(String(gauge));
@@ -2010,7 +2035,7 @@ function getStringPartCode(str, scale) {
   if (str.string_num === 2 || str.string_num === 3) {
     item = GAUGES_STR23.find(g => g.g === str.gauge);
   } else {
-    const list = str.type === 'plain' ? GAUGES_PLAIN : GAUGES_WOUND;
+    const list = str.type === 'plain' ? GAUGES_PLAIN : GAUGES_WOUND_ALL;
     item = list.find(g => g.g === str.gauge);
   }
   return item ? item.uw : null;
@@ -2300,7 +2325,7 @@ function adaptNearestScalePack(targetScale, tuning, count) {
     } else {
       // Guitar - try plain table first, then wound table
       const entry = GAUGES_PLAIN.find(g => g.g === s.gauge)
-                 || GAUGES_WOUND.find(g => g.g === s.gauge);
+                 || GAUGES_WOUND_ALL.find(g => g.g === s.gauge);
       if (entry) uw = UW[entry.uw];
     }
     if (uw != null) {
@@ -2374,11 +2399,14 @@ function buildStringTable(pack) {
     // Bass uses the full D'Addario XLB gauge range at every scale (Long Scale strings
     // physically fit shorter basses too - the UW lookup handles scale-native vs fallback).
     // Guitar uses plain/wound/combined.
+    // Lowest wound string on a guitar also gets the XLB bass singles past .090.
+    const lowestGuitar = !isBassInstrument() && str.string_num === total && str.type !== 'plain';
     const gauges = isBassInstrument() ? bassGaugeNumbers().map(n=>({g:n}))
                   : (str.string_num === 2 || str.string_num === 3) ? GAUGES_STR23
-                  : (str.type === 'plain' ? GAUGES_PLAIN : GAUGES_WOUND);
+                  : (str.type === 'plain' ? GAUGES_PLAIN
+                     : (lowestGuitar ? GAUGES_WOUND_ALL : GAUGES_WOUND));
     const opts = gauges.map(g =>
-      `<option value="${g.g}"${g.g===str.gauge?' selected':''}>${g.g}</option>`
+      `<option value="${g.g}"${g.g===str.gauge?' selected':''}>${g.g}${g.bass?' (bass)':''}</option>`
     ).join('');
     const normNote = normalizeNote(str.note);
     const noteOpts = NOTES_ORDERED.map(n =>
@@ -2393,7 +2421,7 @@ function buildStringTable(pack) {
         <button class="g-btn" onclick="navNote(${str.string_num},-1)" title="Higher pitch">▲</button>
       </div></td>
       <td><div class="g-wrap" style="gap:2px"><button class="g-btn" onclick="navGauge(${str.string_num},-1)" title="Smaller gauge">▼</button><select id="g-${str.string_num}" onchange="onGaugeChange(${str.string_num},this.value)">${opts}</select><button class="g-btn" onclick="navGauge(${str.string_num},1)" title="Larger gauge">▲</button></div>${drillFlagMarkup(str.string_num, str.gauge)}</td>
-      <td style="text-align:center">${isBassInstrument() ? `<select id="p-${str.string_num}" onchange="onPartChange(${str.string_num},this.value)" style="font-size:10px;text-align:center;color:#159385;font-weight:600;min-width:90px">${bassPartsForGauge(str.gauge).map(p=>`<option value="${p.part}"${p.part===(str.part||bassRecommendedPart(str.gauge, scaleForString(str.string_num,total)))?' selected':''}>${p.part}</option>`).join('')}</select>` : `<span style="color:#aaa;font-size:11px">${str.type.slice(0,1).toUpperCase()}</span>`}</td>
+      <td style="text-align:center">${isBassInstrument() ? `<select id="p-${str.string_num}" onchange="onPartChange(${str.string_num},this.value)" style="font-size:10px;text-align:center;color:#159385;font-weight:600;min-width:90px">${bassPartsForGauge(str.gauge).map(p=>`<option value="${p.part}"${p.part===(str.part||bassRecommendedPart(str.gauge, scaleForString(str.string_num,total)))?' selected':''}>${p.part}</option>`).join('')}</select>` : `<span style="color:#aaa;font-size:11px">${isBassSingle(str.gauge) ? 'XLB' : str.type.slice(0,1).toUpperCase()}</span>`}</td>
       <td class="tension-val ${tCol}" id="t-${str.string_num}">${(+str.tension_lbs).toFixed(1)}</td>
       <td style="color:#999;font-size:11px;text-align:center">${fmtScale(scaleForString(str.string_num, total))}"</td>
     </tr>`;
@@ -2475,7 +2503,7 @@ function onGaugeChange(strNum, gauge) {
       item = GAUGES_STR23.find(g => g.g === gauge);
       if (item) str.type = GAUGES_PLAIN.some(g => g.g === gauge) ? 'plain' : 'wound';
     } else {
-      const gauges = str.type === 'plain' ? GAUGES_PLAIN : GAUGES_WOUND;
+      const gauges = str.type === 'plain' ? GAUGES_PLAIN : GAUGES_WOUND_ALL;
       item = gauges.find(g => g.g === gauge);
     }
     if (!item || !freq) return;
@@ -2499,7 +2527,7 @@ function onGaugeChange(strNum, gauge) {
         str.part = bassRecommendedPart(gauge, scaleForString(strNum, currentPack.strings.length));
         partTd.innerHTML = `<select id="p-${strNum}" onchange="onPartChange(${strNum},this.value)" style="font-size:10px;text-align:center;color:#159385;font-weight:600;min-width:90px">${bassPartsForGauge(gauge).map(p=>`<option value="${p.part}"${p.part===str.part?' selected':''}>${p.part}</option>`).join('')}</select>`;
       } else {
-        partTd.innerHTML = `<span style="color:#aaa;font-size:11px">${str.type.slice(0,1).toUpperCase()}</span>`;
+        partTd.innerHTML = `<span style="color:#aaa;font-size:11px">${isBassSingle(str.gauge) ? 'XLB' : str.type.slice(0,1).toUpperCase()}</span>`;
       }
     }
   }
@@ -2602,7 +2630,7 @@ function onNoteChange(strNum, note) {
     uw = bassItem.uw;
   } else {
     const gaugeList = (strNum === 2 || strNum === 3) ? GAUGES_STR23
-                     : (str.type === 'plain' ? GAUGES_PLAIN : GAUGES_WOUND);
+                     : (str.type === 'plain' ? GAUGES_PLAIN : GAUGES_WOUND_ALL);
     const item = gaugeList.find(g => g.g === str.gauge);
     if (!item) return;
     uw = UW[item.uw];
