@@ -55,14 +55,16 @@ SECTIONS = [
         string_count=6,
         color='#2cd5c4',            # teal
         subtitle='{n} STANDARD TUNINGS · {h} HIDDEN GEMS',
-        blurb=('Standard tunings run from E down to F#. Drop tunings lower the 6th string '
-               'an additional whole step from the corresponding standard. Open C is our '
-               'alternate tuning, used for slide work and open-chord rhythm.'),
+        blurb=('Standard tunings run from E down to G. Drop tunings lower the 6th string '
+               'an additional whole step from the corresponding standard. Drop E is a '
+               'baritone-style drop, Open C is our slide and open-chord tuning, and BEADEA '
+               'is a fourths-and-fifths baritone tuning.'),
         tunings=['E Standard','Drop D','D# Standard','Drop C#','D Standard','Drop C',
                  'C# Standard','Drop B','C Standard','Drop A#','B Standard','Drop A',
                  'A# Standard','Drop G#','A Standard','Drop G','G# Standard','Drop F#',
-                 'G Standard','Drop F','Open C'],
-        hidden_gems=['The Idiofame','The Wax Wing','The Holcomb','The Labrynthian'],
+                 'G Standard','Drop F','Drop E','Open C','BEADEA'],
+        hidden_gems=['The Idiofame','The Wax Wing','The Holcomb','The Labrynthian',
+                     'Open Slayer','Sonic Youth'],
     ),
     dict(
         title='7-String Guitar',
@@ -83,8 +85,9 @@ SECTIONS = [
         blurb=('Extended-range options including Meshuggah F (identical pitches to F '
                'Standard, named for its most famous user) and Double Drop E (High A) - '
                'a 7-string Drop F# with a High A added on top.'),
-        tunings=['F# Standard','F Standard','Meshuggah F','Drop E','Double Drop E (High A)',
-                 'A Standard','Drop D','Drop Eb','Drop F','E Standard','High A'],
+        tunings=['High A','F# Standard','Drop E','F Standard','Drop D#','E Standard',
+                 'Drop D','D# Standard','Drop C#','D Standard','Drop C','Drop B',
+                 'Drop F','A Standard','Double Drop E (High A)','Meshuggah F'],
         hidden_gems=['Tsunami Sea','The Sleep Token'],
     ),
     dict(
@@ -93,8 +96,8 @@ SECTIONS = [
         color='#4ca97d',            # green
         subtitle='{n} TUNINGS · STANDARD AND DROP',
         blurb='The classic 4-string bass range, from E Standard down to Drop B.',
-        tunings=['E Standard','Drop D','Eb Standard','D Standard','Drop C',
-                 'C Standard','C# Standard','Drop B','B Standard'],
+        tunings=['E Standard','Drop D','D# Standard','D Standard','Drop C',
+                 'C# Standard','C Standard','Drop B','B Standard'],
         hidden_gems=[],
     ),
     dict(
@@ -105,8 +108,8 @@ SECTIONS = [
         blurb=('Both classic low-B 5-string (B Standard) and the High-C variant (E2 '
                'through C3, used in jazz and modern fusion). Includes Drop F and Drop F# '
                'for ultra-low extended-range work.'),
-        tunings=['B Standard','Drop B','Drop A','A Standard','Drop G#','Drop G',
-                 'Drop F#','Drop F','High C','E Standard','Drop D','Eb Standard','D Standard'],
+        tunings=['High C','B Standard','Drop D','Drop B','A# Standard','Drop A',
+                 'A Standard','Drop G#','Drop G','Drop F#','Drop F','D Fifths'],
         hidden_gems=[],
     ),
 ]
@@ -425,7 +428,7 @@ def render_summary_flowables() -> list:
 
     # Bass ladder
     bass_header = ['STRING','S1','S2','S3','S4','S5','','','']
-    bass_values = ['BASS (lbs)','32.0','34.0','36.0','38.0','40.0','','','']
+    bass_values = ['BASS (lbs)','40.0','40.0','41.0','41.0','42.0','','','']
     t_bass = Table([bass_header, bass_values], colWidths=[1.4*inch] + [0.55*inch]*8)
     t_bass.setStyle(TableStyle([
         ('FONTNAME', (0,0), (-1,0), 'Helvetica-Bold'),
@@ -449,8 +452,8 @@ def render_summary_flowables() -> list:
     # Two info boxes side by side
     enharmonic_text = (
         '<b>Enharmonic Names</b><br/><br/>'
-        'Tunings with sharp/flat equivalents (D# = Eb, G# = Ab) appear under both '
-        'names so you can find the one you think in. The note sequences are identical.'
+        'We name every tuning with sharps. If you think in flats, D# = Eb, G# = Ab, '
+        'A# = Bb and C# = Db, so D# Standard is the same as Eb Standard.'
     )
     custom_text = (
         '<b>Custom Tuning Not Listed?</b><br/><br/>'
@@ -539,11 +542,6 @@ def main():
 
     doc.build(story)
     print(f'Wrote {OUTPUT} ({OUTPUT.stat().st_size:,} bytes)')
-
-
-if __name__ == '__main__':
-    main()
-t_size:,} bytes)')
 
 
 if __name__ == '__main__':
