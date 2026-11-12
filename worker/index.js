@@ -111,6 +111,14 @@ export default {
       return preflightResponse(origin);
     }
 
+    // Public re-order short link: GET /r/<JOB#> (e.g. /r/J270). Hit directly by
+    // the service-report button + QR, so there's no Origin header and it's a GET -
+    // it must answer before the origin allowlist and POST-only guards below. It
+    // never returns job data in the body; it only 302-redirects to the calculator.
+    if (request.method === 'GET' && path.startsWith('/r/')) {
+      return handleReorderRedirect(path, env);
+    }
+
     // Origin allowlist (production browsers only)
     if (!ALLOWED_ORIGINS.includes(origin)) {
       return jsonResponse({ error: 'Forbidden origin.' }, 403, origin);
@@ -275,6 +283,92 @@ async function handleScaleLookup(request, env, origin) {
   const note = (typeof parsed.note === 'string' ? parsed.note : '').slice(0, 240);
 
   return jsonResponse({ scale_length, string_count, note }, 200, origin);
+}
+
+// ---- Public re-order short link (/r/<JOB#>) ----------------------------
+
+// The calculator on GitHub Pages. A re-order link lands here with the job's
+// pack pre-filled via the query params the tool already understands (?ref +
+// sc/tn/nt/g/cl).
+const TOOL_URL = 'https://claytonbeaubien.github.io/rosco-custom-strings/';
+
+// Guitar Jobs field IDs read for the re-order link. Scale Length / Tuning /
+// Tuning Notes are lookups (come back as arrays); Installed Gauges + Client
+// Name Text are single values - firstVal() copes with both. (AT_BASE / AT_JOBS
+// are defined with the /add-to-job handler below.)
+const REORDER_FIELDS = {
+  scale:  'fldqj7ZKl5igyWJ0v',  // Scale Length (lookup -> select name, e.g. "26.5")
+  tuning: 'fldjVm1n1X2Q1g75T',  // Tuning (lookup of a LINK -> Tunings record id(s))
+  notes:  'fldqh9LE4cmPHnClj',  // Tuning Notes (lookup, per-string pitches)
+  gauges: 'fldZlrKMP1zomQaIn',  // Installed Gauges (text, low -> high)
+  client: 'fldpNjRpViEDn0d5U',  // Client Name Text (formula, first-name source)
+};
+// The Tuning lookup returns the linked Tunings record id, not its name, so we
+// resolve the id to the tuning's Name ("B Standard - 7" - count suffix included,
+// which is what the tool's dropdown + string-count parser expect).
+const AT_TUNINGS = 'tblMOp9JMoatpz1k6';      // Tunings master table
+const AT_TUNING_NAME = 'fldOm489nJckRYOZR';  // Name field ("B Standard - 7")
+
+async function handleReorderRedirect(path, env) {
+  const bare = () => redirect(TOOL_URL);  // job missing / no gauges -> plain tool
+  let jobNum;
+  try { jobNum = decodeURIComponent(path.slice(3)).trim(); } catch { return bare(); }
+  if (!/^J\d{1,5}$/.test(jobNum)) return bare();   // validate the job number
+  if (!env.AIRTABLE_TOKEN) return bare();
+
+  // Look the job up by Job #. returnFieldsByFieldId so we read by the stable
+  // field IDs above rather than display names.
+  let rec;
+  try {
+    const fieldParams = Object.values(REORDER_FIELDS).map((f) => `&fields%5B%5D=${f}`).join('');
+    const url = `https://api.airtable.com/v0/${AT_BASE}/${AT_JOBS}` +
+      `?maxRecords=1&returnFieldsByFieldId=true` +
+      `&filterByFormula=${encodeURIComponent(`{Job #}='${jobNum.replace(/'/g, "\\'")}'`)}` +
+      fieldParams;
+    const r = await fetch(url, { headers: { Authorization: `Bearer ${env.AIRTABLE_TOKEN}` } });
+    if (!r.ok) return bare();
+    const j = await r.json();
+    rec = j.records && j.records[0];
+  } catch {
+    return bare();
+  }
+  if (!rec) return bare();  // no such job -> plain tool
+
+  const f = rec.fields || {};
+  const firstVal = (v) => (Array.isArray(v) ? v[0] : v);
+  const str = (v) => { const x = firstVal(v); return x == null ? '' : String(x).trim(); };
+
+  const g = str(f[REORDER_FIELDS.gauges]);
+  if (!g) return bare();  // no installed gauges -> nothing to re-order
+
+  // Resolve the Tuning link to its name. firstVal handles the array; the value
+  // is a record id for the lookup, but cope with a plain name or {name} too.
+  let tn = '';
+  const tv = firstVal(f[REORDER_FIELDS.tuning]);
+  const tvStr = (tv == null ? '' : (typeof tv === 'object' ? (tv.name || tv.id || '') : String(tv))).trim();
+  if (/^rec[A-Za-z0-9]{14}$/.test(tvStr)) {
+    try {
+      const tr = await fetch(
+        `https://api.airtable.com/v0/${AT_BASE}/${AT_TUNINGS}/${tvStr}?returnFieldsByFieldId=true`,
+        { headers: { Authorization: `Bearer ${env.AIRTABLE_TOKEN}` } }
+      );
+      if (tr.ok) { const tj = await tr.json(); tn = str(tj.fields && tj.fields[AT_TUNING_NAME]); }
+    } catch { /* leave tn blank - the tool falls back to the recommended pack */ }
+  } else {
+    tn = tvStr;  // already a tuning name
+  }
+
+  // Build the tool URL. encodeURIComponent (not URLSearchParams) so spaces come
+  // out as %20, matching the tool's existing re-order links. Empty params skipped.
+  const parts = [`ref=${encodeURIComponent(jobNum)}`];
+  const push = (key, raw) => { const s = str(raw); if (s) parts.push(`${key}=${encodeURIComponent(s)}`); };
+  push('sc', f[REORDER_FIELDS.scale]);
+  if (tn) parts.push(`tn=${encodeURIComponent(tn)}`);
+  push('nt', f[REORDER_FIELDS.notes]);
+  push('g',  f[REORDER_FIELDS.gauges]);
+  push('cl', f[REORDER_FIELDS.client]);
+
+  return redirect(`${TOOL_URL}?${parts.join('&')}`);
 }
 
 // ---- Shopify Files: upload pack label image ---------------------------
@@ -882,5 +976,13 @@ function jsonResponse(data, status, origin) {
   return new Response(JSON.stringify(data), {
     status,
     headers: corsHeaders(origin),
+  });
+}
+
+// 302 redirect with no body and no caching - used by the /r/<JOB#> short link.
+function redirect(location) {
+  return new Response(null, {
+    status: 302,
+    headers: { Location: location, 'Cache-Control': 'no-store' },
   });
 }

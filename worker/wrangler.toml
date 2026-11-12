@@ -1,3 +1,15 @@
 name = "rosco-scale-lookup"
 main = "index.js"
 compatibility_date = "2025-04-01"
+
+# Keep the workers.dev URL (rosco-scale-lookup.clayton-18a.workers.dev) live for
+# the POST endpoints the tool calls. Adding a `routes` block makes wrangler
+# disable workers.dev by default, so we re-enable it explicitly.
+workers_dev = true
+
+# Custom route for the public re-order short link on the main domain:
+# roscoguitars.com/r/<JOB#> -> 302 to the tool. The rest of roscoguitars.com
+# (the GHL site) is unaffected - only /r/* matches.
+routes = [
+  { pattern = "roscoguitars.com/r/*", zone_name = "roscoguitars.com" },
+]
