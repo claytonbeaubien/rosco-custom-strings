@@ -7,9 +7,12 @@ compatibility_date = "2025-04-01"
 # disable workers.dev by default, so we re-enable it explicitly.
 workers_dev = true
 
-# Custom route for the public re-order short link on the main domain:
-# roscoguitars.com/r/<JOB#> -> 302 to the tool. The rest of roscoguitars.com
-# (the GHL site) is unaffected - only /r/* matches.
+# Custom route for the public re-order short link on a dedicated proxied
+# subdomain: go.roscoguitars.com/r/<JOB#> -> 302 to the tool. A subdomain keeps
+# the apex (the GHL site) untouched. Needs a Proxied (orange-cloud) DNS record
+# for `go` in Cloudflare; the worker handles /r/* so the record's target is
+# never actually used. (The apex route couldn't fire because roscoguitars.com is
+# DNS-only / grey-cloud for the GHL site, so traffic skips the Cloudflare edge.)
 routes = [
-  { pattern = "roscoguitars.com/r/*", zone_name = "roscoguitars.com" },
+  { pattern = "go.roscoguitars.com/r/*", zone_name = "roscoguitars.com" },
 ]
