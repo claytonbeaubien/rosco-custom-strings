@@ -1687,19 +1687,33 @@ function snapshotPackForCheckout() {
     label_name: labelName,
     label_guitar: labelGuitar,
     label_band: labelBand,
+    // Re-order source job (e.g. "J270") so the Shopify draft order / note can
+    // show this is a re-order. null for a fresh build. The Worker can read this
+    // off the pack snapshot; unknown to it today, it's simply ignored.
+    reorder_ref: REORDER_REF,
     imageDataUrl,
   };
 }
 
 // ── Internal "Add to Job" mode - opened from an Airtable job button (?job=recXXX) ──
 const JOB_ID = (() => { const j = new URLSearchParams(location.search).get('job'); return /^rec[A-Za-z0-9]{14}$/.test(j || '') ? j : null; })();
-// Pre-select string count + scale + tuning from the Airtable job. The Build String
-// Pack button passes &sc=<scale> and &tn=<tuning>, where tuning is "Name - N"
-// (N = string count), e.g. "Drop C - 6". Called once from init() after the default
-// pack is set, so it overrides the defaults with the guitar's actual setup. Anything
-// that doesn't match a known option is skipped gracefully.
-function applyJobConfigFromURL(){
-  if(!JOB_ID) return;
+// ── Public "re-order this pack" mode - opened from the service report button/QR
+// (?ref=J270&sc=...&tn=...&nt=...&g=...&cl=...). Active when ref is present and
+// job is not. Same config steps as job mode, plus the client's exact gauges via
+// &g=, but no Airtable writes - it lands on the normal Buy flow.
+const REORDER_REF = (() => {
+  if(JOB_ID) return null;  // job mode always wins; never both
+  const r = (new URLSearchParams(location.search).get('ref') || '').trim();
+  return r || null;
+})();
+// Pre-select string count + scale + tuning from the URL. Job mode: the Airtable
+// Build String Pack button passes &sc=<scale> and &tn=<tuning>, where tuning is
+// "Name - N" (N = string count), e.g. "Drop C - 6". Re-order mode: the service
+// report passes the same plus &g=<gauges low to high>. Called once from init()
+// after the default pack is set, so it overrides the defaults with the guitar's
+// actual setup. Anything that doesn't match a known option is skipped gracefully.
+function applyConfigFromURL(){
+  if(!JOB_ID && !REORDER_REF) return;
   const p = new URLSearchParams(location.search);
   const scRaw = (p.get('sc') || '').trim();
   const tnRaw = (p.get('tn') || '').trim();
@@ -1737,10 +1751,61 @@ function applyJobConfigFromURL(){
   setLabel('band2-input', (p.get('bn') || '').trim());
   onConfigChange();
   // 5) Notes - a custom tuning ("Custom: G G D G C F A D") never matches the
-  // dropdown, so the button also sends &nt=<notes low to high, no octaves>.
+  // dropdown, so the URL also sends &nt=<notes low to high, no octaves>.
   if(!tuningMatched) applyJobNotes(p.get('nt'));
+  // 6) Re-order mode only: force the client's exact gauges over the recommended
+  // pack. Must run last - count/scale/tuning/notes are all settled by now.
+  if(REORDER_REF) forceGaugesFromURL(p.get('g'));
   updateScaleNavBtns();
   updateTuningNavBtns();
+}
+// Back-compat alias - init() used to call applyJobConfigFromURL().
+const applyJobConfigFromURL = applyConfigFromURL;
+// The gauge PICKER list for a given string, mirroring buildStringTable() exactly
+// so a forced gauge is always a real stocked option the dropdown would show
+// (bass singles allowed only on the lowest wound guitar string).
+function availableGaugesForString(str, total){
+  if(isBassInstrument()) return bassGaugeNumbers().map(n => ({g:n}));
+  if(str.string_num === 2 || str.string_num === 3) return GAUGES_STR23;
+  if(str.type === 'plain') return GAUGES_PLAIN;
+  const lowestGuitar = str.string_num === total && str.type !== 'plain';
+  return lowestGuitar ? GAUGES_WOUND_ALL : GAUGES_WOUND;
+}
+// Re-order mode: force each string's gauge from &g= (low to high, e.g.
+// ".070 .050 .034 ..."). Picks the closest stocked gauge when not exact, then lets
+// onGaugeChange recalc tension/part. Wrong count or any unparseable value = ignore
+// g entirely and keep the recommended pack.
+function forceGaugesFromURL(gRaw){
+  if(!currentPack || !gRaw) return;
+  const toks = gRaw.trim().split(/\s+/).filter(Boolean);
+  const total = currentPack.strings.length;
+  if(toks.length !== total) return;  // wrong count -> keep recommended
+  // Parse every value up front; bail on the whole set if any is bad. Accepts
+  // decimal inches (".070") or bare thousandths ("70"); both normalise to thou.
+  const targets = toks.map(t => {
+    const v = parseFloat(t);
+    if(isNaN(v) || v <= 0) return null;
+    return v < 1 ? v * 1000 : v;
+  });
+  if(targets.some(t => t === null)) return;
+  // toks[0] = lowest string = highest string_num (total); toks[i] -> total - i.
+  for(let i = 0; i < total; i++){
+    const strNum = total - i;
+    const str = currentPack.strings.find(s => s.string_num === strNum);
+    if(!str) continue;
+    const list = availableGaugesForString(str, total);
+    if(!list.length) continue;
+    let best = null, bestDiff = Infinity;
+    for(const opt of list){
+      const d = Math.abs(parseFloat(opt.g) - targets[i]);
+      if(d < bestDiff){ bestDiff = d; best = opt.g; }
+    }
+    if(best != null) onGaugeChange(strNum, best);
+  }
+  // Re-render the table so the gauge dropdowns reflect the forced values
+  // (onGaugeChange updates the data + tension cell but not the <select>).
+  buildStringTable(currentPack);
+  renderLabel();
 }
 // Sets each string's note from &nt= ("G G D G C F A D", low to high), picking the
 // octave closest to the note the loaded pack already has on that string, then
@@ -1843,6 +1908,15 @@ document.addEventListener('DOMContentLoaded', () => {
       const esc = s => String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
       banner.innerHTML = '<span style="text-transform:uppercase;font-size:11px;letter-spacing:.08em;color:#159385;font-weight:700">Building pack for</span>&nbsp;&nbsp;'
         + bits.map(esc).join('&nbsp;&nbsp;<span style="color:#159385">·</span>&nbsp;&nbsp;');
+      banner.style.cssText = 'max-width:1132px;width:calc(100% - 32px);margin:18px auto 0;padding:12px 18px;box-sizing:border-box;background:#e7f5f3;border:1px solid #9ed4cd;color:#0f6f64;border-radius:10px;font-weight:600;font-size:15px;text-align:center';
+    }
+  } else if(REORDER_REF){
+    // Public re-order: normal Buy flow, with a banner naming the source job.
+    document.title = 'Re-order your pack - Rosco Strings';
+    const banner = document.getElementById('job-banner');
+    if(banner){
+      const esc = s => String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+      banner.innerHTML = '<span style="text-transform:uppercase;font-size:11px;letter-spacing:.08em;color:#159385;font-weight:700">Your pack from</span>&nbsp;&nbsp;' + esc(REORDER_REF);
       banner.style.cssText = 'max-width:1132px;width:calc(100% - 32px);margin:18px auto 0;padding:12px 18px;box-sizing:border-box;background:#e7f5f3;border:1px solid #9ed4cd;color:#0f6f64;border-radius:10px;font-weight:600;font-size:15px;text-align:center';
     }
   }
@@ -2222,7 +2296,7 @@ async function init() {
   // DEFAULTS_BY_COUNT entry the string-count buttons use (25.5" Drop C
   // for 6-string). Keeps default-setting logic in one place.
   setStringCount(stringCount);
-  applyJobConfigFromURL();
+  applyConfigFromURL();
   buildQR();
   updateScaleNavBtns();
   updateTuningNavBtns();
