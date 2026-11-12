@@ -1714,7 +1714,23 @@ const REORDER_REF = (() => {
 // actual setup. Anything that doesn't match a known option is skipped gracefully.
 function applyConfigFromURL(){
   if(!JOB_ID && !REORDER_REF) return;
-  const p = new URLSearchParams(location.search);
+  let p = new URLSearchParams(location.search);
+  // Re-order persistence: a full ?ref=...&sc=...&g=... link is stashed per ref so
+  // a refresh - which only carries the trimmed ?ref= - still restores the exact
+  // pack. A bare ?ref= with nothing stored falls through to the normal default.
+  if(REORDER_REF && !JOB_ID){
+    const key = 'roscoReorder:' + REORDER_REF;
+    const hasPackParams = p.get('sc') || p.get('tn') || p.get('g');
+    if(hasPackParams){
+      try { sessionStorage.setItem(key, location.search); } catch(_){}
+      try { history.replaceState(null, '', location.pathname + '?ref=' + encodeURIComponent(REORDER_REF)); } catch(_){}
+    } else {
+      let saved = null;
+      try { saved = sessionStorage.getItem(key); } catch(_){}
+      if(saved){ p = new URLSearchParams(saved); }
+      else { return; }  // nothing stored -> tool's normal default, no error
+    }
+  }
   const scRaw = (p.get('sc') || '').trim();
   const tnRaw = (p.get('tn') || '').trim();
   if(!scRaw && !tnRaw) return;
