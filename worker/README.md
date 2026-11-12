@@ -75,8 +75,9 @@ Or via CLI: `wrangler secret put <NAME>` (paste the value when prompted).
 The Worker only accepts requests from origins in the `ALLOWED_ORIGINS`
 array at the top of `index.js`. Currently:
 
-- `https://claytonbeaubien.github.io` (current public site)
-- `https://roscoguitars.com` (planned customer-facing host)
+- `https://strings.roscoguitars.com` (public home for the tool)
+- `https://claytonbeaubien.github.io` (old public URL - kept so old links + open tabs still work)
+- `https://roscoguitars.com` (apex / embed host)
 - `https://www.roscoguitars.com`
 
 Add new origins by editing the array and redeploying.

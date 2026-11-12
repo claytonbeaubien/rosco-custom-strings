@@ -9,8 +9,12 @@
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 body{background:#ffffff;color:#111;font-family:system-ui,-apple-system,'Segoe UI',sans-serif;min-height:100vh}
-header{background:#fff;border-bottom:2px solid #2cd5c4;padding:16px 32px;display:flex;align-items:center;justify-content:center;box-shadow:0 1px 4px rgba(0,0,0,.08)}
-.logo-img{height:48px;width:auto}
+header{background:#1a1a1a;border-bottom:2px solid #2cd5c4;padding:10px 24px;display:flex;align-items:center;justify-content:space-between;gap:16px;box-shadow:0 1px 4px rgba(0,0,0,.08)}
+.site-logo{display:inline-flex;align-items:center;line-height:0}
+.logo-img{height:30px;width:auto;display:block}
+.site-nav{display:flex;align-items:center;gap:22px}
+.site-nav a{color:#fff;font-size:12px;letter-spacing:.12em;text-transform:uppercase;font-weight:600;text-decoration:none;white-space:nowrap;transition:color .15s ease}
+.site-nav a:hover,.site-nav a:focus-visible{color:#2cd5c4}
 .header-right{color:#667085;font-size:11px;letter-spacing:.15em;text-transform:uppercase;font-weight:500}
 /* Quadrant v4 layout.
    Top row (full width on desktop): actions row (price + save/print)
@@ -238,7 +242,7 @@ body.has-setup-specs .tensions-info .sections-swap{display:inline-flex}
 @media(max-width:599px){.card{margin:0 -12px;width:calc(100% + 24px);padding:16px 14px 14px}}
 @media(max-width:599px){.form-row{grid-template-columns:1fr!important}.count-btns-bass{width:100%}}
 @media(max-width:599px){.btn-row{flex-direction:column}.btn{width:100%;padding:14px 18px;font-size:15px}}
-@media(max-width:599px){header{padding:12px 16px}.logo-img{height:36px}.header-right{font-size:9px}}
+@media(max-width:599px){header{padding:8px 14px;gap:10px}.logo-img{height:24px}.site-nav{gap:13px}.site-nav a{font-size:10.5px;letter-spacing:.05em}}
 @media(max-width:599px){.card{padding:14px 14px 12px;margin-bottom:12px}}
 @media(max-width:599px){.nav-btn{width:32px;height:24px;font-size:11px}}
 .scale-lookup-trigger{font-size:13px;color:#555;margin-top:10px;margin-bottom:2px;cursor:default}
@@ -331,6 +335,9 @@ html.print-mode .setup-specs{display:none !important}
    -> parent grows iframe more -> ... endless). */
 html.embedded body{min-height:0}
 html.embedded header{display:none}
+/* Internal job mode (?job=): opened from an Airtable job button, not the
+   public site - hide the public nav bar (the job banner stands in for it). */
+html.job-mode header{display:none}
 html.embedded .main{margin-top:16px}
 @media(max-width:1099px){html.embedded .main{margin-top:0}}
 
@@ -546,8 +553,31 @@ html.print-mode .print-banner{display:block;background:#f4f5f7;border:1px solid 
   })();
 </script>
 
+<script>
+  // Internal job mode (?job=recXXX): the tool is opened from an Airtable job
+  // button, not the public site - flag it so the public nav bar is hidden
+  // (CSS: html.job-mode header{display:none}). Runs before <header> is parsed,
+  // so there's no flash of the public bar.
+  (function () {
+    try {
+      var j = new URLSearchParams(window.location.search).get('job');
+      if (j && /^rec[A-Za-z0-9]{14}$/.test(j)) document.documentElement.classList.add('job-mode');
+    } catch (e) {}
+  })();
+</script>
+
+<!-- Slim public site bar: Rosco logo (-> roscoguitars.com) + nav. Hidden in
+     print mode, internal job mode, and iframe-embedded mode (host has its own
+     chrome). Brand palette: dark #1a1a1a bar, teal #2cd5c4 accent/hover. -->
 <header>
-  <img src="Images/Rosco Guitars Logo.png" alt="Rosco Guitars" class="logo-img" onerror="this.style.display='none'">
+  <a class="site-logo" href="https://roscoguitars.com" aria-label="Rosco Guitars home">
+    <img src="data/Rosco Guitars Logo.png" alt="Rosco Guitars" class="logo-img" onerror="this.style.display='none'">
+  </a>
+  <nav class="site-nav" aria-label="Primary">
+    <a href="https://roscoguitars.com">Home</a>
+    <a href="https://roscoguitars.com/servicerequest">Book a Service</a>
+    <a href="https://shop.roscoguitars.com">Shop</a>
+  </nav>
 </header>
 
 <!-- Internal job-mode banner - shows which Airtable job this pack is for (?job=…&jn=…&cl=…&gt=…). Placed above .main so the CSS grid doesn't push it to the bottom. -->
