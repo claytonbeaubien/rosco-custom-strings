@@ -297,12 +297,17 @@ const TOOL_URL = 'https://claytonbeaubien.github.io/rosco-custom-strings/';
 // Name Text are single values - firstVal() copes with both. (AT_BASE / AT_JOBS
 // are defined with the /add-to-job handler below.)
 const REORDER_FIELDS = {
-  scale:  'fldqj7ZKl5igyWJ0v',  // Scale Length (lookup number)
-  tuning: 'fldjVm1n1X2Q1g75T',  // Tuning (lookup, name already carries "- N" count)
+  scale:  'fldqj7ZKl5igyWJ0v',  // Scale Length (lookup -> select name, e.g. "26.5")
+  tuning: 'fldjVm1n1X2Q1g75T',  // Tuning (lookup of a LINK -> Tunings record id(s))
   notes:  'fldqh9LE4cmPHnClj',  // Tuning Notes (lookup, per-string pitches)
   gauges: 'fldZlrKMP1zomQaIn',  // Installed Gauges (text, low -> high)
   client: 'fldpNjRpViEDn0d5U',  // Client Name Text (formula, first-name source)
 };
+// The Tuning lookup returns the linked Tunings record id, not its name, so we
+// resolve the id to the tuning's Name ("B Standard - 7" - count suffix included,
+// which is what the tool's dropdown + string-count parser expect).
+const AT_TUNINGS = 'tblMOp9JMoatpz1k6';      // Tunings master table
+const AT_TUNING_NAME = 'fldOm489nJckRYOZR';  // Name field ("B Standard - 7")
 
 async function handleReorderRedirect(path, env) {
   const bare = () => redirect(TOOL_URL);  // job missing / no gauges -> plain tool
@@ -336,12 +341,29 @@ async function handleReorderRedirect(path, env) {
   const g = str(f[REORDER_FIELDS.gauges]);
   if (!g) return bare();  // no installed gauges -> nothing to re-order
 
+  // Resolve the Tuning link to its name. firstVal handles the array; the value
+  // is a record id for the lookup, but cope with a plain name or {name} too.
+  let tn = '';
+  const tv = firstVal(f[REORDER_FIELDS.tuning]);
+  const tvStr = (tv == null ? '' : (typeof tv === 'object' ? (tv.name || tv.id || '') : String(tv))).trim();
+  if (/^rec[A-Za-z0-9]{14}$/.test(tvStr)) {
+    try {
+      const tr = await fetch(
+        `https://api.airtable.com/v0/${AT_BASE}/${AT_TUNINGS}/${tvStr}?returnFieldsByFieldId=true`,
+        { headers: { Authorization: `Bearer ${env.AIRTABLE_TOKEN}` } }
+      );
+      if (tr.ok) { const tj = await tr.json(); tn = str(tj.fields && tj.fields[AT_TUNING_NAME]); }
+    } catch { /* leave tn blank - the tool falls back to the recommended pack */ }
+  } else {
+    tn = tvStr;  // already a tuning name
+  }
+
   // Build the tool URL. encodeURIComponent (not URLSearchParams) so spaces come
   // out as %20, matching the tool's existing re-order links. Empty params skipped.
   const parts = [`ref=${encodeURIComponent(jobNum)}`];
   const push = (key, raw) => { const s = str(raw); if (s) parts.push(`${key}=${encodeURIComponent(s)}`); };
   push('sc', f[REORDER_FIELDS.scale]);
-  push('tn', f[REORDER_FIELDS.tuning]);
+  if (tn) parts.push(`tn=${encodeURIComponent(tn)}`);
   push('nt', f[REORDER_FIELDS.notes]);
   push('g',  f[REORDER_FIELDS.gauges]);
   push('cl', f[REORDER_FIELDS.client]);
