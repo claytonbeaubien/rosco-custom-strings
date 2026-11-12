@@ -51,17 +51,24 @@ The CLI uses `wrangler.toml` in this folder for the worker name and config.
 
 ## Configuration
 
-The Worker reads one secret from `env`:
+The Worker reads four values from `env`. **All four are Cloudflare Secrets
+(encrypted). Never add any of them as a plain-text Variable in the dashboard** -
+a plain var gets wiped on the next `wrangler deploy` (secrets survive), which is
+exactly what cleared `SHOPIFY_CLIENT_ID` and broke Buy This Pack for ~4 hours on
+2026-11-12. `keep_vars = true` in `wrangler.toml` now stops deploys from clearing
+dashboard-set vars, but keep every one of these as **Type: Secret** regardless.
 
 | Name | Type | Purpose |
 |------|------|---------|
-| `ANTHROPIC_API_KEY` | Secret | Server-side key for the Anthropic API |
+| `ANTHROPIC_API_KEY` | Secret | Server-side key for the Anthropic API (scale lookup) |
+| `AIRTABLE_TOKEN` | Secret | Airtable PAT for the re-order short link + add-to-job writes |
+| `SHOPIFY_CLIENT_ID` | Secret | Shopify Admin API key for the Buy This Pack draft order |
+| `SHOPIFY_CLIENT_SECRET` | Secret | Shopify Admin API secret for the draft order |
 
-Set via dashboard: Worker → **Settings** → **Variables and Secrets** → **Add**
-→ Type: **Secret**.
+Add or update one via dashboard: Worker → **Settings** → **Variables and
+Secrets** → **Add** → Type: **Secret** (never **Text**).
 
-Or via CLI: `wrangler secret put ANTHROPIC_API_KEY` (paste the key when
-prompted).
+Or via CLI: `wrangler secret put <NAME>` (paste the value when prompted).
 
 ## Allowed origins
 

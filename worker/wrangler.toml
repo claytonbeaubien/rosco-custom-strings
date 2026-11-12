@@ -2,6 +2,14 @@ name = "rosco-scale-lookup"
 main = "index.js"
 compatibility_date = "2025-04-01"
 
+# Never wipe dashboard-set Secrets/Variables on deploy. On 2026-11-12 a deploy
+# cleared SHOPIFY_CLIENT_ID (a plain-text var at the time) and broke Buy This
+# Pack for ~4 hours. All four values (AIRTABLE_TOKEN, ANTHROPIC_API_KEY,
+# SHOPIFY_CLIENT_ID, SHOPIFY_CLIENT_SECRET) are Secrets now and secrets survive
+# deploys regardless; keep_vars is belt-and-suspenders so a future plain var
+# can't be silently removed either.
+keep_vars = true
+
 # Keep the workers.dev URL (rosco-scale-lookup.clayton-18a.workers.dev) live for
 # the POST endpoints the tool calls. Adding a `routes` block makes wrangler
 # disable workers.dev by default, so we re-enable it explicitly.
