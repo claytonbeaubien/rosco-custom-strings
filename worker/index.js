@@ -33,7 +33,8 @@
 // Browsers allowed to call this Worker. Edit and redeploy when adding a new
 // site (e.g. when the calculator embeds on roscoguitars.com).
 const ALLOWED_ORIGINS = [
-  'https://claytonbeaubien.github.io',
+  'https://claytonbeaubien.github.io',   // old public URL - kept so old links + open tabs still work
+  'https://strings.roscoguitars.com',    // new public home for the tool
   'https://roscoguitars.com',
   'https://www.roscoguitars.com',
 ];
@@ -290,7 +291,7 @@ async function handleScaleLookup(request, env, origin) {
 // The calculator on GitHub Pages. A re-order link lands here with the job's
 // pack pre-filled via the query params the tool already understands (?ref +
 // sc/tn/nt/g/cl).
-const TOOL_URL = 'https://claytonbeaubien.github.io/rosco-custom-strings/';
+const TOOL_URL = 'https://strings.roscoguitars.com/';
 
 // Guitar Jobs field IDs read for the re-order link. Scale Length / Tuning /
 // Tuning Notes are lookups (come back as arrays); Installed Gauges + Client
@@ -730,7 +731,7 @@ async function handleCreateDraftOrder(request, env, origin) {
     // handle any UTF-8 chars in tuning names safely.
     const json = JSON.stringify(packSpec);
     const b64 = btoa(unescape(encodeURIComponent(json)));
-    const labelUrl = `https://claytonbeaubien.github.io/rosco-custom-strings/?print=${encodeURIComponent(b64)}`;
+    const labelUrl = `https://strings.roscoguitars.com/?print=${encodeURIComponent(b64)}`;
     properties.push({ name: '_Pack Label (print)', value: labelUrl });
   } catch (_e) {
     // Non-fatal - order still works without the deep link.
